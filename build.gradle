@@ -24,7 +24,7 @@ dependencies {
     testCompileOnly 'org.projectlombok:lombok:1.18.22'
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.22'
 
-    implementation 'com.github.cfogrady:vb-dim-reader:0.0.0.3-3d2f259'
+    implementation 'com.github.cfogrady:vb-dim-reader:0.0.0.4-ac44e70'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 
