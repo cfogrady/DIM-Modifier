@@ -2,13 +2,16 @@ package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.vb.dim.reader.DimReader;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
+import com.github.cfogrady.vb.dim.reader.content.DimStats;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
 import javafx.event.EventType;
 import javafx.geometry.Insets;
+import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.effect.BlendMode;
 import javafx.scene.image.*;
@@ -27,7 +30,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 
 @Slf4j
 public class LoadedScene {
@@ -89,13 +94,16 @@ public class LoadedScene {
     }
 
     public void setupScene(SelectionState selectionState) {
-        GridPane gridPane = new GridPane();
-        setupGridConstraints(gridPane);
-        setupHeaderButtons(gridPane, selectionState);
-        setupNameArea(gridPane, selectionState);
-        setupSpriteArea(gridPane, selectionState);
-        gridPane.setAlignment(Pos.CENTER);
-        javafx.scene.Scene scene = new Scene(gridPane, 1280, 720);
+        VBox vbox = new VBox();
+        vbox.getChildren().add(setupHeaderButtons(selectionState));
+        vbox.getChildren().add(setupNameArea(selectionState));
+        HBox hbox = new HBox();
+        vbox.getChildren().add(hbox);
+        hbox.getChildren().add(setupSpriteArea(selectionState));
+        hbox.getChildren().add(setupStatArea(selectionState));
+        vbox.setSpacing(10);
+        vbox.setPadding(new Insets(10));
+        javafx.scene.Scene scene = new Scene(vbox, 1280, 720);
         log.info("Setting scene");
         scene.addEventHandler(KeyEvent.KEY_PRESSED, key -> {
             log.info("Key pressed: {}", key.getCode().getName());
@@ -118,43 +126,156 @@ public class LoadedScene {
         stage.show();
     }
 
-    private void setupHeaderButtons(GridPane gridPane, SelectionState selectionState) {
-        gridPane.add(setupOpenButton(), 0, 0);
-        gridPane.add(setupSaveButton(), 1, 0);
-        gridPane.add(setupPrevButton(selectionState), 2, 0);
-        gridPane.add(setupNextButton(selectionState), 4, 0);
+    private Node setupHeaderButtons(SelectionState selectionState) {
+        HBox hBox = new HBox(setupOpenButton(), setupSaveButton(), setupFusionButton(), setupFusionButton());
+        hBox.setSpacing(10);
+        return hBox;
     }
 
-    private void setupNameArea(GridPane gridPane, SelectionState selectionState) {
-        gridPane.add(setupFusionButton(), 0, 1);
-        gridPane.add(setupName(selectionState.getSelectionType(), selectionState.getSlot()), 1, 1, 3, 1);
-        gridPane.add(setupFusionButton(), 4, 1);
+    private Node setupNameArea(SelectionState selectionState) {
+        HBox hBox = new HBox(setupPrevButton(selectionState), setupName(selectionState.getSelectionType(), selectionState.getSlot()), setupNextButton(selectionState));
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        return hBox;
     }
 
-    private void setupSpriteArea(GridPane gridPane, SelectionState selectionState) {
-        Image image = loadImageAtLocation(getImageIndex(selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex()));
-        ImageView imageView = new ImageView();
-        imageView.setImage(image);
-        imageView.setScaleX(2);
-        imageView.setScaleY(2);
-        StackPane stackPane = new StackPane(imageView);
-        stackPane.setAlignment(Pos.CENTER);
-        stackPane.setBackground(getBackground(selectionState)); //160x320
-        stackPane.setPrefWidth(160);
-        stackPane.setPrefHeight(320);
-        gridPane.add(stackPane, 0, 3, 3, 6);
-        gridPane.add(getChangeBackgroundButton(), 0, 2, 3, 1);
+    private Node setupSpriteArea(SelectionState selectionState) {
+        int spriteIndex = getImageIndex(selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
+        SpriteData.Sprite sprite = dimContent.getSpriteData().getSprites().get(spriteIndex);
+        Image image = loadImageAtLocation(sprite);
+        ImageView imageView = new ImageView(image);
+        imageView.setFitWidth(sprite.getWidth() * 2.0);
+        imageView.setFitHeight(sprite.getHeight() * 2.0);
+        //imageView.setLayoutX(0);
+        //imageView.setLayoutY(0);
+        StackPane backgroundPane = new StackPane(imageView);
+        backgroundPane.setAlignment(Pos.BOTTOM_CENTER);
+        backgroundPane.setBackground(getBackground(selectionState)); //160x320
+        backgroundPane.setMinSize(160.0, 320.0);
+        backgroundPane.setMaxSize(160.0, 320.0);
+        VBox vbox = new VBox(getChangeBackgroundButton(), backgroundPane);
         if(selectionState.getSelectionType() != CurrentSelectionType.LOGO) {
-            gridPane.add(setupPrevSpriteButton(selectionState), 0, 9);
-            gridPane.add(setupReplaceSpriteButton(selectionState), 1, 9);
-            gridPane.add(setupNextSpriteButton(selectionState), 2, 9);
+            HBox hBox = new HBox(setupPrevSpriteButton(selectionState), setupReplaceSpriteButton(selectionState), setupNextSpriteButton(selectionState));
+            hBox.setSpacing(10);
+            hBox.setAlignment(Pos.CENTER); //children take up as much space as they can, so we need to either align here, or control width of the parent.
+            vbox.getChildren().add(hBox);
         }
+        vbox.setAlignment(Pos.CENTER);
+        vbox.setSpacing(10);
+        return vbox;
+    }
+
+    private Node setupStatArea(SelectionState selectionState) {
+        GridPane gridPane = new GridPane();
+        gridPane.setGridLinesVisible(true);
+        if(selectionState.getSelectionType() != CurrentSelectionType.SLOT) {
+            return gridPane;
+        }
+        int slot = selectionState.getSlot();
+        DimStats.DimStatBlock statBlock = dimContent.getDimStats().getStatBlocks().get(slot);
+        gridPane.add(setupStageLabel(statBlock), 0, 0);
+        gridPane.add(setupLockedLabel(statBlock), 1, 0);
+        gridPane.add(setupAttributeLabel(statBlock), 0, 1);
+        gridPane.add(setupDispositionLabel(statBlock), 1, 1);
+        gridPane.add(setupSmallAttackLabel(statBlock), 0, 2);
+        gridPane.add(setupBigAttackLabel(statBlock), 1, 2);
+        gridPane.add(setupDPStarsLabel(statBlock), 0, 3);
+        gridPane.add(setupDPLabel(statBlock), 1, 3);
+        gridPane.add(setupHpLabel(statBlock), 0, 4);
+        gridPane.add(setupApLabel(statBlock), 1, 4);
+        gridPane.add(setupEarlyBattleChanceLabel(statBlock), 0, 5);
+        gridPane.add(setupLateBattleChanceLabel(statBlock), 1, 5);
+        return gridPane;
+    }
+
+    private Node setupStageLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("Stage: " + (statBlock.getStage() + 1));
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupLockedLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("Requires Unlock: " + statBlock.isUnlockRequired());
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupAttributeLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("Attribute: " + statBlock.getAttribute());
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupDispositionLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("Disposition: " + statBlock.getDisposition());
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupSmallAttackLabel(DimStats.DimStatBlock statBlock) {
+        String attackLabel;
+        if(statBlock.getStage() < 2) {
+            attackLabel = "NONE";
+        } else {
+            attackLabel = AttackLabels.SMALL_ATTACKS[statBlock.getSmallAttackId()];
+        }
+        Label label = new Label("Small Attack: " + attackLabel);
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupBigAttackLabel(DimStats.DimStatBlock statBlock) {
+        String attackLabel;
+        if(statBlock.getStage() < 2) {
+            attackLabel = "NONE";
+        } else {
+            attackLabel = AttackLabels.BIG_ATTACKS[statBlock.getBigAttackId()];
+        }
+        Label label = new Label("Big Attack: " + attackLabel);
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupDPStarsLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("DP (stars): " + statBlock.getDpStars());
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupDPLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("DP: " + statBlock.getDp());
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupHpLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("HP: " + statBlock.getHp());
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupApLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("AP: " + statBlock.getAp());
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupEarlyBattleChanceLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("Stage 3/4 Battle Chance: " + statBlock.getFirstPoolBattleChance());
+        GridPane.setMargin(label, new Insets(10));
+        return label;
+    }
+
+    private Node setupLateBattleChanceLabel(DimStats.DimStatBlock statBlock) {
+        Label label = new Label("Stage 5/6 Battle Chance: " + statBlock.getSecondPoolBattleChance());
+        GridPane.setMargin(label, new Insets(10));
+        return label;
     }
 
     private Node setupPrevSpriteButton(SelectionState selectionState) {
         Button button = new Button();
         button.setText("Prev Sprite");
-        if(selectionState.getSpriteIndex() == 0) {
+        if(selectionState.getSpriteIndex() == 0 || (selectionState.getSelectionType() == CurrentSelectionType.SLOT && selectionState.getSpriteIndex() < 2)) {
             button.setDisable(true);
         }
         button.setOnAction(event -> {
@@ -215,9 +336,9 @@ public class LoadedScene {
 
     private Node setupName(CurrentSelectionType selectionType, int slot) {
         if(selectionType == CurrentSelectionType.LOGO) {
-            return new TextArea("LOGO");
+            return new Label("LOGO");
         } else if (selectionType == CurrentSelectionType.EGG) {
-            return new TextArea("EGG");
+            return new Label("EGG");
         } else {
             Image image = loadImageAtLocation(getImageIndex(selectionType, slot, 0));
             ImageView imageView = new ImageView(image);
@@ -249,9 +370,9 @@ public class LoadedScene {
             if(selectionState.getSelectionType() == CurrentSelectionType.EGG) {
                 newStateBuilder.selectionType(CurrentSelectionType.LOGO);
             } else if (selectionState.getSlot() == 0) {
-                newStateBuilder.selectionType(CurrentSelectionType.EGG);
+                newStateBuilder.selectionType(CurrentSelectionType.EGG).spriteIndex(0);
             } else {
-                newStateBuilder.slot(selectionState.getSlot() - 1).spriteIndex(0);
+                newStateBuilder.slot(selectionState.getSlot() - 1).spriteIndex(1);
             }
             setupScene(newStateBuilder.build());
         });
@@ -270,9 +391,9 @@ public class LoadedScene {
             if(selectionState.getSelectionType() == CurrentSelectionType.LOGO) {
                 newStateBuilder.selectionType(CurrentSelectionType.EGG);
             } else if (selectionState.getSelectionType() == CurrentSelectionType.EGG) {
-                newStateBuilder.selectionType(CurrentSelectionType.SLOT);
+                newStateBuilder.selectionType(CurrentSelectionType.SLOT).spriteIndex(1);
             } else {
-                newStateBuilder.slot(selectionState.getSlot() + 1).spriteIndex(0);
+                newStateBuilder.slot(selectionState.getSlot() + 1).spriteIndex(1);
             }
             setupScene(newStateBuilder.build());
         });
@@ -338,8 +459,13 @@ public class LoadedScene {
 
     private WritableImage loadImageAtLocation(int index) {
         SpriteData.Sprite sprite = dimContent.getSpriteData().getSprites().get(index);
+        return loadImageAtLocation(sprite);
+    }
+
+    private WritableImage loadImageAtLocation(SpriteData.Sprite sprite) {
         ByteBuffer byteBuffer = ByteBuffer.wrap(sprite.getBGRA());
         PixelBuffer<ByteBuffer> pixelBuffer = new PixelBuffer<ByteBuffer>(sprite.getWidth(), sprite.getHeight(), byteBuffer, PixelFormat.getByteBgraPreInstance());
+
         return new WritableImage(pixelBuffer);
     }
 }

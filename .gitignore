@@ -3,6 +3,6 @@
 build/
 .gradle/
 
-DIM-Modifier.exe
+DIM-Modifier*.exe
 
 warp-packer.exe
