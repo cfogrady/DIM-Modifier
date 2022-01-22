@@ -10,10 +10,7 @@ import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
+import java.io.*;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -34,10 +31,13 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
                 try {
                     fileInputStream = new FileInputStream(file);
                     DimContent content = reader.readDimData(fileInputStream, false);
+                    fileInputStream.close();
                     LoadedScene scene = new LoadedScene(content, stage);
                     scene.setupScene(SelectionState.builder().backgroundType(BackgroundType.IMAGE).selectionType(CurrentSelectionType.LOGO).build());
                 } catch (FileNotFoundException e) {
                     log.error("Couldn't find selected file.", e);
+                } catch (IOException e) {
+                    log.error("Couldn't close file???", e);
                 }
 
             }
