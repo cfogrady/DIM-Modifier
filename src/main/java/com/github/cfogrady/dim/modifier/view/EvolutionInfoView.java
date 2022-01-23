@@ -1,13 +1,17 @@
 package com.github.cfogrady.dim.modifier.view;
 
+import com.github.cfogrady.dim.modifier.CurrentSelectionType;
 import com.github.cfogrady.dim.modifier.LoadedScene;
 import com.github.cfogrady.dim.modifier.SelectionState;
+import com.github.cfogrady.dim.modifier.SpriteSlotParser;
 import com.github.cfogrady.vb.dim.reader.content.DimEvolutionRequirements;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -15,6 +19,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class EvolutionInfoView implements InfoView {
     private final List<DimEvolutionRequirements.DimEvolutionRequirementBlock> dimEvolutionRequirementBlocks;
+    private final SpriteSlotParser spriteSlotParser;
+    // May not work with more than 34 entries
 
     @Override
     public Node setupView(SelectionState selectionState) {
@@ -29,18 +35,20 @@ public class EvolutionInfoView implements InfoView {
 
     @Override
     public double getPrefWidth() {
-        return 1150;
+        return 1300;
     }
 
     private void addRow(GridPane gridPane, int rowIndex) {
         DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock = dimEvolutionRequirementBlocks.get(rowIndex);
         gridPane.add(getSlotLabel(evolutionRequirementBlock), 0, rowIndex);
-        gridPane.add(getHoursForEvolutionLabel(evolutionRequirementBlock), 1, rowIndex);
-        gridPane.add(getVitalValueRequirementLabel(evolutionRequirementBlock), 2, rowIndex);
-        gridPane.add(getTrophiesRequirementLabel(evolutionRequirementBlock), 3, rowIndex);
-        gridPane.add(getBattlesRequirementLabel(evolutionRequirementBlock), 4, rowIndex);
-        gridPane.add(getWinRationRequirementLabel(evolutionRequirementBlock), 5, rowIndex);
-        gridPane.add(getEvolveToSlotLabel(evolutionRequirementBlock), 6, rowIndex);
+        gridPane.add(getEvolveFromImage(evolutionRequirementBlock), 1, rowIndex);
+        gridPane.add(getHoursForEvolutionLabel(evolutionRequirementBlock), 2, rowIndex);
+        gridPane.add(getVitalValueRequirementLabel(evolutionRequirementBlock), 3, rowIndex);
+        gridPane.add(getTrophiesRequirementLabel(evolutionRequirementBlock), 4, rowIndex);
+        gridPane.add(getBattlesRequirementLabel(evolutionRequirementBlock), 5, rowIndex);
+        gridPane.add(getWinRationRequirementLabel(evolutionRequirementBlock), 6, rowIndex);
+        gridPane.add(getEvolveToSlotLabel(evolutionRequirementBlock), 7, rowIndex);
+        gridPane.add(getEvolveToImage(evolutionRequirementBlock), 8, rowIndex);
     }
 
     private Node getSlotLabel(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock) {
@@ -49,8 +57,14 @@ public class EvolutionInfoView implements InfoView {
         return label;
     }
 
+    private Node getEvolveFromImage(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock) {
+        ImageView imageView = new ImageView(spriteSlotParser.getImageForSlotAndIndex(CurrentSelectionType.SLOT, evolutionRequirementBlock.getEvolveFromStatIndex(), 1));
+        GridPane.setMargin(imageView, new Insets(10));
+        return imageView;
+    }
+
     private Node getHoursForEvolutionLabel(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock) {
-        String hours = evolutionRequirementBlock.getHoursUntilEvolution() == LoadedScene.NONE_VALUE ? "None" : Integer.toString(evolutionRequirementBlock.getHoursUntilEvolution());
+        String hours = evolutionRequirementBlock.getHoursUntilEvolution() == LoadedScene.NONE_VALUE ? LoadedScene.NONE_LABEL : Integer.toString(evolutionRequirementBlock.getHoursUntilEvolution());
         Label label = new Label("Hours For Evolutions: " + hours);
         GridPane.setMargin(label, new Insets(10));
         return label;
@@ -84,7 +98,7 @@ public class EvolutionInfoView implements InfoView {
         String evolveToSlot;
         if(evolutionRequirementBlock.getEvolveToStatIndex() == LoadedScene.NONE_VALUE) {
             if(evolutionRequirementBlock.getHoursUntilEvolution() == LoadedScene.NONE_VALUE) {
-                evolveToSlot = "None";
+                evolveToSlot = LoadedScene.NONE_LABEL;
             } else {
                 evolveToSlot = "Fusion";
             }
@@ -94,5 +108,14 @@ public class EvolutionInfoView implements InfoView {
         Label label = new Label("Evolve To Slot: " + evolveToSlot);
         GridPane.setMargin(label, new Insets(10));
         return label;
+    }
+
+    private Node getEvolveToImage(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock) {
+        if(evolutionRequirementBlock.getEvolveToStatIndex() == LoadedScene.NONE_VALUE) {
+            return new Pane();
+        }
+        ImageView imageView = new ImageView(spriteSlotParser.getImageForSlotAndIndex(CurrentSelectionType.SLOT, evolutionRequirementBlock.getEvolveToStatIndex(), 1));
+        GridPane.setMargin(imageView, new Insets(10));
+        return imageView;
     }
 }

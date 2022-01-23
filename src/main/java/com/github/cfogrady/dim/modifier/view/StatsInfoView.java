@@ -1,9 +1,6 @@
 package com.github.cfogrady.dim.modifier.view;
 
-import com.github.cfogrady.dim.modifier.AttackLabels;
-import com.github.cfogrady.dim.modifier.BackgroundType;
-import com.github.cfogrady.dim.modifier.CurrentSelectionType;
-import com.github.cfogrady.dim.modifier.SelectionState;
+import com.github.cfogrady.dim.modifier.*;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
 import com.github.cfogrady.vb.dim.reader.content.DimStats;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
@@ -19,7 +16,6 @@ import javafx.scene.paint.Color;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 
 import static com.github.cfogrady.dim.modifier.LoadedScene.BACKGROUND_INDEX;
@@ -28,15 +24,19 @@ import static com.github.cfogrady.dim.modifier.LoadedScene.NONE_VALUE;
 @RequiredArgsConstructor
 @Slf4j
 public class StatsInfoView implements InfoView {
+    public static final int MAX_SLOTS_ENTRIES_FOR_NORMAL_VB = 17;
+
     private final DimContent dimContent;
+    private final SpriteSlotParser spriteSlotParser;
     private final Consumer<SelectionState> stateChanger;
     private final BackgroundImage background;
 
-    public StatsInfoView(DimContent dimContent, Consumer<SelectionState> stateChanger) {
+    public StatsInfoView(DimContent dimContent, SpriteSlotParser spriteSlotParser, Consumer<SelectionState> stateChanger) {
         this.dimContent = dimContent;
+        this.spriteSlotParser = spriteSlotParser;
         this.stateChanger = stateChanger;
         BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
-        this.background = new BackgroundImage(loadImageAtLocation(BACKGROUND_INDEX), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
+        this.background = new BackgroundImage(spriteSlotParser.loadImageFromSpriteIndex(BACKGROUND_INDEX), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
     }
 
     @Override
@@ -54,27 +54,6 @@ public class StatsInfoView implements InfoView {
     @Override
     public double getPrefWidth() {
         return 750;
-    }
-
-    private int getImageIndex(CurrentSelectionType selectionType, int slot, int image) {
-        if(selectionType == CurrentSelectionType.LOGO) {
-            return 0;
-        } else if(selectionType == CurrentSelectionType.EGG) {
-            return image + 2; // logo + background
-        } else {
-            int index = 2 + 8; //logo+background + egg sprites
-            for(int monSlot = 0; monSlot < slot; monSlot++) {
-                int level = dimContent.getDimStats().getStatBlocks().get(monSlot).getStage();
-                if(level == 0) {
-                    index += 6;
-                } else if(level == 1) {
-                    index += 7;
-                } else {
-                    index += 14;
-                }
-            }
-            return index + image;
-        }
     }
 
     public int getSpriteCountForSelection(SelectionState selectionState) {
@@ -106,9 +85,8 @@ public class StatsInfoView implements InfoView {
     }
 
     private Node setupSpriteArea(SelectionState selectionState) {
-        int spriteIndex = getImageIndex(selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
-        SpriteData.Sprite sprite = dimContent.getSpriteData().getSprites().get(spriteIndex);
-        Image image = loadImageAtLocation(sprite);
+        SpriteData.Sprite sprite = spriteSlotParser.getSpriteForSlotAndIndex(selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
+        Image image = spriteSlotParser.loadImageFromSprite(sprite);
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(sprite.getWidth() * 2.0);
         imageView.setFitHeight(sprite.getHeight() * 2.0);
@@ -181,7 +159,7 @@ public class StatsInfoView implements InfoView {
     private Node setupSmallAttackLabel(DimStats.DimStatBlock statBlock) {
         String attackLabel;
         if(statBlock.getStage() < 2) {
-            attackLabel = "NONE";
+            attackLabel = LoadedScene.NONE_LABEL;
         } else {
             attackLabel = AttackLabels.SMALL_ATTACKS[statBlock.getSmallAttackId()];
         }
@@ -193,7 +171,8 @@ public class StatsInfoView implements InfoView {
     private Node setupBigAttackLabel(DimStats.DimStatBlock statBlock) {
         String attackLabel;
         if(statBlock.getStage() < 2) {
-            attackLabel = "NONE";
+            attackLabel = LoadedScene.NONE_LABEL;
+            log.info("Value is: {}", statBlock.getBigAttackId());
         } else {
             attackLabel = AttackLabels.BIG_ATTACKS[statBlock.getBigAttackId()];
         }
@@ -229,7 +208,7 @@ public class StatsInfoView implements InfoView {
     private Node setupEarlyBattleChanceLabel(DimStats.DimStatBlock statBlock) {
         String chance;
         if(statBlock.getFirstPoolBattleChance() == NONE_VALUE) {
-            chance = "None";
+            chance = LoadedScene.NONE_LABEL;
         } else {
             chance = Integer.toString(statBlock.getFirstPoolBattleChance());
         }
@@ -241,7 +220,7 @@ public class StatsInfoView implements InfoView {
     private Node setupLateBattleChanceLabel(DimStats.DimStatBlock statBlock) {
         String chance;
         if(statBlock.getSecondPoolBattleChance() == NONE_VALUE) {
-            chance = "None";
+            chance = LoadedScene.NONE_LABEL;
         } else {
             chance = Integer.toString(statBlock.getSecondPoolBattleChance());
         }
@@ -312,7 +291,7 @@ public class StatsInfoView implements InfoView {
         } else if (selectionType == CurrentSelectionType.EGG) {
             return new Label("EGG");
         } else {
-            Image image = loadImageAtLocation(getImageIndex(selectionType, slot, 0));
+            Image image = spriteSlotParser.getImageForSlotAndIndex(selectionType, slot, 0);
             ImageView imageView = new ImageView(image);
             imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouse -> {
                 log.info("Mouse clicked for name image");
@@ -363,17 +342,5 @@ public class StatsInfoView implements InfoView {
         });
         StackPane pane = new StackPane(button);
         return pane;
-    }
-
-    private WritableImage loadImageAtLocation(int index) {
-        SpriteData.Sprite sprite = dimContent.getSpriteData().getSprites().get(index);
-        return loadImageAtLocation(sprite);
-    }
-
-    private WritableImage loadImageAtLocation(SpriteData.Sprite sprite) {
-        ByteBuffer byteBuffer = ByteBuffer.wrap(sprite.getBGRA());
-        PixelBuffer<ByteBuffer> pixelBuffer = new PixelBuffer<ByteBuffer>(sprite.getWidth(), sprite.getHeight(), byteBuffer, PixelFormat.getByteBgraPreInstance());
-
-        return new WritableImage(pixelBuffer);
     }
 }

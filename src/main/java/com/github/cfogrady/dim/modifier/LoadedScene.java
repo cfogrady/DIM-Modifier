@@ -1,15 +1,14 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.dim.modifier.view.EvolutionInfoView;
-import com.github.cfogrady.dim.modifier.view.FusionInfoView;
-import com.github.cfogrady.dim.modifier.view.InfoView;
-import com.github.cfogrady.dim.modifier.view.StatsInfoView;
+import com.github.cfogrady.dim.modifier.view.*;
 import com.github.cfogrady.vb.dim.reader.DimReader;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
@@ -25,20 +24,25 @@ import java.io.*;
 public class LoadedScene {
     public static final int NONE_VALUE = 65535;
     public static final int BACKGROUND_INDEX = 1;
+    public static final String NONE_LABEL = "None";
 
     private final DimContent dimContent;
     private final Stage stage;
     private final FusionInfoView fusionInfoView;
     private final StatsInfoView statsInfoView;
     private final EvolutionInfoView evolutionInfoView;
+    private final AdventureInfoView adventureInfoView;
+    private final SpriteSlotParser spriteSlotParser;
     private InfoView currentView;
 
     public LoadedScene(DimContent dimContent, Stage stage) {
         this.dimContent = dimContent;
         this.stage = stage;
-        this.fusionInfoView = new FusionInfoView(dimContent.getDimFusions().getFusionBlocks());
-        this.statsInfoView = new StatsInfoView(dimContent, selectionState -> setupScene(selectionState));
-        this.evolutionInfoView = new EvolutionInfoView(dimContent.getDimEvolutionRequirements().getEvolutionRequirementBlocks());
+        this.spriteSlotParser = new SpriteSlotParser(dimContent);
+        this.fusionInfoView = new FusionInfoView(dimContent.getDimFusions().getFusionBlocks(), dimContent.getDimSpecificFusion().getDimSpecificFusionBlocks(), spriteSlotParser);
+        this.statsInfoView = new StatsInfoView(dimContent, spriteSlotParser, selectionState -> setupScene(selectionState));
+        this.evolutionInfoView = new EvolutionInfoView(dimContent.getDimEvolutionRequirements().getEvolutionRequirementBlocks(), spriteSlotParser);
+        this.adventureInfoView = new AdventureInfoView(dimContent.getDimAdventures().getAdventureBlocks(), spriteSlotParser);
         this.currentView = statsInfoView;
     }
 
@@ -81,14 +85,26 @@ public class LoadedScene {
     }
 
     private Node setupHeaderButtons(SelectionState selectionState) {
-        HBox hBox = new HBox(setupOpenButton(), setupSaveButton(), setupEvolutionsViewButton(selectionState), setupStatsViewButton(selectionState));
+        HBox hBox = new HBox(setupOpenButton(), setupSaveButton(), setupDIMIdLabel(), setupChecksumLabel(), setupStatsViewButton(selectionState), setupEvolutionsViewButton(selectionState), setupFusionButton(selectionState), setupAdventurefdViewButton(selectionState));
+        hBox.setAlignment(Pos.CENTER_LEFT);
         hBox.setSpacing(10);
         return hBox;
+    }
+
+    private Label setupDIMIdLabel() {
+        return new Label("DIM ID: " + dimContent.getDimHeader().getDimId());
+    }
+
+    private Label setupChecksumLabel() {
+        return new Label("Checksum: " + Integer.toHexString(dimContent.getChecksum()));
     }
 
     private Button setupEvolutionsViewButton(SelectionState selectionState) {
         Button button = new Button();
         button.setText("Evolutions");
+        if(currentView == evolutionInfoView) {
+            button.setDisable(true);
+        }
         button.setOnAction(event -> {
             this.currentView = evolutionInfoView;
             setupScene(selectionState);
@@ -109,11 +125,29 @@ public class LoadedScene {
         return button;
     }
 
-    private Button setupFusionButton() {
+    private Button setupAdventurefdViewButton(SelectionState selectionState) {
         Button button = new Button();
-        button.setText("Fusion");
-        button.setDisable(true);
-        // TODO: Setup Fusion section
+        button.setText("Adventures");
+        if(currentView == adventureInfoView) {
+            button.setDisable(true);
+        }
+        button.setOnAction(event -> {
+            this.currentView = adventureInfoView;
+            setupScene(selectionState);
+        });
+        return button;
+    }
+
+    private Button setupFusionButton(SelectionState selectionState) {
+        Button button = new Button();
+        button.setText("Fusions");
+        if(currentView == fusionInfoView) {
+            button.setDisable(true);
+        }
+        button.setOnAction(event -> {
+            this.currentView = fusionInfoView;
+            setupScene(selectionState);
+        });
         return button;
     }
 
