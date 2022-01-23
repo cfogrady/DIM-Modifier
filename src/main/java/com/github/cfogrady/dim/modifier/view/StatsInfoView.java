@@ -18,8 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Consumer;
 
-import static com.github.cfogrady.dim.modifier.LoadedScene.BACKGROUND_INDEX;
-import static com.github.cfogrady.dim.modifier.LoadedScene.NONE_VALUE;
+import static com.github.cfogrady.dim.modifier.LoadedScene.*;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -182,25 +181,49 @@ public class StatsInfoView implements InfoView {
     }
 
     private Node setupDPStarsLabel(DimStats.DimStatBlock statBlock) {
-        Label label = new Label("DP (stars): " + statBlock.getDpStars());
+        String valueText;
+        if(statBlock.getDpStars() == NONE_VALUE) {
+            valueText = NONE_LABEL;
+        } else {
+            valueText = Integer.toString(statBlock.getDpStars());
+        }
+        Label label = new Label("DP (stars): " + valueText);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
     private Node setupDPLabel(DimStats.DimStatBlock statBlock) {
-        Label label = new Label("DP: " + statBlock.getDp());
+        String valueText;
+        if(statBlock.getDp() == NONE_VALUE) {
+            valueText = NONE_LABEL;
+        } else {
+            valueText = Integer.toString(statBlock.getDp());
+        }
+        Label label = new Label("DP: " + valueText);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
     private Node setupHpLabel(DimStats.DimStatBlock statBlock) {
-        Label label = new Label("HP: " + statBlock.getHp());
+        String valueText;
+        if(statBlock.getDp() == NONE_VALUE) {
+            valueText = NONE_LABEL;
+        } else {
+            valueText = Integer.toString(statBlock.getHp());
+        }
+        Label label = new Label("HP: " + valueText);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
     private Node setupApLabel(DimStats.DimStatBlock statBlock) {
-        Label label = new Label("AP: " + statBlock.getAp());
+        String valueText;
+        if(statBlock.getDp() == NONE_VALUE) {
+            valueText = NONE_LABEL;
+        } else {
+            valueText = Integer.toString(statBlock.getAp());
+        }
+        Label label = new Label("AP: " + valueText);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
