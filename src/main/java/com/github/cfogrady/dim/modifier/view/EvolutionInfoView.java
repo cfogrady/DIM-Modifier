@@ -89,7 +89,7 @@ public class EvolutionInfoView implements InfoView {
     }
 
     private Node getWinRationRequirementLabel(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock) {
-        Label label = new Label("Win Ration Requirement: " + evolutionRequirementBlock.getWinRatioRequirement());
+        Label label = new Label("Win Ratio Requirement: " + evolutionRequirementBlock.getWinRatioRequirement());
         GridPane.setMargin(label, new Insets(10));
         return label;
     }

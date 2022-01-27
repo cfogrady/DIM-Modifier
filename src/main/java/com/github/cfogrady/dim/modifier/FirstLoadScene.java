@@ -1,7 +1,7 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.vb.dim.reader.DimReader;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
+import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;

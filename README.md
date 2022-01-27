@@ -5,6 +5,10 @@ It displays all sprites, stats, evolutions, fusions, and adventures.
 
 The `b` key can also be pressed to display some solid color backgrounds.
 
+The application supports changing sprite sizes, but compatibility with VB can't be guaranteed if sprite dimensions are changed.
+
+Names can be changed by clicking on the name on the Stats page.
+
 ## Development
 This project relies on the VB-DIM-Reader library found at https://github.com/cfogrady/VB-DIM-Reader
 

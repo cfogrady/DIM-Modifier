@@ -13,26 +13,34 @@ import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.function.Consumer;
 
 import static com.github.cfogrady.dim.modifier.LoadedScene.*;
 
-@RequiredArgsConstructor
 @Slf4j
+@AllArgsConstructor
 public class StatsInfoView implements InfoView {
     public static final int MAX_SLOTS_ENTRIES_FOR_NORMAL_VB = 17;
 
     private final DimContent dimContent;
     private final SpriteSlotParser spriteSlotParser;
+    private final Stage stage;
     private final Consumer<SelectionState> stateChanger;
-    private final BackgroundImage background;
+    private BackgroundImage background;
 
-    public StatsInfoView(DimContent dimContent, SpriteSlotParser spriteSlotParser, Consumer<SelectionState> stateChanger) {
+    public StatsInfoView(DimContent dimContent, SpriteSlotParser spriteSlotParser,  Stage stage, Consumer<SelectionState> stateChanger) {
         this.dimContent = dimContent;
         this.spriteSlotParser = spriteSlotParser;
+        this.stage = stage;
         this.stateChanger = stateChanger;
         BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
         this.background = new BackgroundImage(spriteSlotParser.loadImageFromSpriteIndex(BACKGROUND_INDEX), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
@@ -77,7 +85,7 @@ public class StatsInfoView implements InfoView {
     }
 
     private Node setupNameArea(SelectionState selectionState) {
-        HBox hBox = new HBox(setupPrevButton(selectionState), setupName(selectionState.getSelectionType(), selectionState.getSlot()), setupNextButton(selectionState));
+        HBox hBox = new HBox(setupPrevButton(selectionState), setupName(selectionState), setupNextButton(selectionState));
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
         return hBox;
@@ -89,20 +97,16 @@ public class StatsInfoView implements InfoView {
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(sprite.getWidth() * 2.0);
         imageView.setFitHeight(sprite.getHeight() * 2.0);
-        //imageView.setLayoutX(0);
-        //imageView.setLayoutY(0);
         StackPane backgroundPane = new StackPane(imageView);
         backgroundPane.setAlignment(Pos.BOTTOM_CENTER);
         backgroundPane.setBackground(getBackground(selectionState)); //160x320
         backgroundPane.setMinSize(160.0, 320.0);
         backgroundPane.setMaxSize(160.0, 320.0);
-        VBox vbox = new VBox(getChangeBackgroundButton(), backgroundPane);
-        if(selectionState.getSelectionType() != CurrentSelectionType.LOGO) {
-            HBox hBox = new HBox(setupPrevSpriteButton(selectionState), setupReplaceSpriteButton(selectionState), setupNextSpriteButton(selectionState));
-            hBox.setSpacing(10);
-            hBox.setAlignment(Pos.CENTER); //children take up as much space as they can, so we need to either align here, or control width of the parent.
-            vbox.getChildren().add(hBox);
-        }
+        VBox vbox = new VBox(getChangeBackgroundButton(selectionState), backgroundPane);
+        HBox hBox = new HBox(setupPrevSpriteButton(selectionState), setupReplaceSpriteButton(selectionState), setupNextSpriteButton(selectionState));
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER); //children take up as much space as they can, so we need to either align here, or control width of the parent.
+        vbox.getChildren().add(hBox);
         vbox.setAlignment(Pos.CENTER);
         vbox.setSpacing(10);
         return vbox;
@@ -255,7 +259,9 @@ public class StatsInfoView implements InfoView {
     private Node setupPrevSpriteButton(SelectionState selectionState) {
         Button button = new Button();
         button.setText("Prev Sprite");
-        if(selectionState.getSpriteIndex() == 0 || (selectionState.getSelectionType() == CurrentSelectionType.SLOT && selectionState.getSpriteIndex() < 2)) {
+        if(selectionState.getSelectionType() == CurrentSelectionType.LOGO ||
+                selectionState.getSpriteIndex() == 0 ||
+                (selectionState.getSelectionType() == CurrentSelectionType.SLOT && selectionState.getSpriteIndex() < 2)) {
             button.setDisable(true);
         }
         button.setOnAction(event -> {
@@ -268,7 +274,7 @@ public class StatsInfoView implements InfoView {
     private Node setupNextSpriteButton(SelectionState selectionState) {
         Button button = new Button();
         button.setText("Next Sprite");
-        if(selectionState.getSpriteIndex() == getSpriteCountForSelection(selectionState)-1) {
+        if(selectionState.getSelectionType() == CurrentSelectionType.LOGO || selectionState.getSpriteIndex() == getSpriteCountForSelection(selectionState)-1) {
             button.setDisable(true);
         }
         button.setOnAction(event -> {
@@ -281,16 +287,41 @@ public class StatsInfoView implements InfoView {
     private Node setupReplaceSpriteButton(SelectionState selectionState) {
         Button button = new Button();
         button.setText("Replace Sprite");
-        button.setDisable(true);
-        // TODO: Setup Fusion section
+        button.setOnAction(event -> {
+            FileChooser fileChooser = new FileChooser();
+            SpriteData.Sprite currentSprite = spriteSlotParser.getSpriteForSlotAndIndex(selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
+            fileChooser.setTitle("Select sprite replacement. Should be " + currentSprite.getWidth() + " x " + currentSprite.getHeight());
+            File file = fileChooser.showOpenDialog(stage);
+            if(file != null) {
+                try {
+                    spriteSlotParser.loadReplacementSprite(file, selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
+                    stateChanger.accept(selectionState);
+                } catch (IOException e) {
+                    log.error("Couldn't load image file!", e);
+                }
+            }
+        });
         return button;
     }
 
-    private Node getChangeBackgroundButton() {
+    private Node getChangeBackgroundButton(SelectionState selectionState) {
         Button button = new Button();
         button.setText("Change Background Image");
-        button.setDisable(true);
-        // TODO: Setup Fusion section
+        button.setOnAction(event -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select background. Recommend 80x160 resolution. May not work with other resolutions");
+            File file = fileChooser.showOpenDialog(stage);
+            if(file != null) {
+                try {
+                    spriteSlotParser.loadReplacementSprite(file, 1);
+                    BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
+                    this.background = new BackgroundImage(spriteSlotParser.loadImageFromSpriteIndex(BACKGROUND_INDEX), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
+                    stateChanger.accept(selectionState);
+                } catch (IOException e) {
+                    log.error("Couldn't load image file!", e);
+                }
+            }
+        });
         return button;
     }
 
@@ -308,16 +339,29 @@ public class StatsInfoView implements InfoView {
         }
     }
 
-    private Node setupName(CurrentSelectionType selectionType, int slot) {
+    private Node setupName(SelectionState selectionState) {
+        CurrentSelectionType selectionType = selectionState.getSelectionType();
+        int slot = selectionState.getSlot();
         if(selectionType == CurrentSelectionType.LOGO) {
             return new Label("LOGO");
         } else if (selectionType == CurrentSelectionType.EGG) {
             return new Label("EGG");
         } else {
-            Image image = spriteSlotParser.getImageForSlotAndIndex(selectionType, slot, 0);
+            SpriteData.Sprite nameSprite = spriteSlotParser.getSpriteForSlotAndIndex(selectionType, slot, 0);
+            Image image = spriteSlotParser.loadImageFromSprite(nameSprite);
             ImageView imageView = new ImageView(image);
             imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouse -> {
-                log.info("Mouse clicked for name image");
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Select name sprite replacement. Should be have height of " + nameSprite.getHeight());
+                File file = fileChooser.showOpenDialog(stage);
+                if(file != null) {
+                    try {
+                        spriteSlotParser.loadReplacementSprite(file, selectionState.getSelectionType(), selectionState.getSlot(), 0);
+                        stateChanger.accept(selectionState);
+                    } catch (IOException e) {
+                        log.error("Couldn't load image file!", e);
+                    }
+                }
             });
             StackPane stackPane = new StackPane(imageView);
             stackPane.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));

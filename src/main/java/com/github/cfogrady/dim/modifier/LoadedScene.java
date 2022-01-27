@@ -1,8 +1,9 @@
 package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.dim.modifier.view.*;
-import com.github.cfogrady.vb.dim.reader.DimReader;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
+import com.github.cfogrady.vb.dim.reader.reader.DimReader;
+import com.github.cfogrady.vb.dim.reader.writer.DimWriter;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -40,7 +41,7 @@ public class LoadedScene {
         this.stage = stage;
         this.spriteSlotParser = new SpriteSlotParser(dimContent);
         this.fusionInfoView = new FusionInfoView(dimContent.getDimFusions().getFusionBlocks(), dimContent.getDimSpecificFusion().getDimSpecificFusionBlocks(), spriteSlotParser);
-        this.statsInfoView = new StatsInfoView(dimContent, spriteSlotParser, selectionState -> setupScene(selectionState));
+        this.statsInfoView = new StatsInfoView(dimContent, spriteSlotParser, stage, selectionState -> setupScene(selectionState));
         this.evolutionInfoView = new EvolutionInfoView(dimContent.getDimEvolutionRequirements().getEvolutionRequirementBlocks(), spriteSlotParser);
         this.adventureInfoView = new AdventureInfoView(dimContent.getDimAdventures().getAdventureBlocks(), spriteSlotParser);
         this.currentView = statsInfoView;
@@ -186,8 +187,24 @@ public class LoadedScene {
     private Button setupSaveButton() {
         Button button = new Button();
         button.setText("Save");
-        button.setDisable(true);
-        // TODO: Setup DIM Writing
+        button.setOnAction(event -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Save DIM File As...");
+            File file = fileChooser.showSaveDialog(stage);
+            if(file != null) {
+                OutputStream fileOutputStream = null;
+                try {
+                    DimWriter writer = new DimWriter();
+                    fileOutputStream = new FileOutputStream(file);
+                    writer.writeDimData(dimContent, fileOutputStream);
+                    fileOutputStream.close();
+                } catch (FileNotFoundException e) {
+                    log.error("Couldn't save selected file.", e);
+                } catch (IOException e) {
+                    log.error("Couldn't close file???", e);
+                }
+            }
+        });
         return button;
     }
 }
