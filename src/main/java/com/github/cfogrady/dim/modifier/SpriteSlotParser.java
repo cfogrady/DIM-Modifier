@@ -72,10 +72,6 @@ public class SpriteSlotParser {
                     green = (int) Math.floor(color.getGreen() * 63.0);
                     blue = (int) Math.floor(color.getBlue() * 31.0);
                 }
-                if(x == 0 && y == 0) {
-                    log.info("Original Image - Red: {}, Green: {}, Blue: {}, Opacity: {}", color.getRed(), color.getGreen(), color.getBlue(), color.getOpacity());
-                    log.info("New Image - Red: {}, Green: {}, Blue: {}", red, green, blue);
-                }
                 // RRRRRGGG GGGBBBBB
                 byte byte0 = (byte) (((red & 0xFF) << 3) | ((green & 0xFF) >> 3));
                 byte byte1 = (byte) (((green & 0xFF) << 5) | (blue & 0xFF));

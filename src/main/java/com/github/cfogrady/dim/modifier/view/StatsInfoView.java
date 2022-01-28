@@ -4,17 +4,20 @@ import com.github.cfogrady.dim.modifier.*;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
 import com.github.cfogrady.vb.dim.reader.content.DimStats;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
+import javafx.collections.FXCollections;
+import javafx.event.EventType;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.image.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.converter.IntegerStringConverter;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,6 +39,7 @@ public class StatsInfoView implements InfoView {
     private final Stage stage;
     private final Consumer<SelectionState> stateChanger;
     private BackgroundImage background;
+    private File lastUsedDirectory;
 
     public StatsInfoView(DimContent dimContent, SpriteSlotParser spriteSlotParser,  Stage stage, Consumer<SelectionState> stateChanger) {
         this.dimContent = dimContent;
@@ -44,6 +48,7 @@ public class StatsInfoView implements InfoView {
         this.stateChanger = stateChanger;
         BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
         this.background = new BackgroundImage(spriteSlotParser.loadImageFromSpriteIndex(BACKGROUND_INDEX), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
+        this.lastUsedDirectory = null;
     }
 
     @Override
@@ -120,14 +125,14 @@ public class StatsInfoView implements InfoView {
         }
         int slot = selectionState.getSlot();
         DimStats.DimStatBlock statBlock = dimContent.getDimStats().getStatBlocks().get(slot);
-        gridPane.add(setupStageLabel(statBlock), 0, 0);
-        gridPane.add(setupLockedLabel(statBlock), 1, 0);
+        gridPane.add(setupStageLabel(selectionState, statBlock), 0, 0);
+        gridPane.add(setupLockedLabel(selectionState, statBlock), 1, 0);
         gridPane.add(setupAttributeLabel(statBlock), 0, 1);
         gridPane.add(setupDispositionLabel(statBlock), 1, 1);
         gridPane.add(setupSmallAttackLabel(statBlock), 0, 2);
         gridPane.add(setupBigAttackLabel(statBlock), 1, 2);
         gridPane.add(setupDPStarsLabel(statBlock), 0, 3);
-        gridPane.add(setupDPLabel(statBlock), 1, 3);
+        gridPane.add(setupDPLabel(selectionState, statBlock), 1, 3);
         gridPane.add(setupHpLabel(statBlock), 0, 4);
         gridPane.add(setupApLabel(statBlock), 1, 4);
         gridPane.add(setupEarlyBattleChanceLabel(statBlock), 0, 5);
@@ -135,16 +140,38 @@ public class StatsInfoView implements InfoView {
         return gridPane;
     }
 
-    private Node setupStageLabel(DimStats.DimStatBlock statBlock) {
-        Label label = new Label("Stage: " + (statBlock.getStage() + 1));
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+    private Node setupStageLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+        Label label = new Label("Stage: ");
+        ComboBox<Integer> comboBox = new ComboBox<Integer>();
+        comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6));
+        comboBox.setValue(statBlock.getStage() + 1);
+        comboBox.setOnAction(event -> {
+            int value = comboBox.getValue() - 1;
+            this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().stage(value).build());
+        });
+        comboBox.setPrefWidth(20);
+        HBox hBox = new HBox(label, comboBox);
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hBox, new Insets(10));
+        return hBox;
     }
 
-    private Node setupLockedLabel(DimStats.DimStatBlock statBlock) {
-        Label label = new Label("Requires Unlock: " + statBlock.isUnlockRequired());
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+    private Node setupLockedLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+        Label label = new Label("Requires Unlock:");
+        ComboBox<Boolean> comboBox = new ComboBox<Boolean>();
+        comboBox.setItems(FXCollections.observableArrayList(false, true));
+        comboBox.setValue(statBlock.isUnlockRequired());
+        comboBox.setOnAction(event -> {
+            boolean value = comboBox.getValue();
+            this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().unlockRequired(value).build());
+        });
+        comboBox.setPrefWidth(80);
+        HBox hBox = new HBox(label, comboBox);
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hBox, new Insets(10));
+        return hBox;
     }
 
     private Node setupAttributeLabel(DimStats.DimStatBlock statBlock) {
@@ -196,16 +223,42 @@ public class StatsInfoView implements InfoView {
         return label;
     }
 
-    private Node setupDPLabel(DimStats.DimStatBlock statBlock) {
-        String valueText;
-        if(statBlock.getDp() == NONE_VALUE) {
-            valueText = NONE_LABEL;
-        } else {
-            valueText = Integer.toString(statBlock.getDp());
+    private Node setupDPLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+        if(statBlock.getStage() < 2) {
+            Label label = new Label("DP: " + NONE_LABEL);
+            GridPane.setMargin(label, new Insets(10));
+            return label;
         }
-        Label label = new Label("DP: " + valueText);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("DP:");
+        TextField textField = new TextField();
+        textField.setText(Integer.toString(statBlock.getDp()));
+        textField.textProperty().addListener((obs,oldv,newv) -> {
+            boolean error = false;
+            if(newv == null || newv.isBlank()) {
+                error = true;
+            } else {
+                try {
+                    int value = Integer.parseInt(newv);
+                    if(value < 0) {
+                        error = true;
+                    } else {
+                        textField.setBorder(null);
+                        this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().dp(value).build());
+                    }
+                } catch (NumberFormatException e) {
+                    error = true;
+                }
+            }
+            if(error) {
+                textField.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(3), new BorderWidths(2), new Insets(-2))));
+            }
+        });
+        textField.setPrefWidth(60);
+        HBox hbox = new HBox(label, textField);
+        hbox.setSpacing(10);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hbox, new Insets(10));
+        return hbox;
     }
 
     private Node setupHpLabel(DimStats.DimStatBlock statBlock) {
@@ -291,9 +344,13 @@ public class StatsInfoView implements InfoView {
             FileChooser fileChooser = new FileChooser();
             SpriteData.Sprite currentSprite = spriteSlotParser.getSpriteForSlotAndIndex(selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
             fileChooser.setTitle("Select sprite replacement. Should be " + currentSprite.getWidth() + " x " + currentSprite.getHeight());
+            if(lastUsedDirectory != null) {
+                fileChooser.setInitialDirectory(lastUsedDirectory);
+            }
             File file = fileChooser.showOpenDialog(stage);
             if(file != null) {
                 try {
+                    lastUsedDirectory = file.getParentFile();
                     spriteSlotParser.loadReplacementSprite(file, selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
                     stateChanger.accept(selectionState);
                 } catch (IOException e) {
@@ -310,9 +367,13 @@ public class StatsInfoView implements InfoView {
         button.setOnAction(event -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Select background. Recommend 80x160 resolution. May not work with other resolutions");
+            if(lastUsedDirectory != null) {
+                fileChooser.setInitialDirectory(lastUsedDirectory);
+            }
             File file = fileChooser.showOpenDialog(stage);
             if(file != null) {
                 try {
+                    lastUsedDirectory = file.getParentFile();
                     spriteSlotParser.loadReplacementSprite(file, 1);
                     BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
                     this.background = new BackgroundImage(spriteSlotParser.loadImageFromSpriteIndex(BACKGROUND_INDEX), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
@@ -353,9 +414,13 @@ public class StatsInfoView implements InfoView {
             imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouse -> {
                 FileChooser fileChooser = new FileChooser();
                 fileChooser.setTitle("Select name sprite replacement. Should be have height of " + nameSprite.getHeight());
+                if(lastUsedDirectory != null) {
+                    fileChooser.setInitialDirectory(lastUsedDirectory);
+                }
                 File file = fileChooser.showOpenDialog(stage);
                 if(file != null) {
                     try {
+                        lastUsedDirectory = file.getParentFile();
                         spriteSlotParser.loadReplacementSprite(file, selectionState.getSelectionType(), selectionState.getSlot(), 0);
                         stateChanger.accept(selectionState);
                     } catch (IOException e) {
