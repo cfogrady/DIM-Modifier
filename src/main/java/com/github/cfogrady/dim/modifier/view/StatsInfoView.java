@@ -1,6 +1,7 @@
 package com.github.cfogrady.dim.modifier.view;
 
 import com.github.cfogrady.dim.modifier.*;
+import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
 import com.github.cfogrady.vb.dim.reader.content.DimStats;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
@@ -65,7 +66,7 @@ public class StatsInfoView implements InfoView {
 
     @Override
     public double getPrefWidth() {
-        return 750;
+        return 870;
     }
 
     public int getSpriteCountForSelection(SelectionState selectionState) {
@@ -127,14 +128,14 @@ public class StatsInfoView implements InfoView {
         DimStats.DimStatBlock statBlock = dimContent.getDimStats().getStatBlocks().get(slot);
         gridPane.add(setupStageLabel(selectionState, statBlock), 0, 0);
         gridPane.add(setupLockedLabel(selectionState, statBlock), 1, 0);
-        gridPane.add(setupAttributeLabel(statBlock), 0, 1);
-        gridPane.add(setupDispositionLabel(statBlock), 1, 1);
-        gridPane.add(setupSmallAttackLabel(statBlock), 0, 2);
-        gridPane.add(setupBigAttackLabel(statBlock), 1, 2);
-        gridPane.add(setupDPStarsLabel(statBlock), 0, 3);
+        gridPane.add(setupAttributeLabel(selectionState, statBlock), 0, 1);
+        gridPane.add(setupDispositionLabel(selectionState, statBlock), 1, 1);
+        gridPane.add(setupSmallAttackLabel(selectionState, statBlock), 0, 2);
+        gridPane.add(setupBigAttackLabel(selectionState, statBlock), 1, 2);
+        gridPane.add(setupDPStarsLabel(selectionState, statBlock), 0, 3);
         gridPane.add(setupDPLabel(selectionState, statBlock), 1, 3);
-        gridPane.add(setupHpLabel(statBlock), 0, 4);
-        gridPane.add(setupApLabel(statBlock), 1, 4);
+        gridPane.add(setupHpLabel(selectionState, statBlock), 0, 4);
+        gridPane.add(setupApLabel(selectionState, statBlock), 1, 4);
         gridPane.add(setupEarlyBattleChanceLabel(statBlock), 0, 5);
         gridPane.add(setupLateBattleChanceLabel(statBlock), 1, 5);
         return gridPane;
@@ -150,6 +151,7 @@ public class StatsInfoView implements InfoView {
             this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().stage(value).build());
         });
         comboBox.setPrefWidth(20);
+        comboBox.setDisable(true);
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
@@ -174,53 +176,135 @@ public class StatsInfoView implements InfoView {
         return hBox;
     }
 
-    private Node setupAttributeLabel(DimStats.DimStatBlock statBlock) {
-        Label label = new Label("Attribute: " + statBlock.getAttribute());
-        GridPane.setMargin(label, new Insets(10));
-        return label;
-    }
-
-    private Node setupDispositionLabel(DimStats.DimStatBlock statBlock) {
-        Label label = new Label("Disposition: " + statBlock.getDisposition());
-        GridPane.setMargin(label, new Insets(10));
-        return label;
-    }
-
-    private Node setupSmallAttackLabel(DimStats.DimStatBlock statBlock) {
-        String attackLabel;
+    private Node setupAttributeLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
         if(statBlock.getStage() < 2) {
-            attackLabel = LoadedScene.NONE_LABEL;
-        } else {
-            attackLabel = AttackLabels.SMALL_ATTACKS[statBlock.getSmallAttackId()];
+            Label label = new Label("Attribute: " + statBlock.getAttribute());
+            GridPane.setMargin(label, new Insets(10));
+            return label;
         }
-        Label label = new Label("Small Attack: " + attackLabel);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Attribute:");
+        ComboBox<Integer> comboBox = new ComboBox<Integer>();
+        comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4));
+        comboBox.setValue(statBlock.getAttribute());
+        comboBox.setOnAction(event -> {
+            int value = comboBox.getValue();
+            this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().attribute(value).build());
+        });
+        HBox hBox = new HBox(label, comboBox);
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hBox, new Insets(10));
+        return hBox;
     }
 
-    private Node setupBigAttackLabel(DimStats.DimStatBlock statBlock) {
-        String attackLabel;
+    private Node setupDispositionLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+        Label label = new Label("Disposition:");
+        ComboBox<Integer> comboBox = new ComboBox<Integer>();
+        comboBox.setItems(FXCollections.observableArrayList(0, 1, 2, 3, 4));
+        comboBox.setValue(statBlock.getDisposition());
+        comboBox.setOnAction(event -> {
+            int value = comboBox.getValue();
+            this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().disposition(value).build());
+        });
+        HBox hBox = new HBox(label, comboBox);
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hBox, new Insets(10));;
+        return hBox;
+    }
+
+    private Node setupSmallAttackLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
         if(statBlock.getStage() < 2) {
-            attackLabel = LoadedScene.NONE_LABEL;
-            log.info("Value is: {}", statBlock.getBigAttackId());
-        } else {
-            attackLabel = AttackLabels.BIG_ATTACKS[statBlock.getBigAttackId()];
+            Label label = new Label("Small Attack: " + LoadedScene.NONE_LABEL);
+            GridPane.setMargin(label, new Insets(10));
+            return label;
         }
-        Label label = new Label("Big Attack: " + attackLabel);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Small Attack:");
+        ComboBox<String> comboBox = new ComboBox<String>();
+        comboBox.setItems(FXCollections.observableArrayList(AttackLabels.SMALL_ATTACKS));
+        comboBox.setValue(AttackLabels.SMALL_ATTACKS[statBlock.getSmallAttackId()]);
+        comboBox.setOnAction(event -> {
+            String value = comboBox.getValue();
+            boolean indexFound = false;
+            for(int i = 0 ; i < AttackLabels.SMALL_ATTACKS.length && !indexFound; i++) {
+                if(AttackLabels.SMALL_ATTACKS[i].equals(value)) {
+                    this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().smallAttackId(i).build());
+                    indexFound = true;
+                }
+            }
+        });
+        comboBox.setPrefWidth(200);
+        HBox hBox = new HBox(label, comboBox);
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hBox, new Insets(10));;
+        return hBox;
     }
 
-    private Node setupDPStarsLabel(DimStats.DimStatBlock statBlock) {
-        String valueText;
-        if(statBlock.getDpStars() == NONE_VALUE) {
-            valueText = NONE_LABEL;
-        } else {
-            valueText = Integer.toString(statBlock.getDpStars());
+    private Node setupBigAttackLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+        if(statBlock.getStage() < 2) {
+            Label label = new Label("Big Attack: " + NONE_LABEL);
+            GridPane.setMargin(label, new Insets(10));
+            return label;
         }
-        Label label = new Label("DP (stars): " + valueText);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Big Attack:");
+        ComboBox<String> comboBox = new ComboBox<String>();
+        comboBox.setItems(FXCollections.observableArrayList(AttackLabels.BIG_ATTACKS));
+        comboBox.setValue(AttackLabels.BIG_ATTACKS[statBlock.getBigAttackId()]);
+        comboBox.setOnAction(event -> {
+            String value = comboBox.getValue();
+            boolean indexFound = false;
+            for(int i = 0 ; i < AttackLabels.BIG_ATTACKS.length && !indexFound; i++) {
+                if(AttackLabels.BIG_ATTACKS[i].equals(value)) {
+                    this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().bigAttackId(i).build());
+                    indexFound = true;
+                }
+            }
+        });
+        comboBox.setPrefWidth(180);
+        HBox hBox = new HBox(label, comboBox);
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hBox, new Insets(10));;
+        return hBox;
+    }
+
+    private Node setupDPStarsLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+        if(statBlock.getStage() < 2) {
+            Label label = new Label("DP (stars): " + NONE_LABEL);
+            GridPane.setMargin(label, new Insets(10));
+            return label;
+        }
+        Label label = new Label("DP (stars):");
+        TextField textField = new TextField();
+        textField.setText(Integer.toString(statBlock.getDpStars()));
+        textField.textProperty().addListener((obs,oldv,newv) -> {
+            boolean error = false;
+            if(newv == null || newv.isBlank()) {
+                error = true;
+            } else {
+                try {
+                    int value = Integer.parseInt(newv);
+                    if(value < 0) {
+                        error = true;
+                    } else {
+                        textField.setBorder(null);
+                        this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().dpStars(value).build());
+                    }
+                } catch (NumberFormatException e) {
+                    error = true;
+                }
+            }
+            if(error) {
+                textField.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(3), new BorderWidths(2), new Insets(-2))));
+            }
+        });
+        textField.setPrefWidth(60);
+        HBox hbox = new HBox(label, textField);
+        hbox.setSpacing(10);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hbox, new Insets(10));
+        return hbox;
     }
 
     private Node setupDPLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
@@ -261,28 +345,38 @@ public class StatsInfoView implements InfoView {
         return hbox;
     }
 
-    private Node setupHpLabel(DimStats.DimStatBlock statBlock) {
-        String valueText;
-        if(statBlock.getDp() == NONE_VALUE) {
-            valueText = NONE_LABEL;
-        } else {
-            valueText = Integer.toString(statBlock.getHp());
+    private Node setupHpLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+        if(statBlock.getStage() < 2) {
+            Label label = new Label("HP: " + NONE_LABEL);
+            GridPane.setMargin(label, new Insets(10));
+            return label;
         }
-        Label label = new Label("HP: " + valueText);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("DP:");
+        IntegerTextField integerTextField = new IntegerTextField(statBlock.getHp(), value ->
+                this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().hp(value).build()));
+        integerTextField.setPrefWidth(60);
+        HBox hbox = new HBox(label, integerTextField);
+        hbox.setSpacing(10);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hbox, new Insets(10));
+        return hbox;
     }
 
-    private Node setupApLabel(DimStats.DimStatBlock statBlock) {
-        String valueText;
-        if(statBlock.getDp() == NONE_VALUE) {
-            valueText = NONE_LABEL;
-        } else {
-            valueText = Integer.toString(statBlock.getAp());
+    private Node setupApLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+        if(statBlock.getStage() < 2) {
+            Label label = new Label("AP: " + NONE_LABEL);
+            GridPane.setMargin(label, new Insets(10));
+            return label;
         }
-        Label label = new Label("AP: " + valueText);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("AP:");
+        IntegerTextField integerTextField = new IntegerTextField(statBlock.getHp(), value ->
+                this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().ap(value).build()));
+        integerTextField.setPrefWidth(60);
+        HBox hbox = new HBox(label, integerTextField);
+        hbox.setSpacing(10);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hbox, new Insets(10));
+        return hbox;
     }
 
     private Node setupEarlyBattleChanceLabel(DimStats.DimStatBlock statBlock) {
