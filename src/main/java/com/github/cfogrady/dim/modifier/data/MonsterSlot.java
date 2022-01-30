@@ -1,6 +1,5 @@
 package com.github.cfogrady.dim.modifier.data;
 
-import com.github.cfogrady.vb.dim.reader.content.DimFusions;
 import com.github.cfogrady.vb.dim.reader.content.DimStats;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
 import lombok.Builder;

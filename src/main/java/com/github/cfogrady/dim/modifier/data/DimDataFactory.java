@@ -1,19 +1,18 @@
 package com.github.cfogrady.dim.modifier.data;
 
 import com.github.cfogrady.vb.dim.reader.content.*;
+import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class DimDataConverter {
+public class DimDataFactory {
     private static final int BABY_I_SPRITE_COUNT = 6;
     private static final int BABY_II_SPRITE_COUNT = 7;
     private static final int NORMAL_SPRITE_COUNT = 14;
 
-    private static DimData fromDimContent(DimContent content) {
+    public DimData fromDimContent(DimContent content) {
         int numberOfSlots = content.getDimStats().getStatBlocks().size();
         List<MonsterSlot> monsterSlotList = new ArrayList<>(numberOfSlots);
         List<UUID> idBySlot = IntStream.range(0, numberOfSlots).mapToObj(i -> UUID.randomUUID()).collect(Collectors.toList());
@@ -21,6 +20,7 @@ public class DimDataConverter {
         List<List<EvolutionEntry>> evolutionsBySlot = getEvolutionsForSlots(content, idBySlot);
         List<Fusions> fusionsBySlot = getFusionsForSlots(content, idBySlot);
         int slotIndex = 0;
+        Map<UUID, MonsterSlot> monsterById = new HashMap<>(numberOfSlots);
         for(DimStats.DimStatBlock statsBlock : content.getDimStats().getStatBlocks()) {
             MonsterSlot monsterSlot = MonsterSlot.builder()
                     .id(idBySlot.get(slotIndex))
@@ -29,10 +29,15 @@ public class DimDataConverter {
                     .evolutionEntries(evolutionsBySlot.get(slotIndex))
                     .fusions(fusionsBySlot.get(slotIndex))
                     .build();
+            monsterById.put(monsterSlot.getId(), monsterSlot);
             monsterSlotList.add(monsterSlot);
             slotIndex++;
         }
-        return DimData.builder().monsterSlotList(monsterSlotList).build();
+        return DimData.builder().monsterSlotList(monsterSlotList)
+                .adventureEntries(getAdventures(content, idBySlot))
+                .specificFusions(getSpecificFusions(content, idBySlot))
+                .monsterSlotsById(monsterById)
+                .build();
     }
 
     /**
@@ -41,7 +46,7 @@ public class DimDataConverter {
      * @param dimContent
      * @return
      */
-    private static List<List<SpriteData.Sprite>> getSpritesForSlots(DimContent dimContent) {
+    List<List<SpriteData.Sprite>> getSpritesForSlots(DimContent dimContent) {
         int numberOfSlots = dimContent.getDimStats().getStatBlocks().size();
         List<List<SpriteData.Sprite>> spritesBySlot = new ArrayList<>(numberOfSlots);
         int index = 2 + 8; //logo+background + egg sprites
@@ -58,7 +63,7 @@ public class DimDataConverter {
         return spritesBySlot;
     }
 
-    private static int getSpriteCountForLevel(int level) {
+    public static int getSpriteCountForLevel(int level) {
         if(level == 0) {
             return BABY_I_SPRITE_COUNT;
         } else if(level == 1) {
@@ -74,14 +79,14 @@ public class DimDataConverter {
      * @param dimContent
      * @return
      */
-    private static List<List<EvolutionEntry>> getEvolutionsForSlots(DimContent dimContent, List<UUID> idsBySlot) {
+    List<List<EvolutionEntry>> getEvolutionsForSlots(DimContent dimContent, List<UUID> idsBySlot) {
         List<List<EvolutionEntry>> evolutionsBySlot = new ArrayList<>(idsBySlot.size());
         for(int i = 0; i < idsBySlot.size(); i++) {
             evolutionsBySlot.add(new ArrayList<>());
         }
         for(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirement : dimContent.getDimEvolutionRequirements().getEvolutionRequirementBlocks()) {
             int slot = evolutionRequirement.getEvolveFromStatIndex();
-            UUID toMonsterId = idsBySlot.get(evolutionRequirement.getEvolveToStatIndex());
+            UUID toMonsterId = evolutionRequirement.getEvolveToStatIndex() == DimReader.NONE_VALUE ? null : idsBySlot.get(evolutionRequirement.getEvolveToStatIndex());
             EvolutionEntry evolutionEntry = EvolutionEntry.builder().evolutionRequirementBlock(evolutionRequirement).toMonster(toMonsterId).build();
             evolutionsBySlot.get(slot).add(evolutionEntry);
         }
@@ -93,20 +98,52 @@ public class DimDataConverter {
      * @param dimContent
      * @return
      */
-    private static List<Fusions> getFusionsForSlots(DimContent dimContent, List<UUID> idsBySlot) {
+    List<Fusions> getFusionsForSlots(DimContent dimContent, List<UUID> idsBySlot) {
         List<Fusions> fusionsBySlot = new ArrayList<>(idsBySlot.size());
         for(int i = 0; i < idsBySlot.size(); i++) {
             fusionsBySlot.add(null);
         }
         for(DimFusions.DimFusionBlock fusionBlock : dimContent.getDimFusions().getFusionBlocks()) {
+            int type1FusionResult = fusionBlock.getStatsIndexForFusionWithType1();
+            int type2FusionResult = fusionBlock.getStatsIndexForFusionWithType2();
+            int type3FusionResult = fusionBlock.getStatsIndexForFusionWithType3();
+            int type4FusionResult = fusionBlock.getStatsIndexForFusionWithType4();
             Fusions fusions = Fusions.builder()
-                    .type1FusionResult(idsBySlot.get(fusionBlock.getStatsIndexForFusionWithType1()))
-                    .type2FusionResult(idsBySlot.get(fusionBlock.getStatsIndexForFusionWithType2()))
-                    .type3FusionResult(idsBySlot.get(fusionBlock.getStatsIndexForFusionWithType3()))
-                    .type4FusionResult(idsBySlot.get(fusionBlock.getStatsIndexForFusionWithType4()))
+                    .type1FusionResult(type1FusionResult == DimReader.NONE_VALUE ? null : idsBySlot.get(type1FusionResult))
+                    .type2FusionResult(type2FusionResult == DimReader.NONE_VALUE ? null : idsBySlot.get(type2FusionResult))
+                    .type3FusionResult(type3FusionResult == DimReader.NONE_VALUE ? null : idsBySlot.get(type3FusionResult))
+                    .type4FusionResult(type4FusionResult == DimReader.NONE_VALUE ? null : idsBySlot.get(type4FusionResult))
                     .build();
             fusionsBySlot.set(fusionBlock.getStatsIndex(), fusions);
         }
         return fusionsBySlot;
+    }
+
+    List<AdventureEntry> getAdventures(DimContent dimContent, List<UUID> idsBySlot) {
+        List<AdventureEntry> adventureEntries = new ArrayList<>(dimContent.getDimAdventures().getAdventureBlocks().size());
+        for(DimAdventures.DimAdventureBlock adventure : dimContent.getDimAdventures().getAdventureBlocks()) {
+            UUID bossId = idsBySlot.get(adventure.getBossStatsIndex());
+            adventureEntries.add(AdventureEntry.builder()
+                            .monsterId(bossId)
+                            .steps(adventure.getSteps())
+                            .bossDp(adventure.getBossDp())
+                            .bossAp(adventure.getBossAp())
+                            .bossHp(adventure.getBossHp())
+                            .build());
+        }
+        return adventureEntries;
+    }
+
+    List<SpecificFusion> getSpecificFusions(DimContent dimContent, List<UUID> idsBySlot) {
+        List<SpecificFusion> specificFusions = new ArrayList<>(dimContent.getDimSpecificFusion().getDimSpecificFusionBlocks().size());
+        for(DimSpecificFusions.DimSpecificFusionBlock specificFusion : dimContent.getDimSpecificFusion().getDimSpecificFusionBlocks()) {
+            specificFusions.add(SpecificFusion.builder()
+                            .localMonsterId(idsBySlot.get(specificFusion.getStatsIndex()))
+                            .evolveToMonsterId(idsBySlot.get(specificFusion.getStatsIndexForFusionResult()))
+                            .partnerDimId(specificFusion.getFusionDimId())
+                            .partnerDimSlotId(specificFusion.getFusionDimSlotId())
+                            .build());
+        }
+        return specificFusions;
     }
 }

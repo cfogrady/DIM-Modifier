@@ -1,5 +1,8 @@
 package com.github.cfogrady.dim.modifier;
 
+import com.github.cfogrady.dim.modifier.data.DimContentFactory;
+import com.github.cfogrady.dim.modifier.data.DimData;
+import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import com.github.cfogrady.dim.modifier.view.*;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
 import com.github.cfogrady.vb.dim.reader.reader.DimReader;
@@ -194,9 +197,12 @@ public class LoadedScene {
             if(file != null) {
                 OutputStream fileOutputStream = null;
                 try {
+                    DimDataFactory dimDataFactory = new DimDataFactory();
+                    DimContentFactory dimContentFactory = new DimContentFactory();
+                    DimData testData = dimDataFactory.fromDimContent(dimContent);
                     DimWriter writer = new DimWriter();
                     fileOutputStream = new FileOutputStream(file);
-                    writer.writeDimData(dimContent, fileOutputStream);
+                    writer.writeDimData(dimContentFactory.merge(dimContent, testData), fileOutputStream);
                     fileOutputStream.close();
                 } catch (FileNotFoundException e) {
                     log.error("Couldn't save selected file.", e);
