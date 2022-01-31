@@ -2,12 +2,14 @@ package com.github.cfogrady.dim.modifier.view;
 
 import com.github.cfogrady.dim.modifier.*;
 import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
-import com.github.cfogrady.vb.dim.reader.content.DimContent;
+import com.github.cfogrady.dim.modifier.data.DimContentFactory;
+import com.github.cfogrady.dim.modifier.data.DimData;
+import com.github.cfogrady.dim.modifier.data.DimDataFactory;
+import com.github.cfogrady.dim.modifier.data.MonsterSlot;
 import com.github.cfogrady.vb.dim.reader.content.DimStats;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
+import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 import javafx.collections.FXCollections;
-import javafx.event.EventType;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -18,13 +20,10 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javafx.util.converter.IntegerStringConverter;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -33,17 +32,16 @@ import static com.github.cfogrady.dim.modifier.LoadedScene.*;
 @Slf4j
 @AllArgsConstructor
 public class StatsInfoView implements InfoView {
-    public static final int MAX_SLOTS_ENTRIES_FOR_NORMAL_VB = 17;
 
-    private final DimContent dimContent;
+    private final DimData dimData;
     private final SpriteSlotParser spriteSlotParser;
     private final Stage stage;
     private final Consumer<SelectionState> stateChanger;
     private BackgroundImage background;
     private File lastUsedDirectory;
 
-    public StatsInfoView(DimContent dimContent, SpriteSlotParser spriteSlotParser,  Stage stage, Consumer<SelectionState> stateChanger) {
-        this.dimContent = dimContent;
+    public StatsInfoView(DimData dimData, SpriteSlotParser spriteSlotParser, Stage stage, Consumer<SelectionState> stateChanger) {
+        this.dimData = dimData;
         this.spriteSlotParser = spriteSlotParser;
         this.stage = stage;
         this.stateChanger = stateChanger;
@@ -76,18 +74,13 @@ public class StatsInfoView implements InfoView {
             return 8;
         } else {
             int level = getSelectionLevel(selectionState);
-            if(level == 0) {
-                return 6;
-            } else if (level == 1) {
-                return 7;
-            } else {
-                return 14;
-            }
+            int spriteCount = DimDataFactory.getSpriteCountForLevel(level);
+            return spriteCount;
         }
     }
 
     private int getSelectionLevel(SelectionState selectionState) {
-        return dimContent.getDimStats().getStatBlocks().get(selectionState.getSlot()).getStage();
+        return dimData.getMonsterSlotList().get(selectionState.getSlot()).getStatBlock().getStage();
     }
 
     private Node setupNameArea(SelectionState selectionState) {
@@ -125,33 +118,34 @@ public class StatsInfoView implements InfoView {
             return gridPane;
         }
         int slot = selectionState.getSlot();
-        DimStats.DimStatBlock statBlock = dimContent.getDimStats().getStatBlocks().get(slot);
-        gridPane.add(setupStageLabel(selectionState, statBlock), 0, 0);
-        gridPane.add(setupLockedLabel(selectionState, statBlock), 1, 0);
-        gridPane.add(setupAttributeLabel(selectionState, statBlock), 0, 1);
-        gridPane.add(setupDispositionLabel(selectionState, statBlock), 1, 1);
-        gridPane.add(setupSmallAttackLabel(selectionState, statBlock), 0, 2);
-        gridPane.add(setupBigAttackLabel(selectionState, statBlock), 1, 2);
-        gridPane.add(setupDPStarsLabel(selectionState, statBlock), 0, 3);
-        gridPane.add(setupDPLabel(selectionState, statBlock), 1, 3);
-        gridPane.add(setupHpLabel(selectionState, statBlock), 0, 4);
-        gridPane.add(setupApLabel(selectionState, statBlock), 1, 4);
-        gridPane.add(setupEarlyBattleChanceLabel(statBlock), 0, 5);
-        gridPane.add(setupLateBattleChanceLabel(statBlock), 1, 5);
+        MonsterSlot monsterSlot = dimData.getMonsterSlotList().get(slot);
+        gridPane.add(setupStageLabel(monsterSlot, selectionState), 0, 0);
+        gridPane.add(setupLockedLabel(monsterSlot), 1, 0);
+        gridPane.add(setupAttributeLabel(monsterSlot), 0, 1);
+        gridPane.add(setupDispositionLabel(monsterSlot), 1, 1);
+        gridPane.add(setupSmallAttackLabel(monsterSlot), 0, 2);
+        gridPane.add(setupBigAttackLabel(monsterSlot), 1, 2);
+        gridPane.add(setupDPStarsLabel(monsterSlot), 0, 3);
+        gridPane.add(setupDPLabel(monsterSlot), 1, 3);
+        gridPane.add(setupHpLabel(monsterSlot), 0, 4);
+        gridPane.add(setupApLabel(monsterSlot), 1, 4);
+        gridPane.add(setupHoursUntilEvolutionLabel(monsterSlot), 0, 5);
+        gridPane.add(setupEarlyBattleChanceLabel(monsterSlot), 0, 6);
+        gridPane.add(setupLateBattleChanceLabel(monsterSlot), 1, 6);
         return gridPane;
     }
 
-    private Node setupStageLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+    private Node setupStageLabel(MonsterSlot monsterSlot, SelectionState selectionState) {
         Label label = new Label("Stage: ");
-        ComboBox<Integer> comboBox = new ComboBox<Integer>();
+        ComboBox<Integer> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6));
-        comboBox.setValue(statBlock.getStage() + 1);
+        comboBox.setValue(monsterSlot.getStatBlock().getStage() + 1);
         comboBox.setOnAction(event -> {
             int value = comboBox.getValue() - 1;
-            this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().stage(value).build());
+            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().stage(value).build());
+            this.stateChanger.accept(selectionState);
         });
         comboBox.setPrefWidth(20);
-        comboBox.setDisable(true);
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
@@ -159,14 +153,14 @@ public class StatsInfoView implements InfoView {
         return hBox;
     }
 
-    private Node setupLockedLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+    private Node setupLockedLabel(MonsterSlot monsterSlot) {
         Label label = new Label("Requires Unlock:");
-        ComboBox<Boolean> comboBox = new ComboBox<Boolean>();
+        ComboBox<Boolean> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(false, true));
-        comboBox.setValue(statBlock.isUnlockRequired());
+        comboBox.setValue(monsterSlot.getStatBlock().isUnlockRequired());
         comboBox.setOnAction(event -> {
             boolean value = comboBox.getValue();
-            this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().unlockRequired(value).build());
+            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().unlockRequired(value).build());
         });
         comboBox.setPrefWidth(80);
         HBox hBox = new HBox(label, comboBox);
@@ -176,19 +170,19 @@ public class StatsInfoView implements InfoView {
         return hBox;
     }
 
-    private Node setupAttributeLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
-        if(statBlock.getStage() < 2) {
-            Label label = new Label("Attribute: " + statBlock.getAttribute());
+    private Node setupAttributeLabel(MonsterSlot monsterSlot) {
+        if(monsterSlot.getStatBlock().getStage() < 2) {
+            Label label = new Label("Attribute: " + monsterSlot.getStatBlock().getAttribute());
             GridPane.setMargin(label, new Insets(10));
             return label;
         }
         Label label = new Label("Attribute:");
-        ComboBox<Integer> comboBox = new ComboBox<Integer>();
+        ComboBox<Integer> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4));
-        comboBox.setValue(statBlock.getAttribute());
+        comboBox.setValue(monsterSlot.getStatBlock().getAttribute());
         comboBox.setOnAction(event -> {
             int value = comboBox.getValue();
-            this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().attribute(value).build());
+            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().attribute(value).build());
         });
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
@@ -197,38 +191,38 @@ public class StatsInfoView implements InfoView {
         return hBox;
     }
 
-    private Node setupDispositionLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
+    private Node setupDispositionLabel(MonsterSlot monsterSlot) {
         Label label = new Label("Disposition:");
-        ComboBox<Integer> comboBox = new ComboBox<Integer>();
+        ComboBox<Integer> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(0, 1, 2, 3, 4));
-        comboBox.setValue(statBlock.getDisposition());
+        comboBox.setValue(monsterSlot.getStatBlock().getDisposition());
         comboBox.setOnAction(event -> {
             int value = comboBox.getValue();
-            this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().disposition(value).build());
+            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().disposition(value).build());
         });
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
-        GridPane.setMargin(hBox, new Insets(10));;
+        GridPane.setMargin(hBox, new Insets(10));
         return hBox;
     }
 
-    private Node setupSmallAttackLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
-        if(statBlock.getStage() < 2) {
+    private Node setupSmallAttackLabel(MonsterSlot monsterSlot) {
+        if(monsterSlot.getStatBlock().getStage() < 2) {
             Label label = new Label("Small Attack: " + LoadedScene.NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
             return label;
         }
         Label label = new Label("Small Attack:");
-        ComboBox<String> comboBox = new ComboBox<String>();
+        ComboBox<String> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(AttackLabels.SMALL_ATTACKS));
-        comboBox.setValue(AttackLabels.SMALL_ATTACKS[statBlock.getSmallAttackId()]);
+        comboBox.setValue(AttackLabels.SMALL_ATTACKS[monsterSlot.getStatBlock().getSmallAttackId()]);
         comboBox.setOnAction(event -> {
             String value = comboBox.getValue();
             boolean indexFound = false;
             for(int i = 0 ; i < AttackLabels.SMALL_ATTACKS.length && !indexFound; i++) {
                 if(AttackLabels.SMALL_ATTACKS[i].equals(value)) {
-                    this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().smallAttackId(i).build());
+                    monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().smallAttackId(i).build());
                     indexFound = true;
                 }
             }
@@ -237,26 +231,26 @@ public class StatsInfoView implements InfoView {
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
-        GridPane.setMargin(hBox, new Insets(10));;
+        GridPane.setMargin(hBox, new Insets(10));
         return hBox;
     }
 
-    private Node setupBigAttackLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
-        if(statBlock.getStage() < 2) {
+    private Node setupBigAttackLabel(MonsterSlot monsterSlot) {
+        if(monsterSlot.getStatBlock().getStage() < 2) {
             Label label = new Label("Big Attack: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
             return label;
         }
         Label label = new Label("Big Attack:");
-        ComboBox<String> comboBox = new ComboBox<String>();
+        ComboBox<String> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(AttackLabels.BIG_ATTACKS));
-        comboBox.setValue(AttackLabels.BIG_ATTACKS[statBlock.getBigAttackId()]);
+        comboBox.setValue(AttackLabels.BIG_ATTACKS[monsterSlot.getStatBlock().getBigAttackId()]);
         comboBox.setOnAction(event -> {
             String value = comboBox.getValue();
             boolean indexFound = false;
             for(int i = 0 ; i < AttackLabels.BIG_ATTACKS.length && !indexFound; i++) {
                 if(AttackLabels.BIG_ATTACKS[i].equals(value)) {
-                    this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().bigAttackId(i).build());
+                    monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().bigAttackId(i).build());
                     indexFound = true;
                 }
             }
@@ -265,95 +259,36 @@ public class StatsInfoView implements InfoView {
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
-        GridPane.setMargin(hBox, new Insets(10));;
+        GridPane.setMargin(hBox, new Insets(10));
         return hBox;
     }
 
-    private Node setupDPStarsLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
-        if(statBlock.getStage() < 2) {
+    private Node setupDPStarsLabel(MonsterSlot monsterSlot) {
+        if(monsterSlot.getStatBlock().getStage() < 2) {
             Label label = new Label("DP (stars): " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
             return label;
         }
         Label label = new Label("DP (stars):");
-        TextField textField = new TextField();
-        textField.setText(Integer.toString(statBlock.getDpStars()));
-        textField.textProperty().addListener((obs,oldv,newv) -> {
-            boolean error = false;
-            if(newv == null || newv.isBlank()) {
-                error = true;
-            } else {
-                try {
-                    int value = Integer.parseInt(newv);
-                    if(value < 0) {
-                        error = true;
-                    } else {
-                        textField.setBorder(null);
-                        this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().dpStars(value).build());
-                    }
-                } catch (NumberFormatException e) {
-                    error = true;
-                }
-            }
-            if(error) {
-                textField.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(3), new BorderWidths(2), new Insets(-2))));
-            }
-        });
-        textField.setPrefWidth(60);
-        HBox hbox = new HBox(label, textField);
+        IntegerTextField integerTextField = new IntegerTextField(monsterSlot.getStatBlock().getDpStars(), value ->
+                monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().dpStars(value).build()));
+        integerTextField.setPrefWidth(60);
+        HBox hbox = new HBox(label, integerTextField);
         hbox.setSpacing(10);
         hbox.setAlignment(Pos.CENTER_LEFT);
         GridPane.setMargin(hbox, new Insets(10));
         return hbox;
     }
 
-    private Node setupDPLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
-        if(statBlock.getStage() < 2) {
+    private Node setupDPLabel(MonsterSlot monsterSlot) {
+        if(monsterSlot.getStatBlock().getStage() < 2) {
             Label label = new Label("DP: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
             return label;
         }
         Label label = new Label("DP:");
-        TextField textField = new TextField();
-        textField.setText(Integer.toString(statBlock.getDp()));
-        textField.textProperty().addListener((obs,oldv,newv) -> {
-            boolean error = false;
-            if(newv == null || newv.isBlank()) {
-                error = true;
-            } else {
-                try {
-                    int value = Integer.parseInt(newv);
-                    if(value < 0) {
-                        error = true;
-                    } else {
-                        textField.setBorder(null);
-                        this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().dp(value).build());
-                    }
-                } catch (NumberFormatException e) {
-                    error = true;
-                }
-            }
-            if(error) {
-                textField.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, new CornerRadii(3), new BorderWidths(2), new Insets(-2))));
-            }
-        });
-        textField.setPrefWidth(60);
-        HBox hbox = new HBox(label, textField);
-        hbox.setSpacing(10);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        GridPane.setMargin(hbox, new Insets(10));
-        return hbox;
-    }
-
-    private Node setupHpLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
-        if(statBlock.getStage() < 2) {
-            Label label = new Label("HP: " + NONE_LABEL);
-            GridPane.setMargin(label, new Insets(10));
-            return label;
-        }
-        Label label = new Label("DP:");
-        IntegerTextField integerTextField = new IntegerTextField(statBlock.getHp(), value ->
-                this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().hp(value).build()));
+        IntegerTextField integerTextField = new IntegerTextField(monsterSlot.getStatBlock().getDp(), value ->
+                monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().dp(value).build()));
         integerTextField.setPrefWidth(60);
         HBox hbox = new HBox(label, integerTextField);
         hbox.setSpacing(10);
@@ -362,15 +297,32 @@ public class StatsInfoView implements InfoView {
         return hbox;
     }
 
-    private Node setupApLabel(SelectionState selectionState, DimStats.DimStatBlock statBlock) {
-        if(statBlock.getStage() < 2) {
+    private Node setupHpLabel(MonsterSlot monsterSlot) {
+        if(monsterSlot.getStatBlock().getStage() < 2) {
+            Label label = new Label("HP: " + NONE_LABEL);
+            GridPane.setMargin(label, new Insets(10));
+            return label;
+        }
+        Label label = new Label("HP:");
+        IntegerTextField integerTextField = new IntegerTextField(monsterSlot.getStatBlock().getHp(), value ->
+                monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().hp(value).build()));
+        integerTextField.setPrefWidth(60);
+        HBox hbox = new HBox(label, integerTextField);
+        hbox.setSpacing(10);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hbox, new Insets(10));
+        return hbox;
+    }
+
+    private Node setupApLabel(MonsterSlot monsterSlot) {
+        if(monsterSlot.getStatBlock().getStage() < 2) {
             Label label = new Label("AP: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
             return label;
         }
         Label label = new Label("AP:");
-        IntegerTextField integerTextField = new IntegerTextField(statBlock.getHp(), value ->
-                this.dimContent.getDimStats().getStatBlocks().set(selectionState.getSlot(), statBlock.toBuilder().ap(value).build()));
+        IntegerTextField integerTextField = new IntegerTextField(monsterSlot.getStatBlock().getAp(), value ->
+                monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().ap(value).build()));
         integerTextField.setPrefWidth(60);
         HBox hbox = new HBox(label, integerTextField);
         hbox.setSpacing(10);
@@ -379,24 +331,37 @@ public class StatsInfoView implements InfoView {
         return hbox;
     }
 
-    private Node setupEarlyBattleChanceLabel(DimStats.DimStatBlock statBlock) {
+    private Node setupHoursUntilEvolutionLabel(MonsterSlot monsterSlot) {
+        Label label = new Label("Hours Until Evolution (" + DimReader.NONE_VALUE + " for NONE):");
+        IntegerTextField integerTextField = new IntegerTextField(monsterSlot.getHoursUntilEvolution(), value ->
+                monsterSlot.setHoursUntilEvolution(value));
+        integerTextField.setPrefWidth(60);
+        integerTextField.setMin(1);
+        HBox hbox = new HBox(label, integerTextField);
+        hbox.setSpacing(10);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hbox, new Insets(10));
+        return hbox;
+    }
+
+    private Node setupEarlyBattleChanceLabel(MonsterSlot monsterSlot) {
         String chance;
-        if(statBlock.getFirstPoolBattleChance() == NONE_VALUE) {
+        if(monsterSlot.getStatBlock().getFirstPoolBattleChance() == NONE_VALUE) {
             chance = LoadedScene.NONE_LABEL;
         } else {
-            chance = Integer.toString(statBlock.getFirstPoolBattleChance());
+            chance = Integer.toString(monsterSlot.getStatBlock().getFirstPoolBattleChance());
         }
         Label label = new Label("Stage 3/4 Battle Chance: " + chance);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node setupLateBattleChanceLabel(DimStats.DimStatBlock statBlock) {
+    private Node setupLateBattleChanceLabel(MonsterSlot monsterSlot) {
         String chance;
-        if(statBlock.getSecondPoolBattleChance() == NONE_VALUE) {
+        if(monsterSlot.getStatBlock().getSecondPoolBattleChance() == NONE_VALUE) {
             chance = LoadedScene.NONE_LABEL;
         } else {
-            chance = Integer.toString(statBlock.getSecondPoolBattleChance());
+            chance = Integer.toString(monsterSlot.getStatBlock().getSecondPoolBattleChance());
         }
         Label label = new Label("Stage 5/6 Battle Chance: " + chance);
         GridPane.setMargin(label, new Insets(10));
@@ -411,9 +376,7 @@ public class StatsInfoView implements InfoView {
                 (selectionState.getSelectionType() == CurrentSelectionType.SLOT && selectionState.getSpriteIndex() < 2)) {
             button.setDisable(true);
         }
-        button.setOnAction(event -> {
-            stateChanger.accept(selectionState.toBuilder().spriteIndex(selectionState.getSpriteIndex() - 1).build());
-        });
+        button.setOnAction(event -> stateChanger.accept(selectionState.toBuilder().spriteIndex(selectionState.getSpriteIndex() - 1).build()));
         StackPane pane = new StackPane(button);
         return pane;
     }
@@ -424,9 +387,7 @@ public class StatsInfoView implements InfoView {
         if(selectionState.getSelectionType() == CurrentSelectionType.LOGO || selectionState.getSpriteIndex() == getSpriteCountForSelection(selectionState)-1) {
             button.setDisable(true);
         }
-        button.setOnAction(event -> {
-            stateChanger.accept(selectionState.toBuilder().spriteIndex(selectionState.getSpriteIndex() + 1).build());
-        });
+        button.setOnAction(event -> stateChanger.accept(selectionState.toBuilder().spriteIndex(selectionState.getSpriteIndex() + 1).build()));
         StackPane pane = new StackPane(button);
         return pane;
     }
@@ -502,7 +463,7 @@ public class StatsInfoView implements InfoView {
         } else if (selectionType == CurrentSelectionType.EGG) {
             return new Label("EGG");
         } else {
-            SpriteData.Sprite nameSprite = spriteSlotParser.getSpriteForSlotAndIndex(selectionType, slot, 0);
+            SpriteData.Sprite nameSprite = dimData.getMonsterSlotList().get(slot).getSprites().get(0);
             Image image = spriteSlotParser.loadImageFromSprite(nameSprite);
             ImageView imageView = new ImageView(image);
             imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouse -> {
@@ -515,7 +476,8 @@ public class StatsInfoView implements InfoView {
                 if(file != null) {
                     try {
                         lastUsedDirectory = file.getParentFile();
-                        spriteSlotParser.loadReplacementSprite(file, selectionState.getSelectionType(), selectionState.getSlot(), 0);
+                        SpriteData.Sprite replacementSprite = spriteSlotParser.loadSprite(file);
+                        dimData.getMonsterSlotList().get(slot).getSprites().set(0, replacementSprite);
                         stateChanger.accept(selectionState);
                     } catch (IOException e) {
                         log.error("Couldn't load image file!", e);
@@ -552,7 +514,7 @@ public class StatsInfoView implements InfoView {
     private Node setupNextButton(SelectionState selectionState) {
         Button button = new Button();
         button.setText("Next");
-        if(selectionState.getSelectionType() == CurrentSelectionType.SLOT && selectionState.getSlot() == dimContent.getDimStats().getStatBlocks().size() - 1) {
+        if(selectionState.getSelectionType() == CurrentSelectionType.SLOT && selectionState.getSlot() == dimData.getMonsterSlotList().size() - 1) {
             button.setDisable(true);
         }
         button.setOnAction(event -> {

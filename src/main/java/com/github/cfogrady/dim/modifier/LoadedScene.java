@@ -24,13 +24,16 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.*;
 
 @Slf4j
-@RequiredArgsConstructor
+@RequiredArgsConstructor()
 public class LoadedScene {
     public static final int NONE_VALUE = 65535;
     public static final int BACKGROUND_INDEX = 1;
     public static final String NONE_LABEL = "None";
 
     private final DimContent dimContent;
+    private final DimData dimData;
+    private final DimDataFactory dimDataFactory;
+    private final DimContentFactory dimContentFactory;
     private final Stage stage;
     private final FusionInfoView fusionInfoView;
     private final StatsInfoView statsInfoView;
@@ -39,14 +42,17 @@ public class LoadedScene {
     private final SpriteSlotParser spriteSlotParser;
     private InfoView currentView;
 
-    public LoadedScene(DimContent dimContent, Stage stage) {
+    public LoadedScene(DimContent dimContent, DimData dimData, Stage stage) {
         this.dimContent = dimContent;
+        this.dimData = dimData;
         this.stage = stage;
         this.spriteSlotParser = new SpriteSlotParser(dimContent);
         this.fusionInfoView = new FusionInfoView(dimContent.getDimFusions().getFusionBlocks(), dimContent.getDimSpecificFusion().getDimSpecificFusionBlocks(), spriteSlotParser);
-        this.statsInfoView = new StatsInfoView(dimContent, spriteSlotParser, stage, selectionState -> setupScene(selectionState));
+        this.statsInfoView = new StatsInfoView(dimData, spriteSlotParser, stage, selectionState -> setupScene(selectionState));
         this.evolutionInfoView = new EvolutionInfoView(dimContent.getDimEvolutionRequirements().getEvolutionRequirementBlocks(), spriteSlotParser);
         this.adventureInfoView = new AdventureInfoView(dimContent.getDimAdventures().getAdventureBlocks(), spriteSlotParser);
+        this.dimDataFactory = new DimDataFactory();
+        this.dimContentFactory = new DimContentFactory();
         this.currentView = statsInfoView;
     }
 
@@ -168,8 +174,9 @@ public class LoadedScene {
                     DimReader reader = new DimReader();
                     fileInputStream = new FileInputStream(file);
                     DimContent content = reader.readDimData(fileInputStream, false);
+                    DimData data = dimDataFactory.fromDimContent(content);
                     fileInputStream.close();
-                    LoadedScene scene = new LoadedScene(content, stage);
+                    LoadedScene scene = new LoadedScene(content, data, stage);
                     scene.setupScene(SelectionState.builder()
                             .selectionType(CurrentSelectionType.LOGO)
                             .slot(0)
@@ -197,12 +204,9 @@ public class LoadedScene {
             if(file != null) {
                 OutputStream fileOutputStream = null;
                 try {
-                    DimDataFactory dimDataFactory = new DimDataFactory();
-                    DimContentFactory dimContentFactory = new DimContentFactory();
-                    DimData testData = dimDataFactory.fromDimContent(dimContent);
                     DimWriter writer = new DimWriter();
                     fileOutputStream = new FileOutputStream(file);
-                    writer.writeDimData(dimContentFactory.merge(dimContent, testData), fileOutputStream);
+                    writer.writeDimData(dimContentFactory.merge(dimContent, dimData), fileOutputStream);
                     fileOutputStream.close();
                 } catch (FileNotFoundException e) {
                     log.error("Couldn't save selected file.", e);

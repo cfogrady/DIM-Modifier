@@ -1,5 +1,6 @@
 package com.github.cfogrady.dim.modifier.data;
 
+import com.github.cfogrady.dim.modifier.SpriteSlotParser;
 import com.github.cfogrady.vb.dim.reader.content.*;
 import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 import lombok.extern.slf4j.Slf4j;
@@ -38,7 +39,25 @@ public class DimContentFactory {
     DimStats createDimStat(DimStats oldDimStats, List<MonsterSlot> monsterSlots) {
         List<DimStats.DimStatBlock> statBlocks = new ArrayList<>(monsterSlots.size());
         for(MonsterSlot monsterSlot : monsterSlots) {
-            statBlocks.add(monsterSlot.getStatBlock());
+            //Ensure we don't write values that will screw up VB for stage < 2
+            if(monsterSlot.getStatBlock().getStage() < 2) {
+                statBlocks.add(DimStats.DimStatBlock.builder()
+                                .stage(monsterSlot.getStatBlock().getStage())
+                                .attribute(0)
+                                .disposition(monsterSlot.getStatBlock().getDisposition())
+                                .unlockRequired(false)
+                                .dp(DimReader.NONE_VALUE)
+                                .dpStars(DimReader.NONE_VALUE)
+                                .ap(DimReader.NONE_VALUE)
+                                .hp(DimReader.NONE_VALUE)
+                                .smallAttackId(DimReader.NONE_VALUE)
+                                .bigAttackId(DimReader.NONE_VALUE)
+                                .firstPoolBattleChance(DimReader.NONE_VALUE)
+                                .secondPoolBattleChance(DimReader.NONE_VALUE)
+                                .build());
+            } else {
+                statBlocks.add(monsterSlot.getStatBlock());
+            }
         }
         DimStats.DimStatsBuilder builder = oldDimStats.toBuilder();
         if(oldDimStats.getStatBlocks().size() != statBlocks.size() && statBlocks.size() < DimStats.VB_TABLE_SIZE) {
@@ -55,9 +74,11 @@ public class DimContentFactory {
             for(EvolutionEntry evolutionEntry : monsterSlot.getEvolutionEntries()) {
                 UUID evolveToMonsterId = evolutionEntry.getToMonster();
                 int evolveToMonsterSlot = evolveToMonsterId == null ? DimReader.NONE_VALUE : monsterIdToSlot.get(evolveToMonsterId);
+                int hoursUntilEvolve = monsterSlot.getHoursUntilEvolution();
                 evolutionRequirementBlocks.add(evolutionEntry.getEvolutionRequirementBlock().toBuilder()
                                 .evolveFromStatIndex(monsterIdToSlot.get(monsterSlot.getId()))
                                 .evolveToStatIndex(evolveToMonsterSlot)
+                                .hoursUntilEvolution(hoursUntilEvolve)
                                 .build());
             }
         }
@@ -146,7 +167,15 @@ public class DimContentFactory {
             sprites.add(oldSpriteData.getSprites().get(i));
         }
         for(MonsterSlot monsterSlot : monsterSlots) {
-            sprites.addAll(monsterSlot.getSprites());
+            // use correct number of sprites for monsters with lower level than stage 2
+            int monsterStage = monsterSlot.getStatBlock().getStage();
+            if(monsterStage < 2) {
+                for(int i = 0; i < DimDataFactory.getSpriteCountForLevel(monsterStage); i++) {
+                    sprites.add(monsterSlot.getSprites().get(i));
+                }
+            } else {
+                sprites.addAll(monsterSlot.getSprites());
+            }
         }
         return builder.sprites(sprites).build();
     }

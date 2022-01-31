@@ -9,6 +9,6 @@ import java.util.UUID;
 @Data
 @Builder(toBuilder = true)
 public class EvolutionEntry {
-    private final DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock;
-    private final UUID toMonster;
+    private DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock;
+    private UUID toMonster;
 }

@@ -10,8 +10,8 @@ import java.util.UUID;
 @Data
 @Builder(toBuilder = true)
 public class DimData {
-    private final List<MonsterSlot> monsterSlotList;
-    private final Map<UUID, MonsterSlot> monsterSlotsById;
-    private final List<AdventureEntry> adventureEntries;
-    private final List<SpecificFusion> specificFusions;
+    private List<MonsterSlot> monsterSlotList;
+    private Map<UUID, MonsterSlot> monsterSlotsById;
+    private List<AdventureEntry> adventureEntries;
+    private List<SpecificFusion> specificFusions;
 }

@@ -55,6 +55,17 @@ public class SpriteSlotParser {
         dimContent.getSpriteData().getSprites().set(spriteIndex, sprite);
     }
 
+    public SpriteData.Sprite loadSprite(File file) throws IOException {
+        FileInputStream inputStream = new FileInputStream(file);
+        Image image = new Image(inputStream);
+        inputStream.close();
+        int width = (int) image.getWidth();
+        int height = (int) image.getHeight();
+        byte[] pixelData = convertToR5G6B5(image.getPixelReader(), width, height);
+        SpriteData.Sprite sprite = SpriteData.Sprite.builder().width(width).height(height).pixelData(pixelData).build();
+        return sprite;
+    }
+
     private byte[] convertToR5G6B5(PixelReader pixelReader, int width, int height) {
         byte[] bytes = new byte[width*height*2];
         for(int y = 0; y < height; y++) {

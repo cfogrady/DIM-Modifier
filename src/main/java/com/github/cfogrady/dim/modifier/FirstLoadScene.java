@@ -1,5 +1,7 @@
 package com.github.cfogrady.dim.modifier;
 
+import com.github.cfogrady.dim.modifier.data.DimData;
+import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
 import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 import javafx.scene.Scene;
@@ -16,6 +18,7 @@ import java.io.*;
 @Slf4j
 public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
     private final Stage stage;
+    private final DimDataFactory dimDataFactory;
 
     @Override
     public void setupScene() {
@@ -32,7 +35,8 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
                     fileInputStream = new FileInputStream(file);
                     DimContent content = reader.readDimData(fileInputStream, false);
                     fileInputStream.close();
-                    LoadedScene scene = new LoadedScene(content, stage);
+                    DimData dimData = dimDataFactory.fromDimContent(content);
+                    LoadedScene scene = new LoadedScene(content, dimData, stage);
                     scene.setupScene(SelectionState.builder().backgroundType(BackgroundType.IMAGE).selectionType(CurrentSelectionType.LOGO).build());
                 } catch (FileNotFoundException e) {
                     log.error("Couldn't find selected file.", e);

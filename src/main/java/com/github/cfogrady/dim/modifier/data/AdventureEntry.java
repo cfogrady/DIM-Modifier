@@ -8,9 +8,9 @@ import java.util.UUID;
 @Builder(toBuilder = true)
 @Data
 public class AdventureEntry {
-    private final int steps;
-    private final UUID monsterId;
-    private final int bossDp;
-    private final int bossHp;
-    private final int bossAp;
+    private int steps;
+    private UUID monsterId;
+    private int bossDp;
+    private int bossHp;
+    private int bossAp;
 }

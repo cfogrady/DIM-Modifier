@@ -11,9 +11,10 @@ import java.util.UUID;
 @Data
 @Builder(toBuilder = true)
 public class MonsterSlot {
-    private final UUID id; //This is transient. Used to keep track of evolutions while slot indexes are being changed.
-    private final DimStats.DimStatBlock statBlock;
-    private final List<SpriteData.Sprite> sprites;
-    private final List<EvolutionEntry> evolutionEntries;
-    private final Fusions fusions;
+    private UUID id; //This is transient. Used to keep track of evolutions while slot indexes are being changed.
+    private DimStats.DimStatBlock statBlock;
+    private List<SpriteData.Sprite> sprites;
+    private List<EvolutionEntry> evolutionEntries;
+    private int hoursUntilEvolution;
+    private Fusions fusions;
 }

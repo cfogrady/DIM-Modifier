@@ -22,10 +22,12 @@ public class DimDataFactory {
         int slotIndex = 0;
         Map<UUID, MonsterSlot> monsterById = new HashMap<>(numberOfSlots);
         for(DimStats.DimStatBlock statsBlock : content.getDimStats().getStatBlocks()) {
+            int hoursUntilEvolution = evolutionsBySlot.get(slotIndex).get(0).getEvolutionRequirementBlock().getHoursUntilEvolution();
             MonsterSlot monsterSlot = MonsterSlot.builder()
                     .id(idBySlot.get(slotIndex))
                     .statBlock(statsBlock)
                     .sprites(spritesBySlot.get(slotIndex))
+                    .hoursUntilEvolution(hoursUntilEvolution)
                     .evolutionEntries(evolutionsBySlot.get(slotIndex))
                     .fusions(fusionsBySlot.get(slotIndex))
                     .build();
