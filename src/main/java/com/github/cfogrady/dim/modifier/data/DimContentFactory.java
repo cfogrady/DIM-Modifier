@@ -1,6 +1,5 @@
 package com.github.cfogrady.dim.modifier.data;
 
-import com.github.cfogrady.dim.modifier.SpriteSlotParser;
 import com.github.cfogrady.vb.dim.reader.content.*;
 import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,7 @@ public class DimContentFactory {
         DimAdventures newAdventures = createDimAdventures(dimContent.getDimAdventures(), dimData.getAdventureEntries(), monsterIdToSlot);
         DimFusions newFusions = createDimFusions(dimContent.getDimFusions(), dimData.getMonsterSlotList(), monsterIdToSlot);
         DimSpecificFusions newSpecificFusions = createDimSpecificFusions(dimContent.getDimSpecificFusion(), dimData.getSpecificFusions(), monsterIdToSlot);
-        SpriteData spriteData = createSpriteData(dimContent.getSpriteData(), dimData.getMonsterSlotList());
+        SpriteData spriteData = createSpriteData(dimContent.getSpriteData(), dimData);
         return dimContent.toBuilder()
                 .dimStats(newDimStats)
                 .dimEvolutionRequirements(newEvolutionRequirements)
@@ -160,23 +159,37 @@ public class DimContentFactory {
         return builder.dimSpecificFusionBlocks(specificFusionBlocks).build();
     }
 
-    SpriteData createSpriteData(SpriteData oldSpriteData, List<MonsterSlot> monsterSlots) {
+    SpriteData createSpriteData(SpriteData oldSpriteData, DimData dimData) {
+        List<MonsterSlot> monsterSlots = dimData.getMonsterSlotList();
         SpriteData.SpriteDataBuilder builder = oldSpriteData.toBuilder();
         List<SpriteData.Sprite> sprites = new ArrayList<>();
-        for(int i = 0; i < 10; i++) {
-            sprites.add(oldSpriteData.getSprites().get(i));
+        sprites.add(dimData.getLogoSprite());
+        sprites.add(dimData.getBackGroundSprite());
+        for(SpriteData.Sprite eggSprite : dimData.getEggSprites()) {
+            sprites.add(eggSprite);
         }
         for(MonsterSlot monsterSlot : monsterSlots) {
             // use correct number of sprites for monsters with lower level than stage 2
             int monsterStage = monsterSlot.getStatBlock().getStage();
-            if(monsterStage < 2) {
-                for(int i = 0; i < DimDataFactory.getSpriteCountForLevel(monsterStage); i++) {
+            for(int i = 0; i < DimDataFactory.getSpriteCountForLevel(monsterStage); i++) {
+                if(i >= monsterSlot.getSprites().size()) {
+                    sprites.add(SpriteData.Sprite.builder().width(1).height(1).pixelData(createDummySprite(1, 1)).build());
+                } else {
                     sprites.add(monsterSlot.getSprites().get(i));
                 }
-            } else {
-                sprites.addAll(monsterSlot.getSprites());
             }
         }
         return builder.sprites(sprites).build();
+    }
+
+    public static byte[] createDummySprite(int width, int height) {
+        byte[] pixelData = new byte[width*height*2];
+        for(int x = 0; x < width; x++) {
+            for(int y = 0; y < height; y++) {
+                pixelData[(y*width + x)*2] = (byte) 0b11100000;
+                pixelData[(y*width + x)*2 + 1] = (byte) 0b00000111;
+            }
+        }
+        return pixelData;
     }
 }

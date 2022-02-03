@@ -6,7 +6,7 @@ import com.github.cfogrady.dim.modifier.data.DimContentFactory;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
-import com.github.cfogrady.vb.dim.reader.content.DimStats;
+import com.github.cfogrady.dim.modifier.utils.NoneUtils;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
 import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 import javafx.collections.FXCollections;
@@ -34,19 +34,20 @@ import static com.github.cfogrady.dim.modifier.LoadedScene.*;
 public class StatsInfoView implements InfoView {
 
     private final DimData dimData;
-    private final SpriteSlotParser spriteSlotParser;
+    private final SpriteImageTranslator spriteImageTranslator;
     private final Stage stage;
     private final Consumer<SelectionState> stateChanger;
     private BackgroundImage background;
     private File lastUsedDirectory;
 
-    public StatsInfoView(DimData dimData, SpriteSlotParser spriteSlotParser, Stage stage, Consumer<SelectionState> stateChanger) {
+    public StatsInfoView(DimData dimData, SpriteImageTranslator spriteSlotParser, Stage stage, Consumer<SelectionState> stateChanger) {
         this.dimData = dimData;
-        this.spriteSlotParser = spriteSlotParser;
+        this.spriteImageTranslator = spriteSlotParser;
         this.stage = stage;
         this.stateChanger = stateChanger;
         BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
-        this.background = new BackgroundImage(spriteSlotParser.loadImageFromSpriteIndex(BACKGROUND_INDEX), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
+        Image image = spriteSlotParser.loadImageFromSprite(dimData.getBackGroundSprite());
+        this.background = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
         this.lastUsedDirectory = null;
     }
 
@@ -84,15 +85,26 @@ public class StatsInfoView implements InfoView {
     }
 
     private Node setupNameArea(SelectionState selectionState) {
-        HBox hBox = new HBox(setupPrevButton(selectionState), setupName(selectionState), setupNextButton(selectionState));
+        HBox hBox = new HBox(setupPrevButton(selectionState), setupName(selectionState), setupReplaceNameSpriteButton(selectionState), setupAddSlotButton(selectionState), setupDeleteSlotButton(selectionState), setupNextButton(selectionState));
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
         return hBox;
     }
 
     private Node setupSpriteArea(SelectionState selectionState) {
-        SpriteData.Sprite sprite = spriteSlotParser.getSpriteForSlotAndIndex(selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
-        Image image = spriteSlotParser.loadImageFromSprite(sprite);
+        SpriteData.Sprite sprite;
+        if(selectionState.getSelectionType() == CurrentSelectionType.SLOT) {
+            MonsterSlot monsterSlot = dimData.getMonsterSlotList().get(selectionState.getSlot());
+            if(selectionState.getSpriteIndex() >= monsterSlot.getSprites().size()) {
+                monsterSlot.getSprites().add(SpriteData.Sprite.builder().width(1).height(1).pixelData(DimContentFactory.createDummySprite(1, 1)).build());
+            }
+            sprite = monsterSlot.getSprites().get(selectionState.getSpriteIndex());
+        } else if (selectionState.getSelectionType() == CurrentSelectionType.LOGO) {
+            sprite = dimData.getLogoSprite();
+        } else {
+            sprite = dimData.getEggSprites().get(selectionState.getSpriteIndex());
+        }
+        Image image = spriteImageTranslator.loadImageFromSprite(sprite);
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(sprite.getWidth() * 2.0);
         imageView.setFitHeight(sprite.getHeight() * 2.0);
@@ -130,8 +142,6 @@ public class StatsInfoView implements InfoView {
         gridPane.add(setupHpLabel(monsterSlot), 0, 4);
         gridPane.add(setupApLabel(monsterSlot), 1, 4);
         gridPane.add(setupHoursUntilEvolutionLabel(monsterSlot), 0, 5);
-        gridPane.add(setupEarlyBattleChanceLabel(monsterSlot), 0, 6);
-        gridPane.add(setupLateBattleChanceLabel(monsterSlot), 1, 6);
         return gridPane;
     }
 
@@ -216,7 +226,7 @@ public class StatsInfoView implements InfoView {
         Label label = new Label("Small Attack:");
         ComboBox<String> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(AttackLabels.SMALL_ATTACKS));
-        comboBox.setValue(AttackLabels.SMALL_ATTACKS[monsterSlot.getStatBlock().getSmallAttackId()]);
+        comboBox.setValue(AttackLabels.SMALL_ATTACKS[NoneUtils.defaultIfNone(monsterSlot.getStatBlock().getSmallAttackId(), 0)]);
         comboBox.setOnAction(event -> {
             String value = comboBox.getValue();
             boolean indexFound = false;
@@ -244,7 +254,7 @@ public class StatsInfoView implements InfoView {
         Label label = new Label("Big Attack:");
         ComboBox<String> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(AttackLabels.BIG_ATTACKS));
-        comboBox.setValue(AttackLabels.BIG_ATTACKS[monsterSlot.getStatBlock().getBigAttackId()]);
+        comboBox.setValue(AttackLabels.BIG_ATTACKS[NoneUtils.defaultIfNone(monsterSlot.getStatBlock().getBigAttackId(), 0)]);
         comboBox.setOnAction(event -> {
             String value = comboBox.getValue();
             boolean indexFound = false;
@@ -344,30 +354,6 @@ public class StatsInfoView implements InfoView {
         return hbox;
     }
 
-    private Node setupEarlyBattleChanceLabel(MonsterSlot monsterSlot) {
-        String chance;
-        if(monsterSlot.getStatBlock().getFirstPoolBattleChance() == NONE_VALUE) {
-            chance = LoadedScene.NONE_LABEL;
-        } else {
-            chance = Integer.toString(monsterSlot.getStatBlock().getFirstPoolBattleChance());
-        }
-        Label label = new Label("Stage 3/4 Battle Chance: " + chance);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
-    }
-
-    private Node setupLateBattleChanceLabel(MonsterSlot monsterSlot) {
-        String chance;
-        if(monsterSlot.getStatBlock().getSecondPoolBattleChance() == NONE_VALUE) {
-            chance = LoadedScene.NONE_LABEL;
-        } else {
-            chance = Integer.toString(monsterSlot.getStatBlock().getSecondPoolBattleChance());
-        }
-        Label label = new Label("Stage 5/6 Battle Chance: " + chance);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
-    }
-
     private Node setupPrevSpriteButton(SelectionState selectionState) {
         Button button = new Button();
         button.setText("Prev Sprite");
@@ -397,7 +383,7 @@ public class StatsInfoView implements InfoView {
         button.setText("Replace Sprite");
         button.setOnAction(event -> {
             FileChooser fileChooser = new FileChooser();
-            SpriteData.Sprite currentSprite = spriteSlotParser.getSpriteForSlotAndIndex(selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
+            SpriteData.Sprite currentSprite = getSprite(selectionState);
             fileChooser.setTitle("Select sprite replacement. Should be " + currentSprite.getWidth() + " x " + currentSprite.getHeight());
             if(lastUsedDirectory != null) {
                 fileChooser.setInitialDirectory(lastUsedDirectory);
@@ -406,7 +392,7 @@ public class StatsInfoView implements InfoView {
             if(file != null) {
                 try {
                     lastUsedDirectory = file.getParentFile();
-                    spriteSlotParser.loadReplacementSprite(file, selectionState.getSelectionType(), selectionState.getSlot(), selectionState.getSpriteIndex());
+                    SpriteData.Sprite newSprite = spriteImageTranslator.loadSprite(file);
                     stateChanger.accept(selectionState);
                 } catch (IOException e) {
                     log.error("Couldn't load image file!", e);
@@ -414,6 +400,26 @@ public class StatsInfoView implements InfoView {
             }
         });
         return button;
+    }
+
+    private SpriteData.Sprite getSprite(SelectionState selectionState) {
+        if(selectionState.getSelectionType() == CurrentSelectionType.LOGO) {
+            return dimData.getLogoSprite();
+        } else if(selectionState.getSelectionType() == CurrentSelectionType.EGG) {
+            return dimData.getEggSprites().get(selectionState.getSpriteIndex());
+        } else {
+            return dimData.getMonsterSlotList().get(selectionState.getSlot()).getSprites().get(selectionState.getSpriteIndex());
+        }
+    }
+
+    private void setSprite(SelectionState selectionState, SpriteData.Sprite sprite) {
+        if(selectionState.getSelectionType() == CurrentSelectionType.LOGO) {
+            dimData.setLogoSprite(sprite);
+        } else if(selectionState.getSelectionType() == CurrentSelectionType.EGG) {
+            dimData.getEggSprites().set(selectionState.getSpriteIndex(), sprite);
+        } else {
+            dimData.getMonsterSlotList().get(selectionState.getSlot()).getSprites().set(selectionState.getSpriteIndex(), sprite);
+        }
     }
 
     private Node getChangeBackgroundButton(SelectionState selectionState) {
@@ -429,9 +435,10 @@ public class StatsInfoView implements InfoView {
             if(file != null) {
                 try {
                     lastUsedDirectory = file.getParentFile();
-                    spriteSlotParser.loadReplacementSprite(file, 1);
+                    SpriteData.Sprite sprite = spriteImageTranslator.loadSprite(file);
+                    dimData.setBackGroundSprite(sprite);
                     BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
-                    this.background = new BackgroundImage(spriteSlotParser.loadImageFromSpriteIndex(BACKGROUND_INDEX), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
+                    this.background = new BackgroundImage(spriteImageTranslator.loadImageFromSprite(sprite), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
                     stateChanger.accept(selectionState);
                 } catch (IOException e) {
                     log.error("Couldn't load image file!", e);
@@ -464,30 +471,67 @@ public class StatsInfoView implements InfoView {
             return new Label("EGG");
         } else {
             SpriteData.Sprite nameSprite = dimData.getMonsterSlotList().get(slot).getSprites().get(0);
-            Image image = spriteSlotParser.loadImageFromSprite(nameSprite);
+            Image image = spriteImageTranslator.loadImageFromSprite(nameSprite);
             ImageView imageView = new ImageView(image);
-            imageView.addEventHandler(MouseEvent.MOUSE_CLICKED, mouse -> {
-                FileChooser fileChooser = new FileChooser();
-                fileChooser.setTitle("Select name sprite replacement. Should be have height of " + nameSprite.getHeight());
-                if(lastUsedDirectory != null) {
-                    fileChooser.setInitialDirectory(lastUsedDirectory);
-                }
-                File file = fileChooser.showOpenDialog(stage);
-                if(file != null) {
-                    try {
-                        lastUsedDirectory = file.getParentFile();
-                        SpriteData.Sprite replacementSprite = spriteSlotParser.loadSprite(file);
-                        dimData.getMonsterSlotList().get(slot).getSprites().set(0, replacementSprite);
-                        stateChanger.accept(selectionState);
-                    } catch (IOException e) {
-                        log.error("Couldn't load image file!", e);
-                    }
-                }
-            });
             StackPane stackPane = new StackPane(imageView);
             stackPane.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
             return stackPane;
         }
+    }
+
+    private Node setupReplaceNameSpriteButton(SelectionState selectionState) {
+        Button button = new Button();
+        button.setText("Replace Name");
+        CurrentSelectionType selectionType = selectionState.getSelectionType();
+        if(selectionType != CurrentSelectionType.SLOT) {
+            button.setDisable(true);
+        }
+        int slot = selectionState.getSlot();
+        button.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Select name sprite replacement. Should be have height of 15.");
+            if(lastUsedDirectory != null) {
+                fileChooser.setInitialDirectory(lastUsedDirectory);
+            }
+            File file = fileChooser.showOpenDialog(stage);
+            if(file != null) {
+                try {
+                    lastUsedDirectory = file.getParentFile();
+                    SpriteData.Sprite replacementSprite = spriteImageTranslator.loadSprite(file);
+                    dimData.getMonsterSlotList().get(slot).getSprites().set(0, replacementSprite);
+                    stateChanger.accept(selectionState);
+                } catch (IOException ioe) {
+                    log.error("Couldn't load image file!", ioe);
+                }
+            }
+        });
+        return button;
+    }
+
+    private Node setupAddSlotButton(SelectionState selectionState) {
+        Button button = new Button();
+        button.setText("Add Monster");
+        CurrentSelectionType selectionType = selectionState.getSelectionType();
+        if(selectionType != CurrentSelectionType.SLOT) {
+            button.setDisable(true);
+        }
+        button.setOnAction(e -> {
+            dimData.addEntry();
+        });
+        return button;
+    }
+
+    private Node setupDeleteSlotButton(SelectionState selectionState) {
+        Button button = new Button();
+        button.setText("Delete Monster");
+        CurrentSelectionType selectionType = selectionState.getSelectionType();
+        if(selectionType != CurrentSelectionType.SLOT) {
+            button.setDisable(true);
+        }
+        button.setOnAction(e -> {
+            dimData.deleteEntry(dimData.getMonsterSlotList().get(selectionState.getSlot()).getId());
+        });
+        return button;
     }
 
     private Node setupPrevButton(SelectionState selectionState) {

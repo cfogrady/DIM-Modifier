@@ -38,19 +38,19 @@ public class LoadedScene {
     private final FusionInfoView fusionInfoView;
     private final StatsInfoView statsInfoView;
     private final EvolutionInfoView evolutionInfoView;
-    private final AdventureInfoView adventureInfoView;
-    private final SpriteSlotParser spriteSlotParser;
+    private final BattleInfoView battleInfoView;
+    private final SpriteImageTranslator spriteImageTranslator;
     private InfoView currentView;
 
     public LoadedScene(DimContent dimContent, DimData dimData, Stage stage) {
         this.dimContent = dimContent;
         this.dimData = dimData;
         this.stage = stage;
-        this.spriteSlotParser = new SpriteSlotParser(dimContent);
-        this.fusionInfoView = new FusionInfoView(dimContent.getDimFusions().getFusionBlocks(), dimContent.getDimSpecificFusion().getDimSpecificFusionBlocks(), spriteSlotParser);
-        this.statsInfoView = new StatsInfoView(dimData, spriteSlotParser, stage, selectionState -> setupScene(selectionState));
-        this.evolutionInfoView = new EvolutionInfoView(dimContent.getDimEvolutionRequirements().getEvolutionRequirementBlocks(), spriteSlotParser);
-        this.adventureInfoView = new AdventureInfoView(dimContent.getDimAdventures().getAdventureBlocks(), spriteSlotParser);
+        this.spriteImageTranslator = new SpriteImageTranslator();
+        this.fusionInfoView = new FusionInfoView(dimData, spriteImageTranslator);
+        this.statsInfoView = new StatsInfoView(dimData, spriteImageTranslator, stage, selectionState -> setupScene(selectionState));
+        this.evolutionInfoView = new EvolutionInfoView(dimData, spriteImageTranslator);
+        this.battleInfoView = new BattleInfoView(dimData, spriteImageTranslator);
         this.dimDataFactory = new DimDataFactory();
         this.dimContentFactory = new DimContentFactory();
         this.currentView = statsInfoView;
@@ -138,11 +138,11 @@ public class LoadedScene {
     private Button setupAdventurefdViewButton(SelectionState selectionState) {
         Button button = new Button();
         button.setText("Adventures");
-        if(currentView == adventureInfoView) {
+        if(currentView == battleInfoView) {
             button.setDisable(true);
         }
         button.setOnAction(event -> {
-            this.currentView = adventureInfoView;
+            this.currentView = battleInfoView;
             setupScene(selectionState);
         });
         return button;

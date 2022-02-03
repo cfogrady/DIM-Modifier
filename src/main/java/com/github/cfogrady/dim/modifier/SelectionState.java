@@ -7,9 +7,10 @@ import lombok.Data;
 @Builder(toBuilder = true)
 @Data
 public class SelectionState {
-    private final InfoView currentView;
-    private final CurrentSelectionType selectionType;
-    private final int slot;
-    private final int spriteIndex;
-    private final BackgroundType backgroundType;
+    private InfoView currentView;
+    private CurrentSelectionType selectionType;
+    private int slot;
+    private int spriteIndex;
+    private BackgroundType backgroundType;
+    private boolean safetyModeOn;
 }

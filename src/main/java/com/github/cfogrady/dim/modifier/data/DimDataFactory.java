@@ -20,7 +20,7 @@ public class DimDataFactory {
         List<List<EvolutionEntry>> evolutionsBySlot = getEvolutionsForSlots(content, idBySlot);
         List<Fusions> fusionsBySlot = getFusionsForSlots(content, idBySlot);
         int slotIndex = 0;
-        Map<UUID, MonsterSlot> monsterById = new HashMap<>(numberOfSlots);
+        Map<UUID, Integer> monsterSlotIndexById = new HashMap<>(numberOfSlots);
         for(DimStats.DimStatBlock statsBlock : content.getDimStats().getStatBlocks()) {
             int hoursUntilEvolution = evolutionsBySlot.get(slotIndex).get(0).getEvolutionRequirementBlock().getHoursUntilEvolution();
             MonsterSlot monsterSlot = MonsterSlot.builder()
@@ -31,14 +31,17 @@ public class DimDataFactory {
                     .evolutionEntries(evolutionsBySlot.get(slotIndex))
                     .fusions(fusionsBySlot.get(slotIndex))
                     .build();
-            monsterById.put(monsterSlot.getId(), monsterSlot);
+            monsterSlotIndexById.put(monsterSlot.getId(), slotIndex);
             monsterSlotList.add(monsterSlot);
             slotIndex++;
         }
         return DimData.builder().monsterSlotList(monsterSlotList)
                 .adventureEntries(getAdventures(content, idBySlot))
                 .specificFusions(getSpecificFusions(content, idBySlot))
-                .monsterSlotsById(monsterById)
+                .monsterSlotIndexById(monsterSlotIndexById)
+                .logoSprite(content.getSpriteData().getSprites().get(0))
+                .backGroundSprite(content.getSpriteData().getSprites().get(1))
+                .eggSprites(content.getSpriteData().getSprites().subList(2, 10))
                 .build();
     }
 

@@ -1,11 +1,12 @@
 package com.github.cfogrady.dim.modifier.view;
 
-import com.github.cfogrady.dim.modifier.CurrentSelectionType;
 import com.github.cfogrady.dim.modifier.LoadedScene;
 import com.github.cfogrady.dim.modifier.SelectionState;
-import com.github.cfogrady.dim.modifier.SpriteSlotParser;
-import com.github.cfogrady.vb.dim.reader.content.DimFusions;
-import com.github.cfogrady.vb.dim.reader.content.DimSpecificFusions;
+import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
+import com.github.cfogrady.dim.modifier.data.DimData;
+import com.github.cfogrady.dim.modifier.data.Fusions;
+import com.github.cfogrady.dim.modifier.data.MonsterSlot;
+import com.github.cfogrady.dim.modifier.data.SpecificFusion;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
@@ -16,27 +17,30 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import lombok.RequiredArgsConstructor;
 
-import java.util.List;
-
 @RequiredArgsConstructor
 public class FusionInfoView implements InfoView {
-    private final List<DimFusions.DimFusionBlock> dimFusionBlockList;
-    private final List<DimSpecificFusions.DimSpecificFusionBlock> dimSpecificFusionBlockList;
-    private final SpriteSlotParser spriteSlotParser;
+    private final DimData dimData;
+    private final SpriteImageTranslator spriteImageTranslator;
 
     @Override
     public Node setupView(SelectionState selectionState) {
         GridPane gridPane = new GridPane();
         gridPane.setGridLinesVisible(true);
-        for(int i = 0; i < dimFusionBlockList.size(); i++) {
-            addRow(gridPane, i);
+        int monsterIndex = 0;
+        for(MonsterSlot monsterSlot : dimData.getMonsterSlotList()) {
+            if(monsterSlot.getFusions() != null) {
+                addRow(gridPane, monsterIndex, monsterSlot);
+                monsterIndex++;
+            }
         }
         VBox vBox = new VBox(gridPane);
-        if(dimSpecificFusionBlockList.size() > 0) {
+        if(dimData.getSpecificFusions().size() > 0) {
             GridPane specificFusionGridPane = new GridPane();
             specificFusionGridPane.setGridLinesVisible(true);
-            for(int i = 0; i < dimSpecificFusionBlockList.size(); i++) {
-                addSpecificFusionRow(specificFusionGridPane, i);
+            int rowIndex = 0;
+            for(SpecificFusion specificFusion : dimData.getSpecificFusions()) {
+                addSpecificFusionRow(specificFusionGridPane, rowIndex, specificFusion);
+                rowIndex++;
             }
             vBox.getChildren().add(new Label("Specific Fusions"));
             vBox.getChildren().add(specificFusionGridPane);
@@ -50,10 +54,10 @@ public class FusionInfoView implements InfoView {
         return 1300;
     }
 
-    private void addRow(GridPane gridPane, int rowIndex) {
-        DimFusions.DimFusionBlock fusionEntry = dimFusionBlockList.get(rowIndex);
-        gridPane.add(getSlotLabel(fusionEntry), 0, rowIndex);
-        gridPane.add(getFromEvolutionSprite(fusionEntry), 1, rowIndex);
+    private void addRow(GridPane gridPane, int rowIndex, MonsterSlot monsterSlot) {
+        Fusions fusionEntry = monsterSlot.getFusions();
+        gridPane.add(getSlotLabel(monsterSlot), 0, rowIndex);
+        gridPane.add(getFromEvolutionSprite(monsterSlot), 1, rowIndex);
         gridPane.add(getType1FusionResultLabel(fusionEntry), 2, rowIndex);
         gridPane.add(getType1FusionResultSprite(fusionEntry), 3, rowIndex);
         gridPane.add(getType2FusionResultLabel(fusionEntry), 4, rowIndex);
@@ -64,144 +68,143 @@ public class FusionInfoView implements InfoView {
         gridPane.add(getType4FusionResultSprite(fusionEntry), 9, rowIndex);
     }
 
-    private void addSpecificFusionRow(GridPane gridPane, int rowIndex) {
-        DimSpecificFusions.DimSpecificFusionBlock specificFusionEntry = dimSpecificFusionBlockList.get(rowIndex);
-        gridPane.add(getSpecificFusionSlotLabel(specificFusionEntry), 0, rowIndex);
-        gridPane.add(getSpecificFusionSlotSprite(specificFusionEntry), 1, rowIndex);
-        gridPane.add(getSpecificFusionPartnerDimLabel(specificFusionEntry), 2, rowIndex);
-        gridPane.add(getSpecificFusionPartnerSlotLabel(specificFusionEntry), 3, rowIndex);
-        gridPane.add(getSpecificFusionResultLabel(specificFusionEntry), 4, rowIndex);
-        gridPane.add(getSpecificFusionResultSprite(specificFusionEntry), 5, rowIndex);
+    private void addSpecificFusionRow(GridPane gridPane, int rowIndex, SpecificFusion specificFusion) {
+        gridPane.add(getSpecificFusionSlotLabel(specificFusion), 0, rowIndex);
+        gridPane.add(getSpecificFusionSlotSprite(specificFusion), 1, rowIndex);
+        gridPane.add(getSpecificFusionPartnerDimLabel(specificFusion), 2, rowIndex);
+        gridPane.add(getSpecificFusionPartnerSlotLabel(specificFusion), 3, rowIndex);
+        gridPane.add(getSpecificFusionResultLabel(specificFusion), 4, rowIndex);
+        gridPane.add(getSpecificFusionResultSprite(specificFusion), 5, rowIndex);
     }
 
-    private Node getSlotLabel(DimFusions.DimFusionBlock fusionEntry) {
-        Label label = new Label("Evolve From Slot: " + fusionEntry.getStatsIndex());
+    private Node getSlotLabel(MonsterSlot monsterSlot) {
+        Label label = new Label("Evolve From Slot: " + dimData.getMonsterSlotIndexForId(monsterSlot.getId()));
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node getFromEvolutionSprite(DimFusions.DimFusionBlock fusionEntry) {
-        ImageView imageView = new ImageView(spriteSlotParser.getImageForSlotAndIndex(CurrentSelectionType.SLOT, fusionEntry.getStatsIndex(), 1));
+    private Node getFromEvolutionSprite(MonsterSlot monsterSlot) {
+        ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(monsterSlot.getSprites().get(1)));
         GridPane.setMargin(imageView, new Insets(10));
         return imageView;
     }
 
-    private Node getType1FusionResultLabel(DimFusions.DimFusionBlock fusionEntry) {
+    private Node getType1FusionResultLabel(Fusions fusionEntry) {
         String labelText;
-        if(fusionEntry.getStatsIndexForFusionWithType1() == LoadedScene.NONE_VALUE) {
+        if(fusionEntry.getType1FusionResult() == null) {
             labelText = LoadedScene.NONE_LABEL;
         } else {
-            labelText = Integer.toString(fusionEntry.getStatsIndexForFusionWithType1());
+            labelText = Integer.toString(dimData.getMonsterSlotIndexForId(fusionEntry.getType1FusionResult()));
         }
         Label label = new Label("Type 1 Fusion Result: " + labelText);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node getType1FusionResultSprite(DimFusions.DimFusionBlock fusionEntry) {
-        if(fusionEntry.getStatsIndexForFusionWithType1() == LoadedScene.NONE_VALUE) {
+    private Node getType1FusionResultSprite(Fusions fusionEntry) {
+        if(fusionEntry.getType1FusionResult() == null) {
             return new Pane();
         }
-        ImageView imageView = new ImageView(spriteSlotParser.getImageForSlotAndIndex(CurrentSelectionType.SLOT, fusionEntry.getStatsIndexForFusionWithType1(), 1));
+        ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(dimData.getMosnterSprite(fusionEntry.getType1FusionResult(), 1)));
         GridPane.setMargin(imageView, new Insets(10));
         return imageView;
     }
 
-    private Node getType2FusionResultLabel(DimFusions.DimFusionBlock fusionEntry) {
+    private Node getType2FusionResultLabel(Fusions fusionEntry) {
         String labelText;
-        if(fusionEntry.getStatsIndexForFusionWithType2() == LoadedScene.NONE_VALUE) {
+        if(fusionEntry.getType2FusionResult() == null) {
             labelText = LoadedScene.NONE_LABEL;
         } else {
-            labelText = Integer.toString(fusionEntry.getStatsIndexForFusionWithType2());
+            labelText = Integer.toString(dimData.getMonsterSlotIndexForId(fusionEntry.getType2FusionResult()));
         }
         Label label = new Label("Type 2 Fusion Result: " + labelText);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node getType2FusionResultSprite(DimFusions.DimFusionBlock fusionEntry) {
-        if(fusionEntry.getStatsIndexForFusionWithType2() == LoadedScene.NONE_VALUE) {
+    private Node getType2FusionResultSprite(Fusions fusionEntry) {
+        if(fusionEntry.getType2FusionResult() == null) {
             return new Pane();
         }
-        ImageView imageView = new ImageView(spriteSlotParser.getImageForSlotAndIndex(CurrentSelectionType.SLOT, fusionEntry.getStatsIndexForFusionWithType2(), 1));
+        ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(dimData.getMosnterSprite(fusionEntry.getType2FusionResult(), 1)));
         GridPane.setMargin(imageView, new Insets(10));
         return imageView;
     }
 
-    private Node getType3FusionResultLabel(DimFusions.DimFusionBlock fusionEntry) {
+    private Node getType3FusionResultLabel(Fusions fusionEntry) {
         String labelText;
-        if(fusionEntry.getStatsIndexForFusionWithType3() == LoadedScene.NONE_VALUE) {
+        if(fusionEntry.getType3FusionResult() == null) {
             labelText = LoadedScene.NONE_LABEL;
         } else {
-            labelText = Integer.toString(fusionEntry.getStatsIndexForFusionWithType3());
+            labelText = Integer.toString(dimData.getMonsterSlotIndexForId(fusionEntry.getType3FusionResult()));
         }
         Label label = new Label("Type 3 Fusion Result: " + labelText);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node getType3FusionResultSprite(DimFusions.DimFusionBlock fusionEntry) {
-        if(fusionEntry.getStatsIndexForFusionWithType3() == LoadedScene.NONE_VALUE) {
+    private Node getType3FusionResultSprite(Fusions fusionEntry) {
+        if(fusionEntry.getType3FusionResult() == null) {
             return new Pane();
         }
-        ImageView imageView = new ImageView(spriteSlotParser.getImageForSlotAndIndex(CurrentSelectionType.SLOT, fusionEntry.getStatsIndexForFusionWithType3(), 1));
+        ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(dimData.getMosnterSprite(fusionEntry.getType3FusionResult(), 1)));
         GridPane.setMargin(imageView, new Insets(10));
         return imageView;
     }
 
-    private Node getType4FusionResultLabel(DimFusions.DimFusionBlock fusionEntry) {
+    private Node getType4FusionResultLabel(Fusions fusionEntry) {
         String labelText;
-        if(fusionEntry.getStatsIndexForFusionWithType4() == LoadedScene.NONE_VALUE) {
+        if(fusionEntry.getType4FusionResult() == null) {
             labelText = LoadedScene.NONE_LABEL;
         } else {
-            labelText = Integer.toString(fusionEntry.getStatsIndexForFusionWithType4());
+            labelText = Integer.toString(dimData.getMonsterSlotIndexForId(fusionEntry.getType4FusionResult()));
         }
         Label label = new Label("Type 4 Fusion Result: " + labelText);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node getType4FusionResultSprite(DimFusions.DimFusionBlock fusionEntry) {
-        if(fusionEntry.getStatsIndexForFusionWithType4() == LoadedScene.NONE_VALUE) {
+    private Node getType4FusionResultSprite(Fusions fusionEntry) {
+        if(fusionEntry.getType4FusionResult() == null) {
             return new Pane();
         }
-        ImageView imageView = new ImageView(spriteSlotParser.getImageForSlotAndIndex(CurrentSelectionType.SLOT, fusionEntry.getStatsIndexForFusionWithType4(), 1));
+        ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(dimData.getMosnterSprite(fusionEntry.getType4FusionResult(), 1)));
         GridPane.setMargin(imageView, new Insets(10));
         return imageView;
     }
 
-    private Node getSpecificFusionSlotLabel(DimSpecificFusions.DimSpecificFusionBlock specificFusionEntry) {
-        Label label = new Label("Evolve From Slot: " + specificFusionEntry.getStatsIndex());
+    private Node getSpecificFusionSlotLabel(SpecificFusion specificFusionEntry) {
+        Label label = new Label("Evolve From Slot: " + dimData.getMonsterSlotIndexForId(specificFusionEntry.getLocalMonsterId()));
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node getSpecificFusionSlotSprite(DimSpecificFusions.DimSpecificFusionBlock specificFusionEntry) {
-        ImageView imageView = new ImageView(spriteSlotParser.getImageForSlotAndIndex(CurrentSelectionType.SLOT, specificFusionEntry.getStatsIndex(), 1));
+    private Node getSpecificFusionSlotSprite(SpecificFusion specificFusionEntry) {
+        ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(dimData.getMosnterSprite(specificFusionEntry.getLocalMonsterId(), 1)));
         GridPane.setMargin(imageView, new Insets(10));
         return imageView;
     }
 
-    private Node getSpecificFusionPartnerDimLabel(DimSpecificFusions.DimSpecificFusionBlock specificFusionEntry) {
-        Label label = new Label("Fusion Partner DIM Id: " + specificFusionEntry.getFusionDimId());
+    private Node getSpecificFusionPartnerDimLabel(SpecificFusion specificFusionEntry) {
+        Label label = new Label("Fusion Partner DIM Id: " + specificFusionEntry.getPartnerDimId());
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node getSpecificFusionPartnerSlotLabel(DimSpecificFusions.DimSpecificFusionBlock specificFusionEntry) {
-        Label label = new Label("Fusion Partner Slot Id: " + specificFusionEntry.getFusionDimSlotId());
+    private Node getSpecificFusionPartnerSlotLabel(SpecificFusion specificFusionEntry) {
+        Label label = new Label("Fusion Partner Slot Id: " + specificFusionEntry.getPartnerDimSlotId());
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node getSpecificFusionResultLabel(DimSpecificFusions.DimSpecificFusionBlock specificFusionEntry) {
-        Label label = new Label("Fusion Result Slot Id: " + specificFusionEntry.getStatsIndexForFusionResult());
+    private Node getSpecificFusionResultLabel(SpecificFusion specificFusionEntry) {
+        Label label = new Label("Fusion Result Slot Id: " + dimData.getMonsterSlotIndexForId(specificFusionEntry.getEvolveToMonsterId()));
         GridPane.setMargin(label, new Insets(10));
         return label;
     }
 
-    private Node getSpecificFusionResultSprite(DimSpecificFusions.DimSpecificFusionBlock specificFusionEntry) {
-        ImageView imageView = new ImageView(spriteSlotParser.getImageForSlotAndIndex(CurrentSelectionType.SLOT, specificFusionEntry.getStatsIndexForFusionResult(), 1));
+    private Node getSpecificFusionResultSprite(SpecificFusion specificFusionEntry) {
+        ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(dimData.getMosnterSprite(specificFusionEntry.getEvolveToMonsterId(), 1)));
         GridPane.setMargin(imageView, new Insets(10));
         return imageView;
     }
