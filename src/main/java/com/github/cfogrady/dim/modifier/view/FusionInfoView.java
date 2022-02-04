@@ -1,5 +1,6 @@
 package com.github.cfogrady.dim.modifier.view;
 
+import com.github.cfogrady.dim.modifier.CurrentSelectionType;
 import com.github.cfogrady.dim.modifier.LoadedScene;
 import com.github.cfogrady.dim.modifier.SelectionState;
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
@@ -9,6 +10,7 @@ import com.github.cfogrady.dim.modifier.data.MonsterSlot;
 import com.github.cfogrady.dim.modifier.data.SpecificFusion;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
@@ -17,23 +19,29 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import lombok.RequiredArgsConstructor;
 
+import java.util.function.Consumer;
+
 @RequiredArgsConstructor
 public class FusionInfoView implements InfoView {
     private final DimData dimData;
     private final SpriteImageTranslator spriteImageTranslator;
+    private final Consumer<SelectionState> stateChanger;
 
     @Override
     public Node setupView(SelectionState selectionState) {
-        GridPane gridPane = new GridPane();
-        gridPane.setGridLinesVisible(true);
-        int monsterIndex = 0;
-        for(MonsterSlot monsterSlot : dimData.getMonsterSlotList()) {
-            if(monsterSlot.getFusions() != null) {
-                addRow(gridPane, monsterIndex, monsterSlot);
-                monsterIndex++;
+        VBox vBox = new VBox();
+        if(selectionState.getSelectionType() == CurrentSelectionType.SLOT) {
+            MonsterSlot monsterSlot = dimData.getMonsterSlotList().get(selectionState.getSlot());
+            if(monsterSlot.getFusions() == null) {
+                vBox.getChildren().add(createAddFusionButton(selectionState, monsterSlot));
+            } else {
+                vBox.getChildren().add(new Label("Fusions:"));
+                GridPane gridPane = new GridPane();
+                gridPane.setGridLinesVisible(true);
+                addRow(gridPane, 0, selectionState, monsterSlot);
+                vBox.getChildren().add(gridPane);
             }
         }
-        VBox vBox = new VBox(gridPane);
         if(dimData.getSpecificFusions().size() > 0) {
             GridPane specificFusionGridPane = new GridPane();
             specificFusionGridPane.setGridLinesVisible(true);
@@ -42,7 +50,7 @@ public class FusionInfoView implements InfoView {
                 addSpecificFusionRow(specificFusionGridPane, rowIndex, specificFusion);
                 rowIndex++;
             }
-            vBox.getChildren().add(new Label("Specific Fusions"));
+            vBox.getChildren().add(new Label("Specific Fusions:"));
             vBox.getChildren().add(specificFusionGridPane);
         }
         vBox.setSpacing(10);
@@ -54,18 +62,17 @@ public class FusionInfoView implements InfoView {
         return 1300;
     }
 
-    private void addRow(GridPane gridPane, int rowIndex, MonsterSlot monsterSlot) {
+    private void addRow(GridPane gridPane, int rowIndex, SelectionState selectionState, MonsterSlot monsterSlot) {
         Fusions fusionEntry = monsterSlot.getFusions();
-        gridPane.add(getSlotLabel(monsterSlot), 0, rowIndex);
-        gridPane.add(getFromEvolutionSprite(monsterSlot), 1, rowIndex);
-        gridPane.add(getType1FusionResultLabel(fusionEntry), 2, rowIndex);
-        gridPane.add(getType1FusionResultSprite(fusionEntry), 3, rowIndex);
-        gridPane.add(getType2FusionResultLabel(fusionEntry), 4, rowIndex);
-        gridPane.add(getType2FusionResultSprite(fusionEntry), 5, rowIndex);
-        gridPane.add(getType3FusionResultLabel(fusionEntry), 6, rowIndex);
-        gridPane.add(getType3FusionResultSprite(fusionEntry), 7, rowIndex);
-        gridPane.add(getType4FusionResultLabel(fusionEntry), 8, rowIndex);
-        gridPane.add(getType4FusionResultSprite(fusionEntry), 9, rowIndex);
+        gridPane.add(getType1FusionResultLabel(fusionEntry), 0, rowIndex);
+        gridPane.add(getType1FusionResultSprite(fusionEntry), 1, rowIndex);
+        gridPane.add(getType2FusionResultLabel(fusionEntry), 2, rowIndex);
+        gridPane.add(getType2FusionResultSprite(fusionEntry), 3, rowIndex);
+        gridPane.add(getType3FusionResultLabel(fusionEntry), 4, rowIndex);
+        gridPane.add(getType3FusionResultSprite(fusionEntry), 5, rowIndex);
+        gridPane.add(getType4FusionResultLabel(fusionEntry), 6, rowIndex);
+        gridPane.add(getType4FusionResultSprite(fusionEntry), 7, rowIndex);
+        gridPane.add(createDeleteFusionButton(selectionState, monsterSlot), 8, rowIndex);
     }
 
     private void addSpecificFusionRow(GridPane gridPane, int rowIndex, SpecificFusion specificFusion) {
@@ -77,16 +84,23 @@ public class FusionInfoView implements InfoView {
         gridPane.add(getSpecificFusionResultSprite(specificFusion), 5, rowIndex);
     }
 
-    private Node getSlotLabel(MonsterSlot monsterSlot) {
-        Label label = new Label("Evolve From Slot: " + dimData.getMonsterSlotIndexForId(monsterSlot.getId()));
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+    private Node createAddFusionButton(SelectionState selectionState, MonsterSlot monsterSlot) {
+        Button button = new Button("Add Fusions");
+        button.setOnAction(e -> {
+            monsterSlot.setFusions(Fusions.builder().build());
+            stateChanger.accept(selectionState);
+        });
+        return button;
     }
 
-    private Node getFromEvolutionSprite(MonsterSlot monsterSlot) {
-        ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(monsterSlot.getSprites().get(1)));
-        GridPane.setMargin(imageView, new Insets(10));
-        return imageView;
+    private Node createDeleteFusionButton(SelectionState selectionState, MonsterSlot monsterSlot) {
+        Button button = new Button("Delete Fusions");
+        button.setOnAction(e -> {
+            monsterSlot.setFusions(null);
+            stateChanger.accept(selectionState);
+        });
+        GridPane.setMargin(button, new Insets(10));
+        return button;
     }
 
     private Node getType1FusionResultLabel(Fusions fusionEntry) {

@@ -2,6 +2,7 @@ package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.dim.modifier.data.AdventureEntry;
 import com.github.cfogrady.dim.modifier.data.DimData;
+import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
 import com.github.cfogrady.vb.dim.reader.content.DimStats;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
@@ -31,6 +32,10 @@ public class SafetyValidator {
 
     private boolean isMonsterSlotValid(MonsterSlot slot, int slotIndex) {
         int level = slot.getStatBlock().getStage();
+        if(slot.getSprites().size() != DimDataFactory.getSpriteCountForLevel(level)) {
+            log.info("Not enough sprites for slot {}", slotIndex);
+            return false;
+        }
         SpriteData.Sprite nameSprite = slot.getSprites().get(0);
         if(nameSprite.getHeight() != 15 || nameSprite.getWidth() % 80 != 0) {
             log.info("Name sprites must be multiple of 80 by 15");
@@ -46,14 +51,14 @@ public class SafetyValidator {
                 return false;
             }
         }
-        for(int i = 1; i < lastSprite; i++) {
+        for(int i = 1; i < lastSprite-1; i++) {
             if(!areDimensionsForLevelValid(level, slot.getSprites().get(i))) {
                 log.info("Monster sprite dimensions are bad for slot {} with sprite index {}", slotIndex, i);
                 return false;
             }
         }
         DimStats.DimStatBlock stats = slot.getStatBlock();
-        if(stats.getStage() > 2) {
+        if(level > 1) {
             if(stats.getDpStars() > 10) {
                 log.info("Monster {} DP Stars must be 10 or less", slotIndex);
                 return false;
@@ -62,11 +67,11 @@ public class SafetyValidator {
                 log.info("Monster {} DP must be less than 75", slotIndex);
                 return false;
             }
-            if(stats.getAp() > 22) {
+            if(stats.getHp() > 22) {
                 log.info("Monster {} HP must be less than 22", slotIndex);
                 return false;
             }
-            if(stats.getHp() > 9) {
+            if(stats.getAp() > 9) {
                 log.info("Monster {} AP must be less than 9", slotIndex);
                 return false;
             }

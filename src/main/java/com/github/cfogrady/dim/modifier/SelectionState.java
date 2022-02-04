@@ -4,6 +4,8 @@ import com.github.cfogrady.dim.modifier.view.InfoView;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.File;
+
 @Builder(toBuilder = true)
 @Data
 public class SelectionState {
@@ -13,4 +15,5 @@ public class SelectionState {
     private int spriteIndex;
     private BackgroundType backgroundType;
     private boolean safetyModeOn;
+    private File lastFileOpenPath;
 }

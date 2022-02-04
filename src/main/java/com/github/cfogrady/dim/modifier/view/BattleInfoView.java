@@ -41,7 +41,7 @@ public class BattleInfoView implements InfoView {
 
     @Override
     public double getPrefWidth() {
-        return 600;
+        return 700;
     }
 
     private void addRow(GridPane gridPane, int rowIndex) {
@@ -71,8 +71,13 @@ public class BattleInfoView implements InfoView {
     }
 
     private Node getBossSlotLabel(AdventureEntry adventureEntry) {
-        int monsterSlotIndex = dimData.getMonsterSlotIndexForId(adventureEntry.getMonsterId());
-        Label label = new Label("Boss Slot: " + monsterSlotIndex);
+        String monsterSlotLabel;
+        if(adventureEntry.getMonsterId() == null) {
+            monsterSlotLabel = LoadedScene.NONE_LABEL;
+        } else {
+            monsterSlotLabel = Integer.toString(dimData.getMonsterSlotIndexForId(adventureEntry.getMonsterId()));
+        }
+        Label label = new Label("Boss Slot: " + monsterSlotLabel);
         GridPane.setMargin(label, new Insets(10));
         return label;
     }

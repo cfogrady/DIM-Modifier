@@ -84,6 +84,12 @@ tasks.register('buildImageWin', WindowsBuildImageTask).configure{
     })
 }
 
+tasks.withType(JavaExec) {
+    if (System.getProperty('DEBUG', 'false') == 'true') {
+        jvmArgs '-Xdebug', '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005'
+    }
+}
+
 tasks.register('buildImageLinux', LinuxBuildImageTask).configure{
     dependsOn(provider {
         tasks.findByName("jlink")

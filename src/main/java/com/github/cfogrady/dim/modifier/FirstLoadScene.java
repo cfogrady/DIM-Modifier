@@ -37,7 +37,7 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
                     fileInputStream.close();
                     DimData dimData = dimDataFactory.fromDimContent(content);
                     LoadedScene scene = new LoadedScene(content, dimData, stage);
-                    scene.setupScene(SelectionState.builder().backgroundType(BackgroundType.IMAGE).selectionType(CurrentSelectionType.LOGO).build());
+                    scene.setupScene(SelectionState.builder().backgroundType(BackgroundType.IMAGE).selectionType(CurrentSelectionType.LOGO).safetyModeOn(true).build());
                 } catch (FileNotFoundException e) {
                     log.error("Couldn't find selected file.", e);
                 } catch (IOException e) {
