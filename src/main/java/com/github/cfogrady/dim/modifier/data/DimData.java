@@ -7,10 +7,7 @@ import com.github.cfogrady.vb.dim.reader.content.SpriteData;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Data
@@ -30,6 +27,15 @@ public class DimData {
 
     public MonsterSlot getMonsterSlotForId(UUID id) {
         return monsterSlotList.get(getMonsterSlotIndexForId(id));
+    }
+
+    public UUID getFirstMonsterIdForLevel(int level) {
+        for(MonsterSlot monsterSlot : monsterSlotList) {
+            if(monsterSlot.getStatBlock().getStage() == level) {
+                return monsterSlot.getId();
+            }
+        }
+        return null;
     }
 
     public SpriteData.Sprite getMosnterSprite(UUID id, int spriteIndex) {

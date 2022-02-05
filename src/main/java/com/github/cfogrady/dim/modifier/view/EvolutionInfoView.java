@@ -5,6 +5,7 @@ import com.github.cfogrady.dim.modifier.LoadedScene;
 import com.github.cfogrady.dim.modifier.SelectionState;
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
+import com.github.cfogrady.dim.modifier.controls.SlotComboBox;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.EvolutionEntry;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
@@ -14,8 +15,8 @@ import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -29,6 +30,7 @@ import java.util.UUID;
 public class EvolutionInfoView implements InfoView {
     private final DimData dimData;
     private final SpriteImageTranslator spriteImageTranslator;
+    private final Runnable sceneRefresher;
 
     @Override
     public Node setupView(SelectionState selectionState) {
@@ -43,7 +45,7 @@ public class EvolutionInfoView implements InfoView {
             addRow(gridPane, index, monsterSlot, evolutionEntry);
             index++;
         }
-        VBox vBox = new VBox(setupHoursUntilEvolutionLabel(monsterSlot), gridPane);
+        VBox vBox = new VBox(setupHoursUntilEvolutionLabel(monsterSlot), gridPane, getAddEntry(monsterSlot));
         vBox.setSpacing(10);
         return vBox;
     }
@@ -54,13 +56,13 @@ public class EvolutionInfoView implements InfoView {
     }
 
     private void addRow(GridPane gridPane, int rowIndex, MonsterSlot monsterSlot, EvolutionEntry evolutionEntry) {
-        gridPane.add(getEvolveFromImage(monsterSlot), 0, rowIndex);
-        gridPane.add(getVitalValueRequirementLabel(evolutionEntry.getEvolutionRequirementBlock()), 1, rowIndex);
-        gridPane.add(getTrophiesRequirementLabel(evolutionEntry.getEvolutionRequirementBlock()), 2, rowIndex);
-        gridPane.add(getBattlesRequirementLabel(evolutionEntry.getEvolutionRequirementBlock()), 3, rowIndex);
-        gridPane.add(getWinRatioRequirementLabel(evolutionEntry.getEvolutionRequirementBlock()), 4, rowIndex);
-        gridPane.add(getEvolveToSlotLabel(monsterSlot, evolutionEntry), 5, rowIndex);
-        gridPane.add(getEvolveToImage(evolutionEntry.getToMonster()), 6, rowIndex);
+        gridPane.add(getVitalValueRequirementLabel(evolutionEntry), 0, rowIndex);
+        gridPane.add(getTrophiesRequirementLabel(evolutionEntry), 1, rowIndex);
+        gridPane.add(getBattlesRequirementLabel(evolutionEntry), 2, rowIndex);
+        gridPane.add(getWinRatioRequirementLabel(evolutionEntry), 3, rowIndex);
+        gridPane.add(getEvolveToSlotLabel(monsterSlot, evolutionEntry), 4, rowIndex);
+        gridPane.add(getEvolveToImage(evolutionEntry.getToMonster()), 5, rowIndex);
+        gridPane.add(getDeleteEntry(monsterSlot, rowIndex), 6, rowIndex);
     }
 
     private Node setupHoursUntilEvolutionLabel(MonsterSlot monsterSlot) {
@@ -75,56 +77,63 @@ public class EvolutionInfoView implements InfoView {
         return hbox;
     }
 
-    private Node getSlotLabel(int slotIndex) {
-        Label label = new Label("Evolve From Slot: " + slotIndex);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+    private Node getVitalValueRequirementLabel(EvolutionEntry evolutionEntry) {
+        Label label = new Label("Vital Value Requirement:");
+        IntegerTextField textField = new IntegerTextField(evolutionEntry.getEvolutionRequirementBlock().getVitalRequirements(), val -> {
+            evolutionEntry.setEvolutionRequirementBlock(evolutionEntry.getEvolutionRequirementBlock().toBuilder().vitalRequirements(val).build());
+        });
+        textField.setMin(0);
+        VBox vBox = new VBox(label, textField);
+        vBox.setSpacing(10);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
-    private Node getEvolveFromImage(MonsterSlot monsterSlot) {
-        ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(monsterSlot.getSprites().get(1)));
-        GridPane.setMargin(imageView, new Insets(10));
-        return imageView;
+    private Node getTrophiesRequirementLabel(EvolutionEntry evolutionEntry) {
+        Label label = new Label("Trophies Requirement:");
+        IntegerTextField textField = new IntegerTextField(evolutionEntry.getEvolutionRequirementBlock().getTrophyRequirement(), val -> {
+            evolutionEntry.setEvolutionRequirementBlock(evolutionEntry.getEvolutionRequirementBlock().toBuilder().trophyRequirement(val).build());
+        });
+        textField.setMin(0);
+        VBox vBox = new VBox(label, textField);
+        vBox.setSpacing(10);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
-    private Node getVitalValueRequirementLabel(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock) {
-        Label label = new Label("Vital Value Requirement: " + evolutionRequirementBlock.getVitalRequirements());
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+    private Node getBattlesRequirementLabel(EvolutionEntry evolutionEntry) {
+        Label label = new Label("Battles Requirement:");
+        IntegerTextField textField = new IntegerTextField(evolutionEntry.getEvolutionRequirementBlock().getBattleRequirement(), val -> {
+            evolutionEntry.setEvolutionRequirementBlock(evolutionEntry.getEvolutionRequirementBlock().toBuilder().battleRequirement(val).build());
+        });
+        textField.setMin(0);
+        VBox vBox = new VBox(label, textField);
+        vBox.setSpacing(10);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
-    private Node getTrophiesRequirementLabel(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock) {
-        Label label = new Label("Trophies Requirement: " + evolutionRequirementBlock.getTrophyRequirement());
-        GridPane.setMargin(label, new Insets(10));
-        return label;
-    }
-
-    private Node getBattlesRequirementLabel(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock) {
-        Label label = new Label("Battles Requirement: " + evolutionRequirementBlock.getBattleRequirement());
-        GridPane.setMargin(label, new Insets(10));
-        return label;
-    }
-
-    private Node getWinRatioRequirementLabel(DimEvolutionRequirements.DimEvolutionRequirementBlock evolutionRequirementBlock) {
-        Label label = new Label("Win Ratio Requirement: " + evolutionRequirementBlock.getWinRatioRequirement());
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+    private Node getWinRatioRequirementLabel(EvolutionEntry evolutionEntry) {
+        Label label = new Label("Win Ratio Requirement:");
+        IntegerTextField textField = new IntegerTextField(evolutionEntry.getEvolutionRequirementBlock().getWinRatioRequirement(), val -> {
+            evolutionEntry.setEvolutionRequirementBlock(evolutionEntry.getEvolutionRequirementBlock().toBuilder().winRatioRequirement(val).build());
+        });
+        textField.setMin(0);
+        textField.setMax(100);
+        VBox vBox = new VBox(label, textField);
+        vBox.setSpacing(10);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
     private Node getEvolveToSlotLabel(MonsterSlot fromMonster, EvolutionEntry evolutionEntry) {
-        String evolveToSlot;
-        if(evolutionEntry.getToMonster() == null) {
-            if(fromMonster.getHoursUntilEvolution() == LoadedScene.NONE_VALUE) {
-                evolveToSlot = LoadedScene.NONE_LABEL;
-            } else {
-                evolveToSlot = "Fusion";
-            }
-        } else {
-            evolveToSlot = Integer.toString(dimData.getMonsterSlotIndexForId(evolutionEntry.getToMonster()));
-        }
-        Label label = new Label("Evolve To Slot: " + evolveToSlot);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        String noneOptionDisplay = fromMonster.getEvolutionEntries().size() == 1 && fromMonster.getHoursUntilEvolution() != LoadedScene.NONE_VALUE ? "Fusion" : LoadedScene.NONE_LABEL;
+        Label label = new Label("Evolve To Slot:");
+        SlotComboBox slotComboBox = new SlotComboBox(dimData, evolutionEntry.getToMonster(), noneOptionDisplay, sceneRefresher, id -> evolutionEntry.setToMonster(id));
+        VBox vBox = new VBox(label, slotComboBox);
+        vBox.setSpacing(10);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
     private Node getEvolveToImage(UUID toMonster) {
@@ -136,5 +145,25 @@ public class EvolutionInfoView implements InfoView {
         ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(toMonsterSprite));
         GridPane.setMargin(imageView, new Insets(10));
         return imageView;
+    }
+
+    private Node getDeleteEntry(MonsterSlot monsterSlot, int index) {
+        Button button = new Button("Delete Entry");
+        button.setOnAction(e -> {
+            monsterSlot.getEvolutionEntries().remove(index);
+            sceneRefresher.run();
+        });
+        GridPane.setMargin(button, new Insets(10));
+        return button;
+    }
+
+    private Node getAddEntry(MonsterSlot monsterSlot) {
+        Button button = new Button("Add Entry");
+        button.setOnAction(e -> {
+            monsterSlot.getEvolutionEntries().add(EvolutionEntry.builder().evolutionRequirementBlock(DimEvolutionRequirements.DimEvolutionRequirementBlock.builder().build()).toMonster(null).build());
+            sceneRefresher.run();
+        });
+        GridPane.setMargin(button, new Insets(10));
+        return button;
     }
 }

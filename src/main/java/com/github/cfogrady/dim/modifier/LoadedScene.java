@@ -29,13 +29,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
-import java.util.function.Consumer;
 
 @Slf4j
 @RequiredArgsConstructor()
 public class LoadedScene {
     public static final int NONE_VALUE = 65535;
-    public static final int BACKGROUND_INDEX = 1;
     public static final String NONE_LABEL = "None";
 
     private final DimContent dimContent;
@@ -49,32 +47,39 @@ public class LoadedScene {
     private final BattleInfoView battleInfoView;
     private final SpriteImageTranslator spriteImageTranslator;
     private final SafetyValidator safetyValidator;
+    private SelectionState selectionState;
     private InfoView currentView;
 
     public LoadedScene(DimContent dimContent, DimData dimData, Stage stage) {
         this.dimContent = dimContent;
         this.dimData = dimData;
         this.stage = stage;
-        Consumer<SelectionState> stateChanger = this::setupScene;
+        Runnable sceneRefresher = this::setupScene;
         this.spriteImageTranslator = new SpriteImageTranslator();
-        this.fusionInfoView = new FusionInfoView(dimData, spriteImageTranslator, stateChanger);
-        this.statsInfoView = new StatsInfoView(dimData, spriteImageTranslator, stage, stateChanger);
-        this.evolutionInfoView = new EvolutionInfoView(dimData, spriteImageTranslator);
-        this.battleInfoView = new BattleInfoView(dimData, spriteImageTranslator);
+        this.fusionInfoView = new FusionInfoView(dimData, spriteImageTranslator, sceneRefresher);
+        this.statsInfoView = new StatsInfoView(dimData, spriteImageTranslator, stage, sceneRefresher);
+        this.evolutionInfoView = new EvolutionInfoView(dimData, spriteImageTranslator, sceneRefresher);
+        this.battleInfoView = new BattleInfoView(dimData, spriteImageTranslator, sceneRefresher);
+        this.selectionState = SelectionState.builder()
+                .safetyModeOn(true)
+                .currentView(statsInfoView)
+                .backgroundType(BackgroundType.IMAGE)
+                .selectionType(CurrentSelectionType.LOGO)
+                .build();
         this.safetyValidator = new SafetyValidator();
         this.dimDataFactory = new DimDataFactory();
         this.dimContentFactory = new DimContentFactory();
         this.currentView = statsInfoView;
     }
 
-    public void setupScene(SelectionState selectionState) {
+    public void setupScene() {
         if(this.currentView == null) {
             this.currentView = statsInfoView;
         }
         VBox vbox = new VBox();
-        vbox.getChildren().add(setupHeaderButtons(selectionState));
+        vbox.getChildren().add(setupHeaderButtons());
         if(currentView != battleInfoView) {
-            vbox.getChildren().add(setupNameButtons(selectionState));
+            vbox.getChildren().add(setupNameButtons());
         }
         vbox.getChildren().add(this.currentView.setupView(selectionState));
         vbox.setSpacing(10);
@@ -85,14 +90,16 @@ public class LoadedScene {
             log.info("Key pressed: {}", key.getCode().getName());
             if(key.getCode() == KeyCode.A) {
                 if(selectionState.getSpriteIndex() > 0) {
-                    setupScene(selectionState.toBuilder().spriteIndex(selectionState.getSpriteIndex() - 1).build());
+                    selectionState.setSpriteIndex(selectionState.getSpriteIndex()-1);
+                    setupScene();
                 }
             } else if (key.getCode() == KeyCode.D) {
                 if(selectionState.getSpriteIndex() < statsInfoView.getSpriteCountForSelection(selectionState) - 1) {
-                    setupScene(selectionState.toBuilder().spriteIndex(selectionState.getSpriteIndex() + 1).build());
+                    selectionState.setSpriteIndex(selectionState.getSpriteIndex()+1);
+                    setupScene();
                 }
             } else if(key.getCode() == KeyCode.B) {
-                changeBackground(selectionState);
+                changeBackground();
             }
         });
         scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
@@ -102,28 +109,27 @@ public class LoadedScene {
         stage.show();
     }
 
-    private void changeBackground(SelectionState selectionState) {
-        SelectionState.SelectionStateBuilder builder = selectionState.toBuilder();
-        builder.backgroundType(BackgroundType.nextBackground(selectionState.getBackgroundType()));
-        setupScene(builder.build());
+    private void changeBackground() {
+        selectionState.setBackgroundType(BackgroundType.nextBackground(selectionState.getBackgroundType()));
+        setupScene();
     }
 
-    private Node setupHeaderButtons(SelectionState selectionState) {
-        HBox hBox = new HBox(setupOpenButton(), setupSaveButton(selectionState), setupSafetyCheck(selectionState),
-                setupDIMIdLabel(), setupChecksumLabel(), setupStatsViewButton(selectionState), setupEvolutionsViewButton(selectionState),
-                setupFusionButton(selectionState), setupBattlesViewButton(selectionState));
+    private Node setupHeaderButtons() {
+        HBox hBox = new HBox(setupOpenButton(), setupSaveButton(), setupSafetyCheck(),
+                setupDIMIdLabel(), setupChecksumLabel(), setupStatsViewButton(), setupEvolutionsViewButton(),
+                setupFusionButton(), setupBattlesViewButton());
         hBox.setAlignment(Pos.CENTER_LEFT);
         hBox.setSpacing(10);
         return hBox;
     }
 
-    private Node setupNameButtons(SelectionState selectionState) {
-        HBox hBox = new HBox(setupPrevButton(selectionState),
-                setupName(selectionState),
-                setupNextButton(selectionState),
-                setupReplaceNameSpriteButton(selectionState),
-                setupAddSlotButton(selectionState),
-                setupDeleteSlotButton(selectionState));
+    private Node setupNameButtons() {
+        HBox hBox = new HBox(setupPrevButton(),
+                setupName(),
+                setupNextButton(),
+                setupReplaceNameSpriteButton(),
+                setupAddSlotButton(),
+                setupDeleteSlotButton());
         hBox.setAlignment(Pos.CENTER_LEFT);
         hBox.setSpacing(10);
         return hBox;
@@ -137,7 +143,7 @@ public class LoadedScene {
         return new Label("Checksum: " + Integer.toHexString(dimContent.getChecksum()));
     }
 
-    private Button setupEvolutionsViewButton(SelectionState selectionState) {
+    private Button setupEvolutionsViewButton() {
         Button button = new Button();
         button.setText("Evolutions");
         if(currentView == evolutionInfoView) {
@@ -145,7 +151,7 @@ public class LoadedScene {
         }
         button.setOnAction(event -> {
             this.currentView = evolutionInfoView;
-            setupScene(selectionState);
+            setupScene();
         });
         return button;
     }
@@ -154,7 +160,7 @@ public class LoadedScene {
             "official ranges. Using unofficial ranges (especially with sprites) may result in buffer overflows of devices causing freezes or at worst " +
             "bricking the device. Only uncheck this if you know what you are doing or are ok risking damage to your device.";
 
-    private Node setupSafetyCheck(SelectionState selectionState) {
+    private Node setupSafetyCheck() {
         Tooltip tooltip = new Tooltip(SAFETY_CHECK_TOOLTIP);
         tooltip.setWrapText(true);
         tooltip.setPrefWidth(200);
@@ -164,7 +170,7 @@ public class LoadedScene {
         checkBox.setSelected(selectionState.isSafetyModeOn());
         checkBox.setOnAction(e -> {
             selectionState.setSafetyModeOn(!selectionState.isSafetyModeOn());
-            setupScene(selectionState);
+            setupScene();
         });
         checkBox.setTooltip(tooltip);
         HBox hBox = new HBox(label, checkBox);
@@ -173,7 +179,7 @@ public class LoadedScene {
         return hBox;
     }
 
-    private Button setupStatsViewButton(SelectionState selectionState) {
+    private Button setupStatsViewButton() {
         Button button = new Button();
         button.setText("Stats");
         if(currentView == statsInfoView) {
@@ -181,12 +187,12 @@ public class LoadedScene {
         }
         button.setOnAction(event -> {
             this.currentView = statsInfoView;
-            setupScene(selectionState);
+            setupScene();
         });
         return button;
     }
 
-    private Button setupBattlesViewButton(SelectionState selectionState) {
+    private Button setupBattlesViewButton() {
         Button button = new Button();
         button.setText("Battles");
         if(currentView == battleInfoView) {
@@ -194,12 +200,12 @@ public class LoadedScene {
         }
         button.setOnAction(event -> {
             this.currentView = battleInfoView;
-            setupScene(selectionState);
+            setupScene();
         });
         return button;
     }
 
-    private Button setupFusionButton(SelectionState selectionState) {
+    private Button setupFusionButton() {
         Button button = new Button();
         button.setText("Fusions");
         if(currentView == fusionInfoView) {
@@ -207,7 +213,7 @@ public class LoadedScene {
         }
         button.setOnAction(event -> {
             this.currentView = fusionInfoView;
-            setupScene(selectionState);
+            setupScene();
         });
         return button;
     }
@@ -228,12 +234,7 @@ public class LoadedScene {
                     DimData data = dimDataFactory.fromDimContent(content);
                     fileInputStream.close();
                     LoadedScene scene = new LoadedScene(content, data, stage);
-                    scene.setupScene(SelectionState.builder()
-                            .selectionType(CurrentSelectionType.LOGO)
-                            .slot(0)
-                            .spriteIndex(0)
-                            .backgroundType(BackgroundType.IMAGE)
-                            .build());
+                    scene.setupScene();
                 } catch (FileNotFoundException e) {
                     log.error("Couldn't find selected file.", e);
                 } catch (IOException e) {
@@ -245,7 +246,7 @@ public class LoadedScene {
         return button;
     }
 
-    private Button setupSaveButton(SelectionState selectionState) {
+    private Button setupSaveButton() {
         Button button = new Button();
         button.setText("Save");
         if(selectionState.isSafetyModeOn()) {
@@ -273,9 +274,8 @@ public class LoadedScene {
         return button;
     }
 
-    private Node setupName(SelectionState selectionState) {
+    private Node setupName() {
         CurrentSelectionType selectionType = selectionState.getSelectionType();
-        int slot = selectionState.getSlot();
         if(selectionType == CurrentSelectionType.LOGO) {
             Label label = new Label("LOGO");
             label.setPrefWidth(240);
@@ -299,7 +299,7 @@ public class LoadedScene {
         }
     }
 
-    private Node setupReplaceNameSpriteButton(SelectionState selectionState) {
+    private Node setupReplaceNameSpriteButton() {
         Button button = new Button();
         button.setText("Replace Name");
         CurrentSelectionType selectionType = selectionState.getSelectionType();
@@ -319,7 +319,7 @@ public class LoadedScene {
                     selectionState.setLastFileOpenPath(file.getParentFile());
                     SpriteData.Sprite replacementSprite = spriteImageTranslator.loadSprite(file);
                     dimData.getMonsterSlotList().get(slot).getSprites().set(0, replacementSprite);
-                    this.setupScene(selectionState);
+                    this.setupScene();
                 } catch (IOException ioe) {
                     log.error("Couldn't load image file!", ioe);
                 }
@@ -328,7 +328,7 @@ public class LoadedScene {
         return button;
     }
 
-    private Node setupAddSlotButton(SelectionState selectionState) {
+    private Node setupAddSlotButton() {
         Button button = new Button();
         button.setText("Add Monster");
         CurrentSelectionType selectionType = selectionState.getSelectionType();
@@ -337,12 +337,12 @@ public class LoadedScene {
         }
         button.setOnAction(e -> {
             dimData.addEntry(selectionState.getSlot());
-            setupScene(selectionState);
+            setupScene();
         });
         return button;
     }
 
-    private Node setupDeleteSlotButton(SelectionState selectionState) {
+    private Node setupDeleteSlotButton() {
         Button button = new Button();
         button.setText("Delete Monster");
         CurrentSelectionType selectionType = selectionState.getSelectionType();
@@ -351,48 +351,51 @@ public class LoadedScene {
         }
         button.setOnAction(e -> {
             dimData.deleteEntry(dimData.getMonsterSlotList().get(selectionState.getSlot()).getId());
-            setupScene(selectionState.toBuilder().spriteIndex(1).build());
+            selectionState.setSpriteIndex(1);
+            setupScene();
         });
         return button;
     }
 
-    private Node setupPrevButton(SelectionState selectionState) {
+    private Node setupPrevButton() {
         Button button = new Button();
         button.setText("Prev");
         if(selectionState.getSelectionType() == CurrentSelectionType.LOGO) {
             button.setDisable(true);
         }
         button.setOnAction(event -> {
-            SelectionState.SelectionStateBuilder newStateBuilder = selectionState.toBuilder();
             if(selectionState.getSelectionType() == CurrentSelectionType.EGG) {
-                newStateBuilder.selectionType(CurrentSelectionType.LOGO);
+                selectionState.setSelectionType(CurrentSelectionType.LOGO);
             } else if (selectionState.getSlot() == 0) {
-                newStateBuilder.selectionType(CurrentSelectionType.EGG).spriteIndex(0);
+                selectionState.setSelectionType(CurrentSelectionType.EGG);
+                selectionState.setSpriteIndex(0);
             } else {
-                newStateBuilder.slot(selectionState.getSlot() - 1).spriteIndex(1);
+                selectionState.setSlot(selectionState.getSlot() - 1);
+                selectionState.setSpriteIndex(1);
             }
-            setupScene(newStateBuilder.build());
+            setupScene();
         });
         StackPane pane = new StackPane(button);
         return pane;
     }
 
-    private Node setupNextButton(SelectionState selectionState) {
+    private Node setupNextButton() {
         Button button = new Button();
         button.setText("Next");
         if(selectionState.getSelectionType() == CurrentSelectionType.SLOT && selectionState.getSlot() == dimData.getMonsterSlotList().size() - 1) {
             button.setDisable(true);
         }
         button.setOnAction(event -> {
-            SelectionState.SelectionStateBuilder newStateBuilder = selectionState.toBuilder();
             if(selectionState.getSelectionType() == CurrentSelectionType.LOGO) {
-                newStateBuilder.selectionType(CurrentSelectionType.EGG);
+                selectionState.setSelectionType(CurrentSelectionType.EGG);
             } else if (selectionState.getSelectionType() == CurrentSelectionType.EGG) {
-                newStateBuilder.selectionType(CurrentSelectionType.SLOT).spriteIndex(1);
+                selectionState.setSelectionType(CurrentSelectionType.SLOT);
+                selectionState.setSpriteIndex(1);
             } else {
-                newStateBuilder.slot(selectionState.getSlot() + 1).spriteIndex(1);
+                selectionState.setSlot(selectionState.getSlot() + 1);
+                selectionState.setSpriteIndex(1);
             }
-            setupScene(newStateBuilder.build());
+            setupScene();
         });
         StackPane pane = new StackPane(button);
         return pane;

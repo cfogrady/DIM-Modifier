@@ -4,6 +4,7 @@ import com.github.cfogrady.dim.modifier.data.AdventureEntry;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
+import com.github.cfogrady.vb.dim.reader.content.DimEvolutionRequirements;
 import com.github.cfogrady.vb.dim.reader.content.DimStats;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +22,25 @@ public class SafetyValidator {
             return false;
         }
         int slotIndex = 0;
+        int evolutions = 0;
         for(MonsterSlot slot : dimData.getMonsterSlotList()) {
             if(!isMonsterSlotValid(slot, slotIndex)) {
                 return false;
             }
+            evolutions += slot.getEvolutionEntries().size();
             slotIndex++;
+        }
+        if(slotIndex > DimStats.VB_TABLE_SIZE) {
+            log.info("Too many slots! DIM should have 17 or less.");
+            return false;
+        }
+        if(evolutions > DimEvolutionRequirements.VB_TABLE_SIZE) {
+            log.info("Too many evolutions! DIM should have 34 or less.");
+            return false;
+        }
+        if(dimData.getSpecificFusions().size() > 1) {
+            log.info("Too many specific fusions! DIM should have no more than 1");
+            return false;
         }
         return true;
     }

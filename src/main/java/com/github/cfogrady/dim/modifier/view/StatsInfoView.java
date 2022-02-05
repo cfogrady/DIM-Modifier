@@ -8,7 +8,6 @@ import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
 import com.github.cfogrady.dim.modifier.utils.NoneUtils;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
-import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -24,7 +23,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import static com.github.cfogrady.dim.modifier.LoadedScene.*;
 
@@ -35,14 +33,14 @@ public class StatsInfoView implements InfoView {
     private final DimData dimData;
     private final SpriteImageTranslator spriteImageTranslator;
     private final Stage stage;
-    private final Consumer<SelectionState> stateChanger;
+    private final Runnable sceneRefresher;
     private BackgroundImage background;
 
-    public StatsInfoView(DimData dimData, SpriteImageTranslator spriteSlotParser, Stage stage, Consumer<SelectionState> stateChanger) {
+    public StatsInfoView(DimData dimData, SpriteImageTranslator spriteSlotParser, Stage stage, Runnable stateChanger) {
         this.dimData = dimData;
         this.spriteImageTranslator = spriteSlotParser;
         this.stage = stage;
-        this.stateChanger = stateChanger;
+        this.sceneRefresher = stateChanger;
         BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
         Image image = spriteSlotParser.loadImageFromSprite(dimData.getBackGroundSprite());
         this.background = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
@@ -120,7 +118,7 @@ public class StatsInfoView implements InfoView {
         }
         int slot = selectionState.getSlot();
         MonsterSlot monsterSlot = dimData.getMonsterSlotList().get(slot);
-        gridPane.add(setupStageLabel(monsterSlot, selectionState), 0, 0);
+        gridPane.add(setupStageLabel(monsterSlot), 0, 0);
         gridPane.add(setupLockedLabel(monsterSlot), 1, 0);
         gridPane.add(setupAttributeLabel(monsterSlot), 0, 1);
         gridPane.add(setupDispositionLabel(monsterSlot), 1, 1);
@@ -133,7 +131,7 @@ public class StatsInfoView implements InfoView {
         return gridPane;
     }
 
-    private Node setupStageLabel(MonsterSlot monsterSlot, SelectionState selectionState) {
+    private Node setupStageLabel(MonsterSlot monsterSlot) {
         Label label = new Label("Stage: ");
         ComboBox<Integer> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6));
@@ -141,7 +139,7 @@ public class StatsInfoView implements InfoView {
         comboBox.setOnAction(event -> {
             int value = comboBox.getValue() - 1;
             monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().stage(value).build());
-            this.stateChanger.accept(selectionState);
+            this.sceneRefresher.run();
         });
         comboBox.setPrefWidth(20);
         HBox hBox = new HBox(label, comboBox);
@@ -341,7 +339,8 @@ public class StatsInfoView implements InfoView {
                 (selectionState.getSelectionType() == CurrentSelectionType.SLOT && selectionState.getSpriteIndex() < 2)) {
             button.setDisable(true);
         }
-        button.setOnAction(event -> stateChanger.accept(selectionState.toBuilder().spriteIndex(selectionState.getSpriteIndex() - 1).build()));
+        selectionState.setSpriteIndex(selectionState.getSpriteIndex() - 1);
+        button.setOnAction(event -> sceneRefresher.run());
         StackPane pane = new StackPane(button);
         return pane;
     }
@@ -352,7 +351,8 @@ public class StatsInfoView implements InfoView {
         if(selectionState.getSelectionType() == CurrentSelectionType.LOGO || selectionState.getSpriteIndex() == getSpriteCountForSelection(selectionState)-1) {
             button.setDisable(true);
         }
-        button.setOnAction(event -> stateChanger.accept(selectionState.toBuilder().spriteIndex(selectionState.getSpriteIndex() + 1).build()));
+        selectionState.setSpriteIndex(selectionState.getSpriteIndex() + 1);
+        button.setOnAction(event -> sceneRefresher.run());
         StackPane pane = new StackPane(button);
         return pane;
     }
@@ -373,7 +373,7 @@ public class StatsInfoView implements InfoView {
                     selectionState.setLastFileOpenPath(file.getParentFile());
                     SpriteData.Sprite newSprite = spriteImageTranslator.loadSprite(file);
                     setSprite(selectionState, newSprite);
-                    stateChanger.accept(selectionState);
+                    sceneRefresher.run();
                 } catch (IOException e) {
                     log.error("Couldn't load image file!", e);
                 }
@@ -419,7 +419,7 @@ public class StatsInfoView implements InfoView {
                     dimData.setBackGroundSprite(sprite);
                     BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
                     this.background = new BackgroundImage(spriteImageTranslator.loadImageFromSprite(sprite), BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
-                    stateChanger.accept(selectionState);
+                    sceneRefresher.run();
                 } catch (IOException e) {
                     log.error("Couldn't load image file!", e);
                 }

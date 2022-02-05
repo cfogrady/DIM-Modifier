@@ -1,14 +1,16 @@
 package com.github.cfogrady.dim.modifier.view;
 
 import com.github.cfogrady.dim.modifier.CurrentSelectionType;
-import com.github.cfogrady.dim.modifier.LoadedScene;
 import com.github.cfogrady.dim.modifier.SelectionState;
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
+import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
+import com.github.cfogrady.dim.modifier.controls.SlotComboBox;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.Fusions;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
 import com.github.cfogrady.dim.modifier.data.SpecificFusion;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -19,13 +21,13 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import lombok.RequiredArgsConstructor;
 
-import java.util.function.Consumer;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 public class FusionInfoView implements InfoView {
     private final DimData dimData;
     private final SpriteImageTranslator spriteImageTranslator;
-    private final Consumer<SelectionState> stateChanger;
+    private final Runnable sceneRefresher;
 
     @Override
     public Node setupView(SelectionState selectionState) {
@@ -42,6 +44,7 @@ public class FusionInfoView implements InfoView {
                 vBox.getChildren().add(gridPane);
             }
         }
+        vBox.getChildren().add(new Label("Specific Fusions:"));
         if(dimData.getSpecificFusions().size() > 0) {
             GridPane specificFusionGridPane = new GridPane();
             specificFusionGridPane.setGridLinesVisible(true);
@@ -50,21 +53,22 @@ public class FusionInfoView implements InfoView {
                 addSpecificFusionRow(specificFusionGridPane, rowIndex, specificFusion);
                 rowIndex++;
             }
-            vBox.getChildren().add(new Label("Specific Fusions:"));
+
             vBox.getChildren().add(specificFusionGridPane);
         }
+        vBox.getChildren().add(getAddSpecificFusion());
         vBox.setSpacing(10);
         return new ScrollPane(vBox);
     }
 
     @Override
     public double getPrefWidth() {
-        return 1300;
+        return 1050;
     }
 
     private void addRow(GridPane gridPane, int rowIndex, SelectionState selectionState, MonsterSlot monsterSlot) {
         Fusions fusionEntry = monsterSlot.getFusions();
-        gridPane.add(getType1FusionResultLabel(fusionEntry), 0, rowIndex);
+        gridPane.add(getType1FusionResultLabel(fusionEntry, selectionState), 0, rowIndex);
         gridPane.add(getType1FusionResultSprite(fusionEntry), 1, rowIndex);
         gridPane.add(getType2FusionResultLabel(fusionEntry), 2, rowIndex);
         gridPane.add(getType2FusionResultSprite(fusionEntry), 3, rowIndex);
@@ -82,13 +86,14 @@ public class FusionInfoView implements InfoView {
         gridPane.add(getSpecificFusionPartnerSlotLabel(specificFusion), 3, rowIndex);
         gridPane.add(getSpecificFusionResultLabel(specificFusion), 4, rowIndex);
         gridPane.add(getSpecificFusionResultSprite(specificFusion), 5, rowIndex);
+        gridPane.add(getDeleteSpecificFusion(rowIndex), 6, rowIndex);
     }
 
     private Node createAddFusionButton(SelectionState selectionState, MonsterSlot monsterSlot) {
         Button button = new Button("Add Fusions");
         button.setOnAction(e -> {
             monsterSlot.setFusions(Fusions.builder().build());
-            stateChanger.accept(selectionState);
+            sceneRefresher.run();
         });
         return button;
     }
@@ -97,22 +102,20 @@ public class FusionInfoView implements InfoView {
         Button button = new Button("Delete Fusions");
         button.setOnAction(e -> {
             monsterSlot.setFusions(null);
-            stateChanger.accept(selectionState);
+            sceneRefresher.run();
         });
         GridPane.setMargin(button, new Insets(10));
         return button;
     }
 
-    private Node getType1FusionResultLabel(Fusions fusionEntry) {
-        String labelText;
-        if(fusionEntry.getType1FusionResult() == null) {
-            labelText = LoadedScene.NONE_LABEL;
-        } else {
-            labelText = Integer.toString(dimData.getMonsterSlotIndexForId(fusionEntry.getType1FusionResult()));
-        }
-        Label label = new Label("Type 1 Fusion Result: " + labelText);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+    private Node getType1FusionResultLabel(Fusions fusionEntry, SelectionState selectionState) {
+        Label label = new Label("Type 1 Fusion Result:");
+        SlotComboBox slotComboBox = new SlotComboBox(dimData, fusionEntry.getType1FusionResult(), sceneRefresher, uuid -> fusionEntry.setType1FusionResult(uuid));
+        VBox vBox = new VBox(label, slotComboBox);
+        vBox.setSpacing(10);
+        vBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
     private Node getType1FusionResultSprite(Fusions fusionEntry) {
@@ -125,15 +128,13 @@ public class FusionInfoView implements InfoView {
     }
 
     private Node getType2FusionResultLabel(Fusions fusionEntry) {
-        String labelText;
-        if(fusionEntry.getType2FusionResult() == null) {
-            labelText = LoadedScene.NONE_LABEL;
-        } else {
-            labelText = Integer.toString(dimData.getMonsterSlotIndexForId(fusionEntry.getType2FusionResult()));
-        }
-        Label label = new Label("Type 2 Fusion Result: " + labelText);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Type 2 Fusion Result:");
+        SlotComboBox slotComboBox = new SlotComboBox(dimData, fusionEntry.getType2FusionResult(), sceneRefresher, uuid -> fusionEntry.setType2FusionResult(uuid));
+        VBox vBox = new VBox(label, slotComboBox);
+        vBox.setSpacing(10);
+        vBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
     private Node getType2FusionResultSprite(Fusions fusionEntry) {
@@ -146,15 +147,13 @@ public class FusionInfoView implements InfoView {
     }
 
     private Node getType3FusionResultLabel(Fusions fusionEntry) {
-        String labelText;
-        if(fusionEntry.getType3FusionResult() == null) {
-            labelText = LoadedScene.NONE_LABEL;
-        } else {
-            labelText = Integer.toString(dimData.getMonsterSlotIndexForId(fusionEntry.getType3FusionResult()));
-        }
-        Label label = new Label("Type 3 Fusion Result: " + labelText);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Type 3 Fusion Result:");
+        SlotComboBox slotComboBox = new SlotComboBox(dimData, fusionEntry.getType3FusionResult(), sceneRefresher, uuid -> fusionEntry.setType3FusionResult(uuid));
+        VBox vBox = new VBox(label, slotComboBox);
+        vBox.setSpacing(10);
+        vBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
     private Node getType3FusionResultSprite(Fusions fusionEntry) {
@@ -167,15 +166,13 @@ public class FusionInfoView implements InfoView {
     }
 
     private Node getType4FusionResultLabel(Fusions fusionEntry) {
-        String labelText;
-        if(fusionEntry.getType4FusionResult() == null) {
-            labelText = LoadedScene.NONE_LABEL;
-        } else {
-            labelText = Integer.toString(dimData.getMonsterSlotIndexForId(fusionEntry.getType4FusionResult()));
-        }
-        Label label = new Label("Type 4 Fusion Result: " + labelText);
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Type 4 Fusion Result:");
+        SlotComboBox slotComboBox = new SlotComboBox(dimData, fusionEntry.getType4FusionResult(), sceneRefresher, uuid -> fusionEntry.setType4FusionResult(uuid));
+        VBox vBox = new VBox(label, slotComboBox);
+        vBox.setSpacing(10);
+        vBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
     private Node getType4FusionResultSprite(Fusions fusionEntry) {
@@ -188,9 +185,11 @@ public class FusionInfoView implements InfoView {
     }
 
     private Node getSpecificFusionSlotLabel(SpecificFusion specificFusionEntry) {
-        Label label = new Label("Evolve From Slot: " + dimData.getMonsterSlotIndexForId(specificFusionEntry.getLocalMonsterId()));
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Evolve From Slot:");
+        SlotComboBox slotComboBox = new SlotComboBox(dimData, specificFusionEntry.getLocalMonsterId(), false, sceneRefresher, id -> specificFusionEntry.setLocalMonsterId(id));
+        VBox vBox = new VBox(label, slotComboBox);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
     private Node getSpecificFusionSlotSprite(SpecificFusion specificFusionEntry) {
@@ -200,26 +199,54 @@ public class FusionInfoView implements InfoView {
     }
 
     private Node getSpecificFusionPartnerDimLabel(SpecificFusion specificFusionEntry) {
-        Label label = new Label("Fusion Partner DIM Id: " + specificFusionEntry.getPartnerDimId());
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Fusion Partner DIM Id:");
+        IntegerTextField textField = new IntegerTextField(specificFusionEntry.getPartnerDimId(), id -> specificFusionEntry.setPartnerDimId(id));
+        VBox vbox = new VBox(label, textField);
+        vbox.setSpacing(10);
+        GridPane.setMargin(vbox, new Insets(10));
+        return vbox;
     }
 
     private Node getSpecificFusionPartnerSlotLabel(SpecificFusion specificFusionEntry) {
-        Label label = new Label("Fusion Partner Slot Id: " + specificFusionEntry.getPartnerDimSlotId());
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Fusion Partner Slot Id:" + specificFusionEntry.getPartnerDimSlotId());
+        IntegerTextField textField = new IntegerTextField(specificFusionEntry.getPartnerDimSlotId(), id -> specificFusionEntry.setPartnerDimSlotId(id));
+        VBox vbox = new VBox(label, textField);
+        vbox.setSpacing(10);
+        GridPane.setMargin(vbox, new Insets(10));
+        return vbox;
     }
 
     private Node getSpecificFusionResultLabel(SpecificFusion specificFusionEntry) {
-        Label label = new Label("Fusion Result Slot Id: " + dimData.getMonsterSlotIndexForId(specificFusionEntry.getEvolveToMonsterId()));
-        GridPane.setMargin(label, new Insets(10));
-        return label;
+        Label label = new Label("Fusion Result Slot Id:");
+        SlotComboBox slotComboBox = new SlotComboBox(dimData, specificFusionEntry.getEvolveToMonsterId(), false, sceneRefresher, id -> specificFusionEntry.setEvolveToMonsterId(id));
+        VBox vBox = new VBox(label, slotComboBox);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
     }
 
     private Node getSpecificFusionResultSprite(SpecificFusion specificFusionEntry) {
         ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(dimData.getMosnterSprite(specificFusionEntry.getEvolveToMonsterId(), 1)));
         GridPane.setMargin(imageView, new Insets(10));
         return imageView;
+    }
+
+    private Node getDeleteSpecificFusion(int rowIndex) {
+        Button button = new Button("Delete Entry");
+        button.setOnAction(e -> {
+            dimData.getSpecificFusions().remove(rowIndex);
+            sceneRefresher.run();
+        });
+        GridPane.setMargin(button, new Insets(10));
+        return button;
+    }
+
+    private Node getAddSpecificFusion() {
+        Button button = new Button("Add Entry");
+        button.setOnAction(e -> {
+            UUID monsterId = dimData.getFirstMonsterIdForLevel(5);
+            dimData.getSpecificFusions().add(SpecificFusion.builder().localMonsterId(monsterId).evolveToMonsterId(monsterId).build());
+            sceneRefresher.run();
+        });
+        return button;
     }
 }
