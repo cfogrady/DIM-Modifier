@@ -15,7 +15,9 @@ This project relies on the VB-DIM-Reader library found at https://github.com/cfo
 At present, that above project must be build locally and have the `publishToMavenLocal` command run so gradle can access it when building this application.
 
 ### Run
-To run the project execute `./gradlew run` from the project's root directory.
+To run the project execute execute `./gradlew run` from the project's root directory.
+### Debug
+To run the project in debug execute `./gradlew -DDEBUG=true run` and connect with a remote debugger.
 
 ### Build Image
 To build a deployable image run `gradlew.bat buildImageWin` from the project's root directory. Similar commands exist for linux, but haven't been tested yet.

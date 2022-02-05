@@ -1,5 +1,6 @@
 package com.github.cfogrady.dim.modifier;
 
+import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,7 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        FirstLoadScene scene = new FirstLoadScene(primaryStage);
+        FirstLoadScene scene = new FirstLoadScene(primaryStage, new DimDataFactory());
         scene.setupScene();
     }
 }
