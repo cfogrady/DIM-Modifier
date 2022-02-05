@@ -339,8 +339,10 @@ public class StatsInfoView implements InfoView {
                 (selectionState.getSelectionType() == CurrentSelectionType.SLOT && selectionState.getSpriteIndex() < 2)) {
             button.setDisable(true);
         }
-        selectionState.setSpriteIndex(selectionState.getSpriteIndex() - 1);
-        button.setOnAction(event -> sceneRefresher.run());
+        button.setOnAction(event -> {
+            selectionState.setSpriteIndex(selectionState.getSpriteIndex() - 1);
+            sceneRefresher.run();
+        });
         StackPane pane = new StackPane(button);
         return pane;
     }
@@ -351,8 +353,10 @@ public class StatsInfoView implements InfoView {
         if(selectionState.getSelectionType() == CurrentSelectionType.LOGO || selectionState.getSpriteIndex() == getSpriteCountForSelection(selectionState)-1) {
             button.setDisable(true);
         }
-        selectionState.setSpriteIndex(selectionState.getSpriteIndex() + 1);
-        button.setOnAction(event -> sceneRefresher.run());
+        button.setOnAction(event -> {
+            selectionState.setSpriteIndex(selectionState.getSpriteIndex() + 1);
+            sceneRefresher.run();
+        });
         StackPane pane = new StackPane(button);
         return pane;
     }
