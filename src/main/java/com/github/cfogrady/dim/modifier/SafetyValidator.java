@@ -47,6 +47,13 @@ public class SafetyValidator {
 
     private boolean isMonsterSlotValid(MonsterSlot slot, int slotIndex) {
         int level = slot.getStatBlock().getStage();
+        if(slotIndex < 2 && slotIndex != slot.getStatBlock().getStage()) {
+            log.info("First two slots must be stage 1 and 2 respectively.");
+            return false;
+        } else if(slotIndex >= 2 && slot.getStatBlock().getStage() < 2) {
+            log.info("Only first two slots can be stage 1 or 2.");
+            return false;
+        }
         if(slot.getSprites().size() != DimDataFactory.getSpriteCountForLevel(level)) {
             log.info("Not enough sprites for slot {}", slotIndex);
             return false;

@@ -118,10 +118,10 @@ public class StatsInfoView implements InfoView {
         }
         int slot = selectionState.getSlot();
         MonsterSlot monsterSlot = dimData.getMonsterSlotList().get(slot);
-        gridPane.add(setupStageLabel(monsterSlot), 0, 0);
-        gridPane.add(setupLockedLabel(monsterSlot), 1, 0);
-        gridPane.add(setupAttributeLabel(monsterSlot), 0, 1);
-        gridPane.add(setupDispositionLabel(monsterSlot), 1, 1);
+        gridPane.add(setupStageLabel(selectionState, monsterSlot), 0, 0);
+        gridPane.add(setupLockedLabel(selectionState, monsterSlot), 1, 0);
+        gridPane.add(setupAttributeLabel(selectionState, monsterSlot), 0, 1);
+        gridPane.add(setupDispositionLabel(selectionState, monsterSlot), 1, 1);
         gridPane.add(setupSmallAttackLabel(monsterSlot), 0, 2);
         gridPane.add(setupBigAttackLabel(monsterSlot), 1, 2);
         gridPane.add(setupDPStarsLabel(monsterSlot), 0, 3);
@@ -131,11 +131,20 @@ public class StatsInfoView implements InfoView {
         return gridPane;
     }
 
-    private Node setupStageLabel(MonsterSlot monsterSlot) {
+    private Node setupStageLabel(SelectionState selectionState, MonsterSlot monsterSlot) {
         Label label = new Label("Stage: ");
         ComboBox<Integer> comboBox = new ComboBox<>();
-        comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6));
         comboBox.setValue(monsterSlot.getStatBlock().getStage() + 1);
+        if(selectionState.isSafetyModeOn()) {
+            if(selectionState.isOnBabySlot()) {
+                comboBox.setItems(FXCollections.observableArrayList(monsterSlot.getStatBlock().getStage() + 1));
+                comboBox.setDisable(true);
+            } else {
+                comboBox.setItems(FXCollections.observableArrayList(3, 4, 5, 6));
+            }
+        } else {
+            comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6));
+        }
         comboBox.setOnAction(event -> {
             int value = comboBox.getValue() - 1;
             monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().stage(value).build());
@@ -149,11 +158,14 @@ public class StatsInfoView implements InfoView {
         return hBox;
     }
 
-    private Node setupLockedLabel(MonsterSlot monsterSlot) {
+    private Node setupLockedLabel(SelectionState selectionState, MonsterSlot monsterSlot) {
         Label label = new Label("Requires Unlock:");
         ComboBox<Boolean> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(false, true));
         comboBox.setValue(monsterSlot.getStatBlock().isUnlockRequired());
+        if(selectionState.isSafetyModeOn() && selectionState.isOnBabySlot()) {
+            comboBox.setDisable(true);
+        }
         comboBox.setOnAction(event -> {
             boolean value = comboBox.getValue();
             monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().unlockRequired(value).build());
@@ -166,7 +178,7 @@ public class StatsInfoView implements InfoView {
         return hBox;
     }
 
-    private Node setupAttributeLabel(MonsterSlot monsterSlot) {
+    private Node setupAttributeLabel(SelectionState selectionState, MonsterSlot monsterSlot) {
         if(monsterSlot.getStatBlock().getStage() < 2) {
             Label label = new Label("Attribute: " + monsterSlot.getStatBlock().getAttribute());
             GridPane.setMargin(label, new Insets(10));
@@ -176,6 +188,9 @@ public class StatsInfoView implements InfoView {
         ComboBox<Integer> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4));
         comboBox.setValue(monsterSlot.getStatBlock().getAttribute());
+        if(selectionState.isSafetyModeOn() && selectionState.isOnBabySlot()) {
+            comboBox.setDisable(true);
+        }
         comboBox.setOnAction(event -> {
             int value = comboBox.getValue();
             monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().attribute(value).build());
@@ -187,11 +202,14 @@ public class StatsInfoView implements InfoView {
         return hBox;
     }
 
-    private Node setupDispositionLabel(MonsterSlot monsterSlot) {
+    private Node setupDispositionLabel(SelectionState selectionState, MonsterSlot monsterSlot) {
         Label label = new Label("Disposition:");
         ComboBox<Integer> comboBox = new ComboBox<>();
         comboBox.setItems(FXCollections.observableArrayList(0, 1, 2, 3, 4));
         comboBox.setValue(monsterSlot.getStatBlock().getDisposition());
+        if(selectionState.isSafetyModeOn() && selectionState.isOnBabySlot()) {
+            comboBox.setDisable(true);
+        }
         comboBox.setOnAction(event -> {
             int value = comboBox.getValue();
             monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().disposition(value).build());
