@@ -2,6 +2,7 @@ package com.github.cfogrady.dim.modifier.view;
 
 import com.github.cfogrady.dim.modifier.*;
 import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
+import com.github.cfogrady.dim.modifier.controls.StringIntComboBox;
 import com.github.cfogrady.dim.modifier.data.DimContentFactory;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.DimDataFactory;
@@ -9,6 +10,7 @@ import com.github.cfogrady.dim.modifier.data.MonsterSlot;
 import com.github.cfogrady.dim.modifier.utils.NoneUtils;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -23,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import static com.github.cfogrady.dim.modifier.LoadedScene.*;
 
@@ -185,16 +188,12 @@ public class StatsInfoView implements InfoView {
             return label;
         }
         Label label = new Label("Attribute:");
-        ComboBox<Integer> comboBox = new ComboBox<>();
-        comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4));
-        comboBox.setValue(monsterSlot.getStatBlock().getAttribute());
+        StringIntComboBox comboBox = new StringIntComboBox(monsterSlot.getStatBlock().getAttribute(), getAttributes(), value -> {
+            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().attribute(value).build());
+        });
         if(selectionState.isSafetyModeOn() && selectionState.isOnBabySlot()) {
             comboBox.setDisable(true);
         }
-        comboBox.setOnAction(event -> {
-            int value = comboBox.getValue();
-            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().attribute(value).build());
-        });
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
@@ -202,23 +201,38 @@ public class StatsInfoView implements InfoView {
         return hBox;
     }
 
+    private ObservableList<StringIntComboBox.StringIntPair> getAttributes() {
+        StringIntComboBox.StringIntPair virus = new StringIntComboBox.StringIntPair("Virus", 1);
+        StringIntComboBox.StringIntPair data = new StringIntComboBox.StringIntPair("Data", 2);
+        StringIntComboBox.StringIntPair vaccine = new StringIntComboBox.StringIntPair("Vaccine", 3);
+        StringIntComboBox.StringIntPair free = new StringIntComboBox.StringIntPair("Free", 4);
+        return FXCollections.observableArrayList(virus, data, vaccine, free);
+
+    }
+
     private Node setupDispositionLabel(SelectionState selectionState, MonsterSlot monsterSlot) {
         Label label = new Label("Disposition:");
-        ComboBox<Integer> comboBox = new ComboBox<>();
-        comboBox.setItems(FXCollections.observableArrayList(0, 1, 2, 3, 4));
-        comboBox.setValue(monsterSlot.getStatBlock().getDisposition());
+        StringIntComboBox comboBox = new StringIntComboBox(monsterSlot.getStatBlock().getDisposition(), getDispositions(), value -> {
+            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().disposition(value).build());
+        });
         if(selectionState.isSafetyModeOn() && selectionState.isOnBabySlot()) {
             comboBox.setDisable(true);
         }
-        comboBox.setOnAction(event -> {
-            int value = comboBox.getValue();
-            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().disposition(value).build());
-        });
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
         GridPane.setMargin(hBox, new Insets(10));
         return hBox;
+    }
+
+    private ObservableList<StringIntComboBox.StringIntPair> getDispositions() {
+        StringIntComboBox.StringIntPair stoic = new StringIntComboBox.StringIntPair("Stoic", 0);
+        StringIntComboBox.StringIntPair active = new StringIntComboBox.StringIntPair("Active", 1);
+        StringIntComboBox.StringIntPair normal = new StringIntComboBox.StringIntPair("Normal", 2);
+        StringIntComboBox.StringIntPair indoor = new StringIntComboBox.StringIntPair("Indoor", 3);
+        StringIntComboBox.StringIntPair lazy = new StringIntComboBox.StringIntPair("Lazy", 4);
+        return FXCollections.observableArrayList(stoic, active, normal, indoor, lazy);
+
     }
 
     private Node setupSmallAttackLabel(MonsterSlot monsterSlot) {
