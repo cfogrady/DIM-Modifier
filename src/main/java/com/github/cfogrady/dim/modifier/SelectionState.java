@@ -16,4 +16,8 @@ public class SelectionState {
     private BackgroundType backgroundType;
     private boolean safetyModeOn;
     private File lastFileOpenPath;
+
+    public boolean isOnBabySlot() {
+        return selectionType == CurrentSelectionType.SLOT && slot < 2;
+    }
 }
