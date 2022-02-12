@@ -16,6 +16,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.*;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
@@ -98,12 +99,8 @@ public class StatsInfoView implements InfoView {
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(sprite.getWidth() * 2.0);
         imageView.setFitHeight(sprite.getHeight() * 2.0);
-        StackPane backgroundPane = new StackPane(imageView);
-        backgroundPane.setAlignment(Pos.BOTTOM_CENTER);
-        backgroundPane.setBackground(getBackground(selectionState)); //160x320
-        backgroundPane.setMinSize(160.0, 320.0);
-        backgroundPane.setMaxSize(160.0, 320.0);
-        VBox vbox = new VBox(getChangeBackgroundButton(selectionState), backgroundPane);
+
+        VBox vbox = new VBox(getChangeBackgroundButton(selectionState), setupSpriteBackground(selectionState, imageView));
         HBox hBox = new HBox(setupPrevSpriteButton(selectionState), setupReplaceSpriteButton(selectionState), setupNextSpriteButton(selectionState));
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER); //children take up as much space as they can, so we need to either align here, or control width of the parent.
@@ -111,6 +108,48 @@ public class StatsInfoView implements InfoView {
         vbox.setAlignment(Pos.CENTER);
         vbox.setSpacing(10);
         return vbox;
+    }
+
+    private Node setupSpriteBackground(SelectionState selectionState, ImageView spriteImageView) {
+        StackPane backgroundPane = new StackPane(spriteImageView);
+        backgroundPane.setAlignment(Pos.BOTTOM_CENTER);
+        backgroundPane.setBackground(getBackground(selectionState)); //160x320
+        backgroundPane.setMinSize(160.0, 320.0);
+        backgroundPane.setMaxSize(160.0, 320.0);
+        backgroundPane.setOnDragDropped( e-> {
+            if(e.getDragboard().hasFiles()) {
+                List<File> files = e.getDragboard().getFiles();
+                File file = files.get(0);
+                replaceSpriteWithFile(file, selectionState);
+            }
+        });
+        backgroundPane.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
+            }
+        });
+        return backgroundPane;
+    }
+
+    private void replaceSpriteWithFile(File file, SelectionState selectionState) {
+        if(file != null) {
+            try {
+                SpriteData.Sprite newSprite = spriteImageTranslator.loadSprite(file);
+                setSprite(selectionState, newSprite);
+                sceneRefresher.run();
+            } catch (IOException ioe) {
+                log.error("Couldn't load image file!", ioe);
+            }
+        }
     }
 
     private Node setupStatArea(SelectionState selectionState) {
@@ -400,20 +439,12 @@ public class StatsInfoView implements InfoView {
             FileChooser fileChooser = new FileChooser();
             SpriteData.Sprite currentSprite = getSprite(selectionState);
             fileChooser.setTitle("Select sprite replacement. Should be " + currentSprite.getWidth() + " x " + currentSprite.getHeight());
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image format", "*.png", "*.bmp"));
             if(selectionState.getLastFileOpenPath() != null) {
                 fileChooser.setInitialDirectory(selectionState.getLastFileOpenPath());
             }
             File file = fileChooser.showOpenDialog(stage);
-            if(file != null) {
-                try {
-                    selectionState.setLastFileOpenPath(file.getParentFile());
-                    SpriteData.Sprite newSprite = spriteImageTranslator.loadSprite(file);
-                    setSprite(selectionState, newSprite);
-                    sceneRefresher.run();
-                } catch (IOException e) {
-                    log.error("Couldn't load image file!", e);
-                }
-            }
+            replaceSpriteWithFile(file, selectionState);
         });
         return button;
     }
@@ -443,6 +474,7 @@ public class StatsInfoView implements InfoView {
         button.setText("Change Background Image");
         button.setOnAction(event -> {
             FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image format", "*.png", "*.bmp"));
             fileChooser.setTitle("Select background. Recommend 80x160 resolution. May not work with other resolutions");
             if(selectionState.getLastFileOpenPath() != null) {
                 fileChooser.setInitialDirectory(selectionState.getLastFileOpenPath());
