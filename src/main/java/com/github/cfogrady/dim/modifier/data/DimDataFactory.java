@@ -1,5 +1,6 @@
 package com.github.cfogrady.dim.modifier.data;
 
+import com.github.cfogrady.dim.modifier.LoadedScene;
 import com.github.cfogrady.vb.dim.reader.content.*;
 import com.github.cfogrady.vb.dim.reader.reader.DimReader;
 
@@ -8,6 +9,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class DimDataFactory {
+    private static final int NONE_VALUE = LoadedScene.NONE_VALUE;
+
     private static final int BABY_I_SPRITE_COUNT = 6;
     private static final int BABY_II_SPRITE_COUNT = 7;
     private static final int NORMAL_SPRITE_COUNT = 14;
@@ -22,7 +25,8 @@ public class DimDataFactory {
         int slotIndex = 0;
         Map<UUID, Integer> monsterSlotIndexById = new HashMap<>(numberOfSlots);
         for(DimStats.DimStatBlock statsBlock : content.getDimStats().getStatBlocks()) {
-            int hoursUntilEvolution = evolutionsBySlot.get(slotIndex).get(0).getEvolutionRequirementBlock().getHoursUntilEvolution();
+            List<EvolutionEntry> evolutionEntries = evolutionsBySlot.get(slotIndex);
+            int hoursUntilEvolution = evolutionEntries.isEmpty() ? NONE_VALUE : evolutionEntries.get(0).getEvolutionRequirementBlock().getHoursUntilEvolution();
             MonsterSlot monsterSlot = MonsterSlot.builder()
                     .id(idBySlot.get(slotIndex))
                     .statBlock(statsBlock)
