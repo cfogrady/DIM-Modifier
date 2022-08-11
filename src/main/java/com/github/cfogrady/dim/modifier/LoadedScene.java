@@ -116,7 +116,7 @@ public class LoadedScene {
 
     private Node setupHeaderButtons() {
         HBox hBox = new HBox(setupOpenButton(), setupSaveButton(), setupSafetyCheck(),
-                setupDIMIdLabel(), setupChecksumLabel(), setupStatsViewButton(), setupEvolutionsViewButton(),
+                setupDIMIdLabel(), setupDIMRevisionLabel(), setupDIMDateLabel(), setupChecksumLabel(), setupStatsViewButton(), setupEvolutionsViewButton(),
                 setupFusionButton(), setupBattlesViewButton());
         hBox.setAlignment(Pos.CENTER_LEFT);
         hBox.setSpacing(10);
@@ -137,6 +137,17 @@ public class LoadedScene {
 
     private Label setupDIMIdLabel() {
         return new Label("DIM ID: " + dimContent.getDimHeader().getDimId());
+    }
+
+    private Label setupDIMRevisionLabel() {
+        return new Label("Revision: " + dimContent.getDimHeader().getRevisionNumber());
+    }
+
+    private Label setupDIMDateLabel() {
+        return new Label("Factory Date: " +
+                dimContent.getDimHeader().getProductionYear() + "/" +
+                dimContent.getDimHeader().getProductionMonth() + "/" +
+                dimContent.getDimHeader().getProductionDay());
     }
 
     private Label setupChecksumLabel() {

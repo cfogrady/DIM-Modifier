@@ -44,7 +44,7 @@ public class BattleInfoView implements InfoView {
 
     @Override
     public double getPrefWidth() {
-        return 700;
+        return 875;
     }
 
     private void addRow(GridPane gridPane, int rowIndex) {
