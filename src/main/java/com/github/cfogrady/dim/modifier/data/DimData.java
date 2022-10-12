@@ -88,19 +88,23 @@ public class DimData {
     }
 
     public UUID addEntry(int index) {
+        MonsterSlot newMonsterSlot = addMonsterSlot();
+        return addEntry(newMonsterSlot, index);
+    }
+
+    public UUID addEntry(MonsterSlot monster, int index) {
         List<MonsterSlot> newMonsterSlotList = new ArrayList<>(monsterSlotList.size() + 1);
         int currentIndex = 0;
-        MonsterSlot newMonsterSlot = addMonsterSlot();
         for(MonsterSlot monsterSlot : monsterSlotList) {
             if(currentIndex == index) {
-                newMonsterSlotList.add(newMonsterSlot);
+                newMonsterSlotList.add(monster);
             }
             newMonsterSlotList.add(monsterSlot);
             currentIndex++;
         }
         monsterSlotList = newMonsterSlotList;
         recalculateSlotMapping();
-        return newMonsterSlot.getId();
+        return monster.getId();
     }
 
     private MonsterSlot addMonsterSlot() {
@@ -127,7 +131,7 @@ public class DimData {
                 .build();
     }
 
-    private EvolutionEntry setupEmptyEvolution() {
+    public static EvolutionEntry setupEmptyEvolution() {
         return EvolutionEntry.builder()
                 .evolutionRequirementBlock(DimEvolutionRequirements.DimEvolutionRequirementBlock.builder()
                         .hoursUntilEvolution(LoadedScene.NONE_VALUE)

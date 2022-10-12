@@ -1,9 +1,6 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.dim.modifier.data.DimContentFactory;
-import com.github.cfogrady.dim.modifier.data.DimData;
-import com.github.cfogrady.dim.modifier.data.DimDataFactory;
-import com.github.cfogrady.dim.modifier.data.MonsterSlot;
+import com.github.cfogrady.dim.modifier.data.*;
 import com.github.cfogrady.dim.modifier.view.*;
 import com.github.cfogrady.vb.dim.reader.content.DimContent;
 import com.github.cfogrady.vb.dim.reader.content.SpriteData;
@@ -13,10 +10,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
@@ -29,18 +23,23 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor()
 public class LoadedScene {
     public static final int NONE_VALUE = 65535;
     public static final String NONE_LABEL = "None";
+    private final static FileChooser.ExtensionFilter DIGIMON_EXTENSTION = new FileChooser.ExtensionFilter("MON files (*.mon)", "*.mon");
+    private final static FileChooser.ExtensionFilter ALL_FILES = new FileChooser.ExtensionFilter("All Files", "*.*");
 
     private final DimContent dimContent;
     private final DimData dimData;
     private final DimDataFactory dimDataFactory;
     private final DimContentFactory dimContentFactory;
     private final Stage stage;
+    private final DigimonWriter digimonWriter;
+    private final DigimonReader digimonReader;
     private final FusionInfoView fusionInfoView;
     private final StatsInfoView statsInfoView;
     private final EvolutionInfoView evolutionInfoView;
@@ -50,10 +49,12 @@ public class LoadedScene {
     private SelectionState selectionState;
     private InfoView currentView;
 
-    public LoadedScene(DimContent dimContent, DimData dimData, Stage stage) {
+    public LoadedScene(DimContent dimContent, DimData dimData, Stage stage, DigimonWriter digimonWriter, DigimonReader digimonReader) {
         this.dimContent = dimContent;
         this.dimData = dimData;
         this.stage = stage;
+        this.digimonWriter = digimonWriter;
+        this.digimonReader = digimonReader;
         Runnable sceneRefresher = this::setupScene;
         this.spriteImageTranslator = new SpriteImageTranslator();
         this.fusionInfoView = new FusionInfoView(dimData, spriteImageTranslator, sceneRefresher);
@@ -129,7 +130,10 @@ public class LoadedScene {
                 setupNextButton(),
                 setupReplaceNameSpriteButton(),
                 setupAddSlotButton(),
-                setupDeleteSlotButton());
+                setupDeleteSlotButton(),
+                setupExportDigimonButton(),
+                setupImportDigimonButton()
+                );
         hBox.setAlignment(Pos.CENTER_LEFT);
         hBox.setSpacing(10);
         return hBox;
@@ -244,7 +248,7 @@ public class LoadedScene {
                     DimContent content = reader.readDimData(fileInputStream, false);
                     DimData data = dimDataFactory.fromDimContent(content);
                     fileInputStream.close();
-                    LoadedScene scene = new LoadedScene(content, data, stage);
+                    LoadedScene scene = new LoadedScene(content, data, stage, digimonWriter, digimonReader);
                     scene.setupScene();
                 } catch (FileNotFoundException e) {
                     log.error("Couldn't find selected file.", e);
@@ -351,6 +355,93 @@ public class LoadedScene {
             setupScene();
         });
         return button;
+    }
+
+    private Node setupExportDigimonButton() {
+        Button button = new Button();
+        button.setText("Export Monster");
+        CurrentSelectionType selectionType = selectionState.getSelectionType();
+        if(selectionType != CurrentSelectionType.SLOT) {
+            button.setDisable(true);
+        }
+        Dialog<String> inputDialog = setupExportDialogue();
+        button.setOnAction(e -> {
+            Optional<String> artistName = inputDialog.showAndWait();
+            if(artistName.isPresent()) {
+                log.info("Artist Name: {}", artistName.get());
+                exportDigimon(artistName.get());
+            }
+        });
+        return button;
+    }
+
+    private Node setupImportDigimonButton() {
+        Button button = new Button();
+        button.setText("Import Monster");
+        CurrentSelectionType selectionType = selectionState.getSelectionType();
+        if(selectionType != CurrentSelectionType.SLOT) {
+            button.setDisable(true);
+        }
+        button.setOnAction(e -> {
+            importDigimon();
+            setupScene();
+        });
+        return button;
+    }
+
+    private void importDigimon() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(DIGIMON_EXTENSTION, ALL_FILES);
+        fileChooser.setTitle("Import Digimon...");
+        File file = fileChooser.showOpenDialog(stage);
+        if(file != null) {
+            try (InputStream fileInputStream = new FileInputStream(file)) {
+                MonsterSlotWithAuthor monsterSlotWithAuthor = digimonReader.readDigimon(fileInputStream);
+                dimData.addEntry(monsterSlotWithAuthor.getMonsterSlot(), selectionState.getSlot());
+                Dialog<ButtonType> artistCredit = setupInportDialogue(monsterSlotWithAuthor.getAuthor());
+                artistCredit.showAndWait();
+            } catch (FileNotFoundException e) {
+                log.error("Couldn't save selected file.", e);
+            } catch (IOException e) {
+                log.error("Couldn't close file???", e);
+            } catch (ArrayIndexOutOfBoundsException aioobe) {
+                log.error("Selected index is out of bounds!", aioobe);
+            }
+        }
+    }
+
+    private void exportDigimon(String author) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(DIGIMON_EXTENSTION);
+        fileChooser.setTitle("Export Digimon as...");
+        File file = fileChooser.showSaveDialog(stage);
+        if(file != null) {
+            try (OutputStream fileOutputStream = new FileOutputStream(file)) {
+                int slotIndex = selectionState.getSlot();
+                MonsterSlot monsterSlot = dimData.getMonsterSlotList().get(slotIndex);
+                digimonWriter.writeDigimon(author, monsterSlot, fileOutputStream);
+            } catch (FileNotFoundException e) {
+                log.error("Couldn't save selected file.", e);
+            } catch (IOException e) {
+                log.error("Couldn't close file???", e);
+            } catch (ArrayIndexOutOfBoundsException aioobe) {
+                log.error("Selected index is out of bounds!", aioobe);
+            }
+        }
+    }
+
+    private Dialog<String> setupExportDialogue() {
+        TextInputDialog inputDialog = new TextInputDialog();
+        inputDialog.setHeaderText("Artist Name:");
+        inputDialog.setGraphic(null);
+        return inputDialog;
+    }
+
+    private Dialog<ButtonType> setupInportDialogue(String artist) {
+        Alert alert = new Alert(Alert.AlertType.NONE, "This monster was brought to you by " + artist + "!");
+        ButtonType okButton = new ButtonType("OK");
+        alert.getButtonTypes().add(okButton);
+        return alert;
     }
 
     private Node setupDeleteSlotButton() {
