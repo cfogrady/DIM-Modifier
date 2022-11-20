@@ -1,6 +1,8 @@
 package com.github.cfogrady.dim.modifier;
 
+import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.view.InfoView;
+import com.github.cfogrady.vb.dim.reader.content.SpriteData;
 import lombok.Builder;
 import lombok.Data;
 
@@ -19,5 +21,15 @@ public class SelectionState {
 
     public boolean isOnBabySlot() {
         return selectionType == CurrentSelectionType.SLOT && slot < 2;
+    }
+
+    public SpriteData.Sprite getSprite(DimData dimData) {
+        if(getSelectionType() == CurrentSelectionType.LOGO) {
+            return dimData.getLogoSprite();
+        } else if(getSelectionType() == CurrentSelectionType.EGG) {
+            return dimData.getEggSprites().get(getSpriteIndex());
+        } else {
+            return dimData.getMonsterSlotList().get(getSlot()).getSprites().get(getSpriteIndex());
+        }
     }
 }
