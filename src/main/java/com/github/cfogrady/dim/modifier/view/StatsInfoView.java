@@ -95,6 +95,7 @@ public class StatsInfoView implements InfoView {
         } else {
             sprite = dimData.getEggSprites().get(selectionState.getSpriteIndex());
         }
+        log.info("Sprite Displayed size {}x{}. Being displayed at {}x{}: ", sprite.getWidth(), sprite.getHeight(), sprite.getWidth()*2, sprite.getHeight()*2);
         Image image = spriteImageTranslator.loadImageFromSprite(sprite);
         ImageView imageView = new ImageView(image);
         imageView.setFitWidth(sprite.getWidth() * 2.0);
@@ -437,7 +438,7 @@ public class StatsInfoView implements InfoView {
         button.setText("Replace Sprite");
         button.setOnAction(event -> {
             FileChooser fileChooser = new FileChooser();
-            SpriteData.Sprite currentSprite = getSprite(selectionState);
+            SpriteData.Sprite currentSprite = selectionState.getSprite(dimData);
             fileChooser.setTitle("Select sprite replacement. Should be " + currentSprite.getWidth() + " x " + currentSprite.getHeight());
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image format", "*.png", "*.bmp"));
             if(selectionState.getLastFileOpenPath() != null) {
@@ -447,16 +448,6 @@ public class StatsInfoView implements InfoView {
             replaceSpriteWithFile(file, selectionState);
         });
         return button;
-    }
-
-    private SpriteData.Sprite getSprite(SelectionState selectionState) {
-        if(selectionState.getSelectionType() == CurrentSelectionType.LOGO) {
-            return dimData.getLogoSprite();
-        } else if(selectionState.getSelectionType() == CurrentSelectionType.EGG) {
-            return dimData.getEggSprites().get(selectionState.getSpriteIndex());
-        } else {
-            return dimData.getMonsterSlotList().get(selectionState.getSlot()).getSprites().get(selectionState.getSpriteIndex());
-        }
     }
 
     private void setSprite(SelectionState selectionState, SpriteData.Sprite sprite) {
