@@ -54,6 +54,19 @@ abstract class WindowsBuildImageTask extends DefaultTask {
         def command = "warp-packer.exe --arch windows-x64 --input_dir build\\image --exec bin\\DIM-Modifier.bat --output DIM-Modifier-" + version + ".exe"
         def proc = command.execute()
         proc.waitForProcessOutput(System.out, System.err)
+        //This is broken in rcedit :(
+        // For now use resource hacker to manually add the icon during release.
+//        def rc = new File("rcedit-x64.exe")
+//        if(!rc.exists()) {
+//            new URL('https://github.com/electron/rcedit/releases/download/v1.1.1/rcedit-x64.exe').withInputStream{ i -> rc.withOutputStream{ it << i }}
+//        }
+//        command = "rcedit-x64.exe DIM-Modifier-" + version + ".exe --set-icon icon.ico"
+//        proc = command.execute()
+//        proc.waitForProcessOutput(System.out, System.err)
+        command = "\"C:\\Program Files (x86)\\Resource Hacker\\ResourceHacker.exe\"  -open DIM-Modifier-" + version + ".exe -save DIM-Modifier-" + version + ".exe -action addskip -res icon.ico -mask ICONGROUP,MAINICON"
+        proc = command.execute()
+        proc.waitForProcessOutput(System.out, System.err)
+
     }
 }
 
