@@ -2,10 +2,10 @@ package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.dim.modifier.data.*;
 import com.github.cfogrady.dim.modifier.view.*;
-import com.github.cfogrady.vb.dim.reader.content.DimContent;
-import com.github.cfogrady.vb.dim.reader.content.SpriteData;
-import com.github.cfogrady.vb.dim.reader.reader.DimReader;
-import com.github.cfogrady.vb.dim.reader.writer.DimWriter;
+import com.github.cfogrady.vb.dim.card.DimCard;
+import com.github.cfogrady.vb.dim.card.DimReader;
+import com.github.cfogrady.vb.dim.card.DimWriter;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -33,7 +33,7 @@ public class LoadedScene {
     private final static FileChooser.ExtensionFilter DIGIMON_EXTENSTION = new FileChooser.ExtensionFilter("MON files (*.mon)", "*.mon");
     private final static FileChooser.ExtensionFilter ALL_FILES = new FileChooser.ExtensionFilter("All Files", "*.*");
 
-    private final DimContent dimContent;
+    private final DimCard dimContent;
     private final DimData dimData;
     private final DimDataFactory dimDataFactory;
     private final DimContentFactory dimContentFactory;
@@ -49,7 +49,7 @@ public class LoadedScene {
     private SelectionState selectionState;
     private InfoView currentView;
 
-    public LoadedScene(DimContent dimContent, DimData dimData, Stage stage, DigimonWriter digimonWriter, DigimonReader digimonReader) {
+    public LoadedScene(DimCard dimContent, DimData dimData, Stage stage, DigimonWriter digimonWriter, DigimonReader digimonReader) {
         this.dimContent = dimContent;
         this.dimData = dimData;
         this.stage = stage;
@@ -245,7 +245,7 @@ public class LoadedScene {
                 try {
                     DimReader reader = new DimReader();
                     fileInputStream = new FileInputStream(file);
-                    DimContent content = reader.readDimData(fileInputStream, false);
+                    DimCard content = reader.readDimData(fileInputStream, false);
                     DimData data = dimDataFactory.fromDimContent(content);
                     fileInputStream.close();
                     LoadedScene scene = new LoadedScene(content, data, stage, digimonWriter, digimonReader);

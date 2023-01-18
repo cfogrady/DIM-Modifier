@@ -1,6 +1,6 @@
 package com.github.cfogrady.dim.modifier.controls;
 
-import com.github.cfogrady.vb.dim.reader.reader.DimReader;
+import com.github.cfogrady.vb.dim.card.DimReader;
 import javafx.geometry.Insets;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;

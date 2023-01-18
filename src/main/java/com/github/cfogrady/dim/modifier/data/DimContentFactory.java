@@ -1,7 +1,13 @@
 package com.github.cfogrady.dim.modifier.data;
 
-import com.github.cfogrady.vb.dim.reader.content.*;
-import com.github.cfogrady.vb.dim.reader.reader.DimReader;
+import com.github.cfogrady.vb.dim.adventure.DimAdventures;
+import com.github.cfogrady.vb.dim.card.DimCard;
+import com.github.cfogrady.vb.dim.card.DimReader;
+import com.github.cfogrady.vb.dim.character.DimStats;
+import com.github.cfogrady.vb.dim.fusion.DimFusions;
+import com.github.cfogrady.vb.dim.fusion.DimSpecificFusions;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
+import com.github.cfogrady.vb.dim.transformation.DimEvolutionRequirements;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
@@ -13,7 +19,7 @@ public class DimContentFactory {
      * @param dimData - Format used for this app
      * @return
      */
-    public DimContent merge(DimContent dimContent, DimData dimData) {
+    public DimCard merge(DimCard dimContent, DimData dimData) {
         // TODO: Move this into the createDimStat method and return as tuple
         Map<UUID, Integer> monsterIdToSlot = new HashMap<>();
         for(int slotId = 0; slotId < dimData.getMonsterSlotList().size(); slotId++) {

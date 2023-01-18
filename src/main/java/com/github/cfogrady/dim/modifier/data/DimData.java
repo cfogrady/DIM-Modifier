@@ -1,9 +1,9 @@
 package com.github.cfogrady.dim.modifier.data;
 
 import com.github.cfogrady.dim.modifier.LoadedScene;
-import com.github.cfogrady.vb.dim.reader.content.DimEvolutionRequirements;
-import com.github.cfogrady.vb.dim.reader.content.DimStats;
-import com.github.cfogrady.vb.dim.reader.content.SpriteData;
+import com.github.cfogrady.vb.dim.character.DimStats;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
+import com.github.cfogrady.vb.dim.transformation.DimEvolutionRequirements;
 import lombok.Builder;
 import lombok.Data;
 

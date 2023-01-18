@@ -2,7 +2,7 @@ package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.view.InfoView;
-import com.github.cfogrady.vb.dim.reader.content.SpriteData;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Builder;
 import lombok.Data;
 

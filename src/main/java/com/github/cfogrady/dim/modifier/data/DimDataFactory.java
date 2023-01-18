@@ -1,8 +1,14 @@
 package com.github.cfogrady.dim.modifier.data;
 
 import com.github.cfogrady.dim.modifier.LoadedScene;
-import com.github.cfogrady.vb.dim.reader.content.*;
-import com.github.cfogrady.vb.dim.reader.reader.DimReader;
+import com.github.cfogrady.vb.dim.adventure.DimAdventures;
+import com.github.cfogrady.vb.dim.card.DimCard;
+import com.github.cfogrady.vb.dim.card.DimReader;
+import com.github.cfogrady.vb.dim.character.DimStats;
+import com.github.cfogrady.vb.dim.fusion.DimFusions;
+import com.github.cfogrady.vb.dim.fusion.DimSpecificFusions;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
+import com.github.cfogrady.vb.dim.transformation.DimEvolutionRequirements;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -15,7 +21,7 @@ public class DimDataFactory {
     private static final int BABY_II_SPRITE_COUNT = 7;
     private static final int NORMAL_SPRITE_COUNT = 14;
 
-    public DimData fromDimContent(DimContent content) {
+    public DimData fromDimContent(DimCard content) {
         int numberOfSlots = content.getDimStats().getStatBlocks().size();
         List<MonsterSlot> monsterSlotList = new ArrayList<>(numberOfSlots);
         List<UUID> idBySlot = IntStream.range(0, numberOfSlots).mapToObj(i -> UUID.randomUUID()).collect(Collectors.toList());
@@ -55,7 +61,7 @@ public class DimDataFactory {
      * @param dimContent
      * @return
      */
-    List<List<SpriteData.Sprite>> getSpritesForSlots(DimContent dimContent) {
+    List<List<SpriteData.Sprite>> getSpritesForSlots(DimCard dimContent) {
         int numberOfSlots = dimContent.getDimStats().getStatBlocks().size();
         List<List<SpriteData.Sprite>> spritesBySlot = new ArrayList<>(numberOfSlots);
         int index = 2 + 8; //logo+background + egg sprites
@@ -88,7 +94,7 @@ public class DimDataFactory {
      * @param dimContent
      * @return
      */
-    List<List<EvolutionEntry>> getEvolutionsForSlots(DimContent dimContent, List<UUID> idsBySlot) {
+    List<List<EvolutionEntry>> getEvolutionsForSlots(DimCard dimContent, List<UUID> idsBySlot) {
         List<List<EvolutionEntry>> evolutionsBySlot = new ArrayList<>(idsBySlot.size());
         for(int i = 0; i < idsBySlot.size(); i++) {
             evolutionsBySlot.add(new ArrayList<>());
@@ -107,7 +113,7 @@ public class DimDataFactory {
      * @param dimContent
      * @return
      */
-    List<Fusions> getFusionsForSlots(DimContent dimContent, List<UUID> idsBySlot) {
+    List<Fusions> getFusionsForSlots(DimCard dimContent, List<UUID> idsBySlot) {
         List<Fusions> fusionsBySlot = new ArrayList<>(idsBySlot.size());
         for(int i = 0; i < idsBySlot.size(); i++) {
             fusionsBySlot.add(null);
@@ -128,7 +134,7 @@ public class DimDataFactory {
         return fusionsBySlot;
     }
 
-    List<AdventureEntry> getAdventures(DimContent dimContent, List<UUID> idsBySlot) {
+    List<AdventureEntry> getAdventures(DimCard dimContent, List<UUID> idsBySlot) {
         List<AdventureEntry> adventureEntries = new ArrayList<>(dimContent.getDimAdventures().getAdventureBlocks().size());
         for(DimAdventures.DimAdventureBlock adventure : dimContent.getDimAdventures().getAdventureBlocks()) {
             UUID bossId = idsBySlot.get(adventure.getBossStatsIndex());
@@ -143,7 +149,7 @@ public class DimDataFactory {
         return adventureEntries;
     }
 
-    List<SpecificFusion> getSpecificFusions(DimContent dimContent, List<UUID> idsBySlot) {
+    List<SpecificFusion> getSpecificFusions(DimCard dimContent, List<UUID> idsBySlot) {
         List<SpecificFusion> specificFusions = new ArrayList<>(dimContent.getDimSpecificFusion().getDimSpecificFusionBlocks().size());
         for(DimSpecificFusions.DimSpecificFusionBlock specificFusion : dimContent.getDimSpecificFusion().getDimSpecificFusionBlocks()) {
             specificFusions.add(SpecificFusion.builder()

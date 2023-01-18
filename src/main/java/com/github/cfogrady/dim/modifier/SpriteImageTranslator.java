@@ -1,6 +1,6 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.vb.dim.reader.content.SpriteData;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.scene.image.*;
 import javafx.scene.paint.Color;
 import lombok.RequiredArgsConstructor;

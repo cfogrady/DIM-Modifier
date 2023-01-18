@@ -1,8 +1,8 @@
 package com.github.cfogrady.dim.modifier.data;
 
-import com.github.cfogrady.vb.dim.reader.ByteUtils;
-import com.github.cfogrady.vb.dim.reader.content.DimStats;
-import com.github.cfogrady.vb.dim.reader.content.SpriteData;
+import com.github.cfogrady.vb.dim.character.DimStats;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
+import com.github.cfogrady.vb.dim.util.ByteUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;

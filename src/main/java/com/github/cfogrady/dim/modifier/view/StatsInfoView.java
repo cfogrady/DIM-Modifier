@@ -8,7 +8,7 @@ import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
 import com.github.cfogrady.dim.modifier.utils.NoneUtils;
-import com.github.cfogrady.vb.dim.reader.content.SpriteData;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;

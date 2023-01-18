@@ -4,8 +4,8 @@ import com.github.cfogrady.dim.modifier.data.DigimonReader;
 import com.github.cfogrady.dim.modifier.data.DigimonWriter;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.DimDataFactory;
-import com.github.cfogrady.vb.dim.reader.content.DimContent;
-import com.github.cfogrady.vb.dim.reader.reader.DimReader;
+import com.github.cfogrady.vb.dim.card.DimCard;
+import com.github.cfogrady.vb.dim.card.DimReader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
@@ -35,7 +35,7 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
                 InputStream fileInputStream = null;
                 try {
                     fileInputStream = new FileInputStream(file);
-                    DimContent content = reader.readDimData(fileInputStream, false);
+                    DimCard content = reader.readDimData(fileInputStream, false);
                     fileInputStream.close();
                     DimData dimData = dimDataFactory.fromDimContent(content);
                     LoadedScene scene = new LoadedScene(content, dimData, stage, new DigimonWriter(), new DigimonReader());

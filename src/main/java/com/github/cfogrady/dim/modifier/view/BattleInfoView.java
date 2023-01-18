@@ -9,7 +9,8 @@ import com.github.cfogrady.dim.modifier.data.AdventureEntry;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
 import com.github.cfogrady.dim.modifier.utils.NoneUtils;
-import com.github.cfogrady.vb.dim.reader.content.SpriteData;
+
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;

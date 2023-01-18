@@ -4,9 +4,9 @@ import com.github.cfogrady.dim.modifier.data.AdventureEntry;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
-import com.github.cfogrady.vb.dim.reader.content.DimEvolutionRequirements;
-import com.github.cfogrady.vb.dim.reader.content.DimStats;
-import com.github.cfogrady.vb.dim.reader.content.SpriteData;
+import com.github.cfogrady.vb.dim.character.DimStats;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
+import com.github.cfogrady.vb.dim.transformation.DimEvolutionRequirements;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
