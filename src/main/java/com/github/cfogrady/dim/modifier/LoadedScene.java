@@ -1,6 +1,7 @@
 package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.dim.modifier.data.*;
+import com.github.cfogrady.dim.modifier.data.firmware.FirmwareData;
 import com.github.cfogrady.dim.modifier.view.*;
 import com.github.cfogrady.vb.dim.card.DimCard;
 import com.github.cfogrady.vb.dim.card.DimReader;
@@ -33,6 +34,7 @@ public class LoadedScene {
     private final static FileChooser.ExtensionFilter DIGIMON_EXTENSTION = new FileChooser.ExtensionFilter("MON files (*.mon)", "*.mon");
     private final static FileChooser.ExtensionFilter ALL_FILES = new FileChooser.ExtensionFilter("All Files", "*.*");
 
+    private final FirmwareData firmwareData;
     private final DimCard dimContent;
     private final DimData dimData;
     private final DimDataFactory dimDataFactory;
@@ -49,7 +51,8 @@ public class LoadedScene {
     private SelectionState selectionState;
     private InfoView currentView;
 
-    public LoadedScene(DimCard dimContent, DimData dimData, Stage stage, DigimonWriter digimonWriter, DigimonReader digimonReader) {
+    public LoadedScene(FirmwareData firmwareData, DimCard dimContent, DimData dimData, Stage stage, DigimonWriter digimonWriter, DigimonReader digimonReader) {
+        this.firmwareData = firmwareData;
         this.dimContent = dimContent;
         this.dimData = dimData;
         this.stage = stage;
@@ -58,7 +61,7 @@ public class LoadedScene {
         Runnable sceneRefresher = this::setupScene;
         this.spriteImageTranslator = new SpriteImageTranslator();
         this.fusionInfoView = new FusionInfoView(dimData, spriteImageTranslator, sceneRefresher);
-        this.statsInfoView = new StatsInfoView(dimData, spriteImageTranslator, stage, sceneRefresher);
+        this.statsInfoView = new StatsInfoView(firmwareData, dimData, spriteImageTranslator, stage, sceneRefresher);
         this.evolutionInfoView = new EvolutionInfoView(dimData, spriteImageTranslator, sceneRefresher);
         this.battleInfoView = new BattleInfoView(dimData, spriteImageTranslator, sceneRefresher);
         this.selectionState = SelectionState.builder()
@@ -248,7 +251,7 @@ public class LoadedScene {
                     DimCard content = reader.readDimData(fileInputStream, false);
                     DimData data = dimDataFactory.fromDimContent(content);
                     fileInputStream.close();
-                    LoadedScene scene = new LoadedScene(content, data, stage, digimonWriter, digimonReader);
+                    LoadedScene scene = new LoadedScene(firmwareData, content, data, stage, digimonWriter, digimonReader);
                     scene.setupScene();
                 } catch (FileNotFoundException e) {
                     log.error("Couldn't find selected file.", e);

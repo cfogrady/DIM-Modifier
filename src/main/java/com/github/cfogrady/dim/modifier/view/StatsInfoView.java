@@ -1,12 +1,15 @@
 package com.github.cfogrady.dim.modifier.view;
 
 import com.github.cfogrady.dim.modifier.*;
+import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
+import com.github.cfogrady.dim.modifier.controls.ImageIntComboBoxFactory;
 import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
 import com.github.cfogrady.dim.modifier.controls.StringIntComboBox;
 import com.github.cfogrady.dim.modifier.data.DimContentFactory;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.DimDataFactory;
 import com.github.cfogrady.dim.modifier.data.MonsterSlot;
+import com.github.cfogrady.dim.modifier.data.firmware.FirmwareData;
 import com.github.cfogrady.dim.modifier.utils.NoneUtils;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.collections.FXCollections;
@@ -34,17 +37,21 @@ import static com.github.cfogrady.dim.modifier.LoadedScene.*;
 @AllArgsConstructor
 public class StatsInfoView implements InfoView {
 
+    private final FirmwareData firmwareData;
     private final DimData dimData;
     private final SpriteImageTranslator spriteImageTranslator;
     private final Stage stage;
     private final Runnable sceneRefresher;
+    private final ImageIntComboBoxFactory imageIntComboBoxFactory;
     private BackgroundImage background;
 
-    public StatsInfoView(DimData dimData, SpriteImageTranslator spriteSlotParser, Stage stage, Runnable stateChanger) {
+    public StatsInfoView(FirmwareData firmwareData, DimData dimData, SpriteImageTranslator spriteSlotParser, Stage stage, Runnable stateChanger) {
+        this.firmwareData = firmwareData;
         this.dimData = dimData;
         this.spriteImageTranslator = spriteSlotParser;
         this.stage = stage;
         this.sceneRefresher = stateChanger;
+        this.imageIntComboBoxFactory = new ImageIntComboBoxFactory(spriteImageTranslator);
         BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
         Image image = spriteSlotParser.loadImageFromSprite(dimData.getBackGroundSprite());
         this.background = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
@@ -282,20 +289,10 @@ public class StatsInfoView implements InfoView {
             return label;
         }
         Label label = new Label("Small Attack:");
-        ComboBox<String> comboBox = new ComboBox<>();
-        comboBox.setItems(FXCollections.observableArrayList(AttackLabels.SMALL_ATTACKS));
-        comboBox.setValue(AttackLabels.SMALL_ATTACKS[NoneUtils.defaultIfNone(monsterSlot.getStatBlock().getSmallAttackId(), 0)]);
-        comboBox.setOnAction(event -> {
-            String value = comboBox.getValue();
-            boolean indexFound = false;
-            for(int i = 0 ; i < AttackLabels.SMALL_ATTACKS.length && !indexFound; i++) {
-                if(AttackLabels.SMALL_ATTACKS[i].equals(value)) {
-                    monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().smallAttackId(i).build());
-                    indexFound = true;
-                }
-            }
+        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(monsterSlot.getStatBlock().getSmallAttackId(), firmwareData.getSmallAttacks(), value -> {
+            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().smallAttackId(value).build());
         });
-        comboBox.setPrefWidth(200);
+        comboBox.setPrefWidth(120);
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
@@ -310,20 +307,10 @@ public class StatsInfoView implements InfoView {
             return label;
         }
         Label label = new Label("Big Attack:");
-        ComboBox<String> comboBox = new ComboBox<>();
-        comboBox.setItems(FXCollections.observableArrayList(AttackLabels.BIG_ATTACKS));
-        comboBox.setValue(AttackLabels.BIG_ATTACKS[NoneUtils.defaultIfNone(monsterSlot.getStatBlock().getBigAttackId(), 0)]);
-        comboBox.setOnAction(event -> {
-            String value = comboBox.getValue();
-            boolean indexFound = false;
-            for(int i = 0 ; i < AttackLabels.BIG_ATTACKS.length && !indexFound; i++) {
-                if(AttackLabels.BIG_ATTACKS[i].equals(value)) {
-                    monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().bigAttackId(i).build());
-                    indexFound = true;
-                }
-            }
+        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(monsterSlot.getStatBlock().getBigAttackId(), firmwareData.getBigAttacks(), value -> {
+            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().bigAttackId(value).build());
         });
-        comboBox.setPrefWidth(180);
+        comboBox.setPrefWidth(120);
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);

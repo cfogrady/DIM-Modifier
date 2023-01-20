@@ -4,6 +4,8 @@ import com.github.cfogrady.dim.modifier.data.DigimonReader;
 import com.github.cfogrady.dim.modifier.data.DigimonWriter;
 import com.github.cfogrady.dim.modifier.data.DimData;
 import com.github.cfogrady.dim.modifier.data.DimDataFactory;
+import com.github.cfogrady.dim.modifier.data.firmware.FirmwareData;
+import com.github.cfogrady.dim.modifier.data.firmware.FirmwareManager;
 import com.github.cfogrady.vb.dim.card.DimCard;
 import com.github.cfogrady.vb.dim.card.DimReader;
 import javafx.scene.Scene;
@@ -21,6 +23,7 @@ import java.io.*;
 public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
     private final Stage stage;
     private final DimDataFactory dimDataFactory;
+    private final FirmwareData firmwareData;
 
     @Override
     public void setupScene() {
@@ -38,7 +41,7 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
                     DimCard content = reader.readDimData(fileInputStream, false);
                     fileInputStream.close();
                     DimData dimData = dimDataFactory.fromDimContent(content);
-                    LoadedScene scene = new LoadedScene(content, dimData, stage, new DigimonWriter(), new DigimonReader());
+                    LoadedScene scene = new LoadedScene(firmwareData, content, dimData, stage, new DigimonWriter(), new DigimonReader());
                     scene.setupScene();
                 } catch (FileNotFoundException e) {
                     log.error("Couldn't find selected file.", e);
