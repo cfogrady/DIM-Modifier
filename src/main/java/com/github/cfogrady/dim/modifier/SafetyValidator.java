@@ -1,9 +1,9 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.dim.modifier.data.AdventureEntry;
-import com.github.cfogrady.dim.modifier.data.DimData;
-import com.github.cfogrady.dim.modifier.data.DimDataFactory;
-import com.github.cfogrady.dim.modifier.data.MonsterSlot;
+import com.github.cfogrady.dim.modifier.data.dim.AdventureEntry;
+import com.github.cfogrady.dim.modifier.data.dim.DimData;
+import com.github.cfogrady.dim.modifier.data.dim.DimDataFactory;
+import com.github.cfogrady.dim.modifier.data.dim.MonsterSlot;
 import com.github.cfogrady.vb.dim.character.DimStats;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import com.github.cfogrady.vb.dim.transformation.DimEvolutionRequirements;

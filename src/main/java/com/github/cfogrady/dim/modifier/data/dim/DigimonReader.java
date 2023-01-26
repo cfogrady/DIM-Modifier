@@ -1,6 +1,9 @@
-package com.github.cfogrady.dim.modifier.data;
+package com.github.cfogrady.dim.modifier.data.dim;
 
 import com.github.cfogrady.dim.modifier.LoadedScene;
+import com.github.cfogrady.dim.modifier.data.MonsterSlotWithAuthor;
+import com.github.cfogrady.dim.modifier.data.dim.DimData;
+import com.github.cfogrady.dim.modifier.data.dim.MonsterSlot;
 import com.github.cfogrady.vb.dim.character.DimStats;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import com.github.cfogrady.vb.dim.util.ByteUtils;

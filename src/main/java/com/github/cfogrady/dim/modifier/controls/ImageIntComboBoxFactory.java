@@ -18,6 +18,10 @@ public class ImageIntComboBoxFactory {
         return new ImageIntComboBox(currentValue, createImageValuePairs(sprites), valueSetter);
     }
 
+    public ImageIntComboBox createImageIntComboBox(int currentValue, double scaler, List<SpriteData.Sprite> sprites, Consumer<Integer> valueSetter) {
+        return new ImageIntComboBox(currentValue, createImageValuePairs(sprites), valueSetter, scaler);
+    }
+
     private ObservableList<ImageIntComboBox.ImageIntPair> createImageValuePairs(List<SpriteData.Sprite> sprites) {
         ObservableList<ImageIntComboBox.ImageIntPair> items = FXCollections.observableArrayList();
         for(int i = 0; i < sprites.size(); i++) {

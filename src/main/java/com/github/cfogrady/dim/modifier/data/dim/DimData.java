@@ -1,4 +1,4 @@
-package com.github.cfogrady.dim.modifier.data;
+package com.github.cfogrady.dim.modifier.data.dim;
 
 import com.github.cfogrady.dim.modifier.LoadedScene;
 import com.github.cfogrady.vb.dim.character.DimStats;

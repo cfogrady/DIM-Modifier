@@ -1,6 +1,7 @@
 package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.dim.modifier.data.*;
+import com.github.cfogrady.dim.modifier.data.dim.*;
 import com.github.cfogrady.dim.modifier.data.firmware.FirmwareData;
 import com.github.cfogrady.dim.modifier.view.*;
 import com.github.cfogrady.vb.dim.card.DimCard;

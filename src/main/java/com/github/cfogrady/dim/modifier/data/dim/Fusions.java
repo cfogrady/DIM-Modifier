@@ -1,4 +1,4 @@
-package com.github.cfogrady.dim.modifier.data;
+package com.github.cfogrady.dim.modifier.data.dim;
 
 import lombok.Builder;
 import lombok.Data;
@@ -12,4 +12,11 @@ public class Fusions {
     private UUID type2FusionResult;
     private UUID type3FusionResult;
     private UUID type4FusionResult;
+
+    public boolean isEmpty() {
+        return type1FusionResult == null &&
+                type2FusionResult == null &&
+                type3FusionResult == null &&
+                type4FusionResult == null;
+    }
 }

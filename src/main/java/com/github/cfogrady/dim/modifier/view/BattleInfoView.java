@@ -5,9 +5,9 @@ import com.github.cfogrady.dim.modifier.SelectionState;
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
 import com.github.cfogrady.dim.modifier.controls.SlotComboBox;
-import com.github.cfogrady.dim.modifier.data.AdventureEntry;
-import com.github.cfogrady.dim.modifier.data.DimData;
-import com.github.cfogrady.dim.modifier.data.MonsterSlot;
+import com.github.cfogrady.dim.modifier.data.dim.AdventureEntry;
+import com.github.cfogrady.dim.modifier.data.dim.DimData;
+import com.github.cfogrady.dim.modifier.data.dim.MonsterSlot;
 import com.github.cfogrady.dim.modifier.utils.NoneUtils;
 
 import com.github.cfogrady.vb.dim.sprite.SpriteData;

@@ -1,6 +1,5 @@
 package com.github.cfogrady.dim.modifier.controls;
 
-import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.control.ComboBox;
@@ -9,12 +8,17 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.VBox;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.util.function.Consumer;
 
 public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
 
     public ImageIntComboBox(int currentValue, ObservableList<ImageIntPair> valueLabels, Consumer<Integer> valueSetter) {
+        this(currentValue, valueLabels, valueSetter, 1.0);
+    }
+
+    public ImageIntComboBox(int currentValue, ObservableList<ImageIntPair> valueLabels, Consumer<Integer> valueSetter, double imageScaler) {
         super();
         this.setItems(valueLabels);
         this.setValue(getItemForValue(currentValue));
@@ -22,8 +26,8 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
             int newValue = this.getValue().getValue();
             valueSetter.accept(newValue);
         });
-        this.setCellFactory(lv -> new ImageIntCell());
-        this.setButtonCell(new ImageIntCell());
+        this.setCellFactory(lv -> new ImageIntCell(imageScaler));
+        this.setButtonCell(new ImageIntCell(imageScaler));
     }
 
     private ImageIntPair getItemForValue(int value) {
@@ -41,7 +45,10 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
         private final int value;
     }
 
+    @RequiredArgsConstructor
     public static class ImageIntCell extends ListCell<ImageIntPair> {
+        private final double scaler;
+
         @Override
         protected void updateItem(ImageIntPair option, boolean empty) {
             super.updateItem(option, empty) ;
@@ -49,8 +56,8 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
             setGraphic(null);
             if (!empty) {
                 ImageView imageView = new ImageView(option.getImage());
-                imageView.setFitWidth(option.getImage().getWidth() * 2.0);
-                imageView.setFitHeight(option.getImage().getHeight() * 2.0);
+                imageView.setFitWidth(option.getImage().getWidth() * scaler);
+                imageView.setFitHeight(option.getImage().getHeight() * scaler);
                 VBox.setMargin(imageView, new Insets(10));
                 setGraphic(imageView);
             }

@@ -1,4 +1,4 @@
-package com.github.cfogrady.dim.modifier.data;
+package com.github.cfogrady.dim.modifier.data.dim;
 
 import lombok.Builder;
 import lombok.Data;

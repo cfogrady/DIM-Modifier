@@ -1,9 +1,5 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.dim.modifier.data.DimDataFactory;
-
-import java.util.prefs.Preferences;
-
 import com.github.cfogrady.dim.modifier.data.firmware.FirmwareManager;
 import javafx.application.Application;
 import javafx.scene.image.Image;
@@ -12,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Main extends Application {
+    private ApplicationOrchestrator applicationOrchestrator;
 
     public static void main(String[] args) {
         launch(args);
@@ -19,16 +16,20 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        Preferences preferences = Preferences.userNodeForPackage(this.getClass());
-        FirmwareManager firmwareManager = new FirmwareManager(preferences);
+        applicationOrchestrator = ApplicationOrchestrator.buildOrchestration(primaryStage);
         primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("icon.png")));
+        FirmwareManager firmwareManager = applicationOrchestrator.getFirmwareManager();
         if(firmwareManager.isValidFirmwareLocationSet()) {
-            FirstLoadScene scene = new FirstLoadScene(primaryStage, new DimDataFactory(), firmwareManager.loadFirmware());
-            scene.setupScene();
+            applicationOrchestrator.getFirstLoadScene().setupScene();
         } else {
             //firmware load scene
-            FirmwareLoadScene scene = new FirmwareLoadScene(primaryStage, firmwareManager, new DimDataFactory());
-            scene.setupScene();
+            applicationOrchestrator.getFirmwareLoadScene().setupScene();
         }
+    }
+
+    @Override
+    public void stop() {
+        applicationOrchestrator.getTimer().cancel();
+        applicationOrchestrator.getTimer().purge();
     }
 }

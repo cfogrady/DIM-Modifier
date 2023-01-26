@@ -1,6 +1,6 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.dim.modifier.data.DimDataFactory;
+import com.github.cfogrady.dim.modifier.data.dim.DimDataFactory;
 import com.github.cfogrady.dim.modifier.data.firmware.FirmwareManager;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -17,7 +17,7 @@ import java.io.*;
 public class FirmwareLoadScene implements com.github.cfogrady.dim.modifier.Scene {
     private final Stage stage;
     private final FirmwareManager firmwareManager;
-    private final DimDataFactory dimDataFactory;
+    private final FirstLoadScene firstLoadScene;
 
     @Override
     public void setupScene() {
@@ -29,8 +29,7 @@ public class FirmwareLoadScene implements com.github.cfogrady.dim.modifier.Scene
             File file = fileChooser.showOpenDialog(stage);
             if(FirmwareManager.isValidFirmwareLocation(file)) {
                 firmwareManager.setFirmwareLocation(file);
-                FirstLoadScene scene = new FirstLoadScene(stage, dimDataFactory, firmwareManager.loadFirmware());
-                scene.setupScene();
+                firstLoadScene.setupScene();
             }
         });
         Scene scene = new Scene(new StackPane(button), 640, 480);

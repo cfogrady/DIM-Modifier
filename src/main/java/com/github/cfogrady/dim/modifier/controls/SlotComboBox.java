@@ -1,8 +1,8 @@
 package com.github.cfogrady.dim.modifier.controls;
 
 import com.github.cfogrady.dim.modifier.LoadedScene;
-import com.github.cfogrady.dim.modifier.data.DimData;
-import com.github.cfogrady.dim.modifier.data.MonsterSlot;
+import com.github.cfogrady.dim.modifier.data.dim.DimData;
+import com.github.cfogrady.dim.modifier.data.dim.MonsterSlot;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;

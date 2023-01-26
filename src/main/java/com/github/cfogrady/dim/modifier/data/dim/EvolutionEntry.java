@@ -1,4 +1,4 @@
-package com.github.cfogrady.dim.modifier.data;
+package com.github.cfogrady.dim.modifier.data.dim;
 
 import com.github.cfogrady.vb.dim.transformation.DimEvolutionRequirements;
 import lombok.Builder;

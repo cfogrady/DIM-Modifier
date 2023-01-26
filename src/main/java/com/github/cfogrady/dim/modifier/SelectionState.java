@@ -1,6 +1,6 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.dim.modifier.data.DimData;
+import com.github.cfogrady.dim.modifier.data.dim.DimData;
 import com.github.cfogrady.dim.modifier.view.InfoView;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Builder;
