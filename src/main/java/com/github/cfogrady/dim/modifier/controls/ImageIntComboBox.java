@@ -6,12 +6,15 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Consumer;
 
+@Slf4j
 public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
 
     public ImageIntComboBox(int currentValue, ObservableList<ImageIntPair> valueLabels, Consumer<Integer> valueSetter) {
@@ -19,6 +22,10 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
     }
 
     public ImageIntComboBox(int currentValue, ObservableList<ImageIntPair> valueLabels, Consumer<Integer> valueSetter, double imageScaler) {
+        this(currentValue, valueLabels, valueSetter, imageScaler, null);
+    }
+
+    public ImageIntComboBox(int currentValue, ObservableList<ImageIntPair> valueLabels, Consumer<Integer> valueSetter, double imageScaler, Background background) {
         super();
         this.setItems(valueLabels);
         this.setValue(getItemForValue(currentValue));
@@ -26,8 +33,8 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
             int newValue = this.getValue().getValue();
             valueSetter.accept(newValue);
         });
-        this.setCellFactory(lv -> new ImageIntCell(imageScaler));
-        this.setButtonCell(new ImageIntCell(imageScaler));
+        this.setCellFactory(lv -> new ImageIntCell(imageScaler, background));
+        this.setButtonCell(new ImageIntCell(imageScaler, background));
     }
 
     private ImageIntPair getItemForValue(int value) {
@@ -48,6 +55,7 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
     @RequiredArgsConstructor
     public static class ImageIntCell extends ListCell<ImageIntPair> {
         private final double scaler;
+        private final Background background;
 
         @Override
         protected void updateItem(ImageIntPair option, boolean empty) {
@@ -58,8 +66,17 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
                 ImageView imageView = new ImageView(option.getImage());
                 imageView.setFitWidth(option.getImage().getWidth() * scaler);
                 imageView.setFitHeight(option.getImage().getHeight() * scaler);
-                VBox.setMargin(imageView, new Insets(10));
-                setGraphic(imageView);
+                if(background != null) {
+                    StackPane stackPane = new StackPane(imageView);
+                    stackPane.setMaxHeight(option.getImage().getHeight() * scaler);
+                    stackPane.setMaxWidth(option.getImage().getWidth() * scaler);
+                    stackPane.setBackground(background);
+                    VBox.setMargin(stackPane, new Insets(10));
+                    setGraphic(stackPane);
+                } else {
+                    VBox.setMargin(imageView, new Insets(10));
+                    setGraphic(imageView);
+                }
             }
         }
     }

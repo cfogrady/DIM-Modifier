@@ -1,6 +1,7 @@
 package com.github.cfogrady.dim.modifier.view;
 
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
+import com.github.cfogrady.dim.modifier.SpriteReplacer;
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBoxFactory;
 import com.github.cfogrady.dim.modifier.data.AppState;
@@ -25,15 +26,15 @@ import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 public class BemCharactersView implements BemInfoView {
+    public static final int SELECTION_SPRITE_IDX = 1;
+
     private final AppState appState;
     private final ImageIntComboBoxFactory imageIntComboBoxFactory;
     private final SpriteImageTranslator spriteImageTranslator;
+    private final SpriteReplacer spriteReplacer;
     private final Timer timer;
     private final BemStatsView bemStatsView;
-
-    public Character<?> getCharacter(CharacterViewState viewState) {
-        return appState.getCardData().getCharacters().get(viewState.selectedIndex);
-    }
+    private final BemEvolutionsView bemEvolutionsView;
 
     public static abstract class CharacterViewState implements ViewState {
         int selectedIndex;
@@ -42,52 +43,91 @@ public class BemCharactersView implements BemInfoView {
         public void copyFrom(CharacterViewState other) {
             this.selectedIndex = other.selectedIndex;
         }
+        public Character<?> getCharacter(AppState appState) {
+            return appState.getCardData().getCharacters().get(selectedIndex);
+        }
     }
 
     @Override
     public Node setupView(ViewState viewState, Consumer<ViewState> refresher) {
+        setupCharacterView();
         if(viewState == null) {
-            CharacterViewState characterViewState = new BemStatsView.StatsViewState();
+            CharacterViewState characterViewState = new BemStatsView.StatsViewState(this::refreshCharacterSelector, BemStatsView.IDLE_SPRITE_IDX);
             characterViewState.selectedIndex = 0;
             viewState = characterViewState;
         }
-        VBox vbox = new VBox();
-        vbox.setSpacing(10);
-        vbox.setPadding(new Insets(10));
         if(viewState instanceof CharacterViewState characterViewState) {
-            vbox.getChildren().add(setupButtons(characterViewState, refresher));
-            if(viewState instanceof BemStatsView.StatsViewState actualState) {
-                //vbox.getChildren().add(bemStatsView.setupView(actualState, refresher));
-            }
+            refreshAll(characterViewState);
         } else {
             throw new IllegalArgumentException("BemCharacterView must take a CharacterViewState. Received a " + viewState.getClass().getName());
         }
-        return vbox;
+        return characterView;
     }
 
-    public Node setupButtons(CharacterViewState viewState, Consumer<ViewState> refresher) {
-        HBox hBox = new HBox();
-        hBox.setSpacing(10);
-        hBox.setPadding(new Insets(10));
-        hBox.getChildren().addAll(setupSlotSelector(viewState, refresher), setupName(viewState), setupStatsViewButton(viewState, refresher));
-        return hBox;
+    private VBox characterView;
+    private HBox characterSelector;
+    private HBox subViewButtons;
+
+    private void refreshAll(CharacterViewState characterViewState) {
+        refreshCharacterSelector(characterViewState);
+        refreshViewButtons(characterViewState);
+        refreshSubView(characterViewState);
     }
 
-    public Node setupSlotSelector(CharacterViewState viewState, Consumer<ViewState> refresher) {
+    private void setupCharacterView() {
+        if(characterView == null) {
+            characterView = new VBox();
+            characterSelector = new HBox();
+            characterSelector.setSpacing(10);
+            characterSelector.setPadding(new Insets(10));
+            subViewButtons = new HBox();
+            subViewButtons.setSpacing(10);
+            subViewButtons.setPadding(new Insets(10));
+            characterView.setSpacing(10);
+            characterView.setPadding(new Insets(10));
+            characterView.getChildren().add(new HBox(characterSelector, subViewButtons));
+            characterView.getChildren().add(new HBox());
+        }
+    }
+
+    private void refreshCharacterSelector(CharacterViewState viewState) {
+        characterSelector.getChildren().clear();
+        characterSelector.getChildren().addAll(setupSlotSelector(viewState), setupName(viewState));
+    }
+
+    private void refreshViewButtons(CharacterViewState characterViewState) {
+        this.subViewButtons.getChildren().clear();
+        this.subViewButtons.getChildren().addAll(setupStatsViewButton(characterViewState), setupEvolutionsViewButton(characterViewState));
+    }
+
+    private void refreshSubView(ViewState viewState) {
+        Node subView;
+        if(viewState instanceof BemStatsView.StatsViewState actualState) {
+            bemStatsView.refreshView(actualState);
+            subView = bemStatsView.getMainView();
+        } else if(viewState instanceof  BemEvolutionsView.EvolutionsViewState evolutionsViewState) {
+            subView = bemEvolutionsView.setupView(evolutionsViewState, this::refreshSubView);
+        } else {
+            throw new IllegalArgumentException("BemCharacterView must be a StatsViewState. Received a " + viewState.getClass().getName());
+        }
+        characterView.getChildren().set(1, subView);
+    }
+
+    private Node setupSlotSelector(CharacterViewState viewState) {
         ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(viewState.selectedIndex, getIdleForCharacters(), newSlot -> {
             viewState.selectedIndex = newSlot;
             if(viewState.nameUpdater != null) {
                 viewState.nameUpdater.cancel();
                 viewState.nameUpdater = null;
             }
-            refresher.accept(viewState);
+            refreshAll(viewState);
         });
         comboBox.setPrefWidth(120);
         return comboBox;
     }
 
-    public Node setupName(CharacterViewState viewState) {
-        Character<?> character = getCharacter(viewState);
+    private Node setupName(CharacterViewState viewState) {
+        Character<?> character = viewState.getCharacter(appState);
         SpriteData.Sprite nameSprite = character.getSprites().get(0);
         Image image = spriteImageTranslator.loadImageFromSprite(nameSprite);
         ImageView imageView = new ImageView(image);
@@ -102,6 +142,13 @@ public class BemCharactersView implements BemInfoView {
         stackPane.setMinWidth(80);
         stackPane.setMaxHeight(25);
         stackPane.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
+        stackPane.setOnMouseClicked(event -> {
+            SpriteData.Sprite newNameSprite = spriteReplacer.replaceSprite(nameSprite, false, true);
+            if(newNameSprite != null) {
+                character.getSprites().set(0, newNameSprite);
+                refreshCharacterSelector(viewState);
+            }
+        });
         return stackPane;
     }
 
@@ -125,14 +172,30 @@ public class BemCharactersView implements BemInfoView {
         }
     }
 
-    private Button setupStatsViewButton(CharacterViewState viewState, Consumer<ViewState> refresher) {
+    private Button setupStatsViewButton(CharacterViewState viewState) {
         Button button = new Button();
         button.setText("Stats");
         if(viewState instanceof BemStatsView.StatsViewState) {
             button.setDisable(true);
         }
         button.setOnAction(event -> {
-            refresher.accept(BemStatsView.fromCharacterViewState(viewState));
+            BemStatsView.StatsViewState newState = BemStatsView.fromCharacterViewState(viewState, this::refreshCharacterSelector);
+            refreshViewButtons(newState);
+            refreshSubView(newState);
+        });
+        return button;
+    }
+
+    private Button setupEvolutionsViewButton(CharacterViewState viewState) {
+        Button button = new Button();
+        button.setText("Evolutions");
+        if(viewState instanceof BemEvolutionsView.EvolutionsViewState) {
+            button.setDisable(true);
+        }
+        button.setOnAction(event -> {
+            BemEvolutionsView.EvolutionsViewState newState = BemEvolutionsView.fromCharacterViewState(viewState);
+            refreshViewButtons(newState);
+            refreshSubView(newState);
         });
         return button;
     }
@@ -140,7 +203,7 @@ public class BemCharactersView implements BemInfoView {
     List<SpriteData.Sprite> getIdleForCharacters() {
         List<SpriteData.Sprite> idleSprites = new ArrayList<>();
         for(Character<?> character : appState.getCardData().getCharacters()) {
-            idleSprites.add(character.getSprites().get(1));
+            idleSprites.add(character.getSprites().get(SELECTION_SPRITE_IDX));
         }
         return idleSprites;
     }

@@ -5,6 +5,7 @@ import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -20,6 +21,10 @@ public class ImageIntComboBoxFactory {
 
     public ImageIntComboBox createImageIntComboBox(int currentValue, double scaler, List<SpriteData.Sprite> sprites, Consumer<Integer> valueSetter) {
         return new ImageIntComboBox(currentValue, createImageValuePairs(sprites), valueSetter, scaler);
+    }
+
+    public ImageIntComboBox createImageIntComboBox(int currentValue, double scaler, Background background, List<SpriteData.Sprite> sprites, Consumer<Integer> valueSetter) {
+        return new ImageIntComboBox(currentValue, createImageValuePairs(sprites), valueSetter, scaler, background);
     }
 
     private ObservableList<ImageIntComboBox.ImageIntPair> createImageValuePairs(List<SpriteData.Sprite> sprites) {
