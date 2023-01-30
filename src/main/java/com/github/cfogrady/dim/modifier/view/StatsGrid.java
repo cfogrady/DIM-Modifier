@@ -7,10 +7,8 @@ import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
 import com.github.cfogrady.dim.modifier.controls.StringIntComboBox;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
-import com.github.cfogrady.dim.modifier.data.bem.CardSprites;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.dim.modifier.data.dim.card.DimCharacter;
-import com.github.cfogrady.dim.modifier.data.firmware.FirmwareData;
 import com.github.cfogrady.vb.dim.card.DimReader;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.collections.FXCollections;
@@ -22,7 +20,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.paint.Paint;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -40,7 +37,13 @@ public class StatsGrid {
     private final Supplier<Boolean> isSafetyModeOn;
 
     public void refreshStatsGrid(Character<?> character) {
-        gridPane.getChildren().clear();
+        if(gridPane.isGridLinesVisible()) {
+            Node node = gridPane.getChildren().get(0);
+            gridPane.getChildren().clear();
+            gridPane.getChildren().add(node);
+        } else {
+            gridPane.getChildren().clear();
+        }
         gridPane.add(setupStageLabel(character), 0, 0);
         gridPane.add(setupAttributeLabel(character), 1, 0);
         gridPane.add(setupDispositionLabel(character), 0, 1);
