@@ -3,12 +3,8 @@ package com.github.cfogrady.dim.modifier;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.bem.BemCardData;
 import com.github.cfogrady.dim.modifier.data.bem.BemCardDataReader;
-import com.github.cfogrady.dim.modifier.data.bem.BemCardDataWriter;
-import com.github.cfogrady.dim.modifier.data.dim.DigimonReader;
-import com.github.cfogrady.dim.modifier.data.dim.DigimonWriter;
 import com.github.cfogrady.dim.modifier.data.dim.DimData;
 import com.github.cfogrady.dim.modifier.data.dim.DimDataFactory;
-import com.github.cfogrady.dim.modifier.data.firmware.FirmwareData;
 import com.github.cfogrady.vb.dim.card.*;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -28,7 +24,6 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
     private final DimReader dimReader;
     private final DimDataFactory dimDataFactory;
     private final BemCardDataReader bemCardDataReader;
-    private final FirmwareData firmwareData;
     private final LoadedSceneFactory loadedSceneFactory;
     private final LoadedCardDataScene loadedCardDataScene;
 
@@ -41,14 +36,14 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
             fileChooser.setTitle("Select DIM File");
             File file = fileChooser.showOpenDialog(stage);
             if(file != null) {
-                InputStream fileInputStream = null;
+                InputStream fileInputStream;
                 try {
                     fileInputStream = new FileInputStream(file);
                     Card card = dimReader.readDimCardData(fileInputStream, false);
                     fileInputStream.close();
                     if(card instanceof DimCard dimCard) {
                         DimData dimData = dimDataFactory.fromDimContent(dimCard);
-                        LoadedScene scene = loadedSceneFactory.createLoadedScene(firmwareData, dimCard, dimData);
+                        LoadedScene scene = loadedSceneFactory.createLoadedScene(appState.getFirmwareData(), dimCard, dimData);
                         scene.setupScene();
                     } else if(card instanceof BemCard bemCard) {
                         BemCardData bemCardData = bemCardDataReader.fromBemCard(bemCard);

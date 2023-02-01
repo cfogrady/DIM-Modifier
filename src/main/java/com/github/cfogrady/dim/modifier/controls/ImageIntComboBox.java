@@ -29,10 +29,12 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
         super();
         this.setItems(valueLabels);
         this.setValue(getItemForValue(currentValue));
-        this.setOnAction(e -> {
-            int newValue = this.getValue().getValue();
-            valueSetter.accept(newValue);
-        });
+        if(valueSetter != null) {
+            this.setOnAction(e -> {
+                int newValue = this.getValue().getValue();
+                valueSetter.accept(newValue);
+            });
+        }
         this.setCellFactory(lv -> new ImageIntCell(imageScaler, background));
         this.setButtonCell(new ImageIntCell(imageScaler, background));
     }

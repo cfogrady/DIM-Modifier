@@ -18,15 +18,12 @@ import javafx.scene.paint.Color;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 public class BemCharactersView implements BemInfoView {
-    public static final int SELECTION_SPRITE_IDX = 1;
 
     private final AppState appState;
     private final ImageIntComboBoxFactory imageIntComboBoxFactory;
@@ -106,7 +103,8 @@ public class BemCharactersView implements BemInfoView {
             bemStatsView.refreshView(actualState);
             subView = bemStatsView.getMainView();
         } else if(viewState instanceof  BemEvolutionsView.EvolutionsViewState evolutionsViewState) {
-            subView = bemEvolutionsView.setupView(evolutionsViewState, this::refreshSubView);
+            bemEvolutionsView.refreshView(evolutionsViewState);
+            subView = bemEvolutionsView.getMainView();
         } else {
             throw new IllegalArgumentException("BemCharacterView must be a StatsViewState. Received a " + viewState.getClass().getName());
         }
@@ -114,7 +112,7 @@ public class BemCharactersView implements BemInfoView {
     }
 
     private Node setupSlotSelector(CharacterViewState viewState) {
-        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(viewState.selectedIndex, getIdleForCharacters(), newSlot -> {
+        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(viewState.selectedIndex, appState.getIdleForCharacters(), newSlot -> {
             viewState.selectedIndex = newSlot;
             if(viewState.nameUpdater != null) {
                 viewState.nameUpdater.cancel();
@@ -131,7 +129,6 @@ public class BemCharactersView implements BemInfoView {
         SpriteData.Sprite nameSprite = character.getSprites().get(0);
         Image image = spriteImageTranslator.loadImageFromSprite(nameSprite);
         ImageView imageView = new ImageView(image);
-        int x = 0;
         imageView.setViewport(new Rectangle2D(0, 0, 80, 15));
         if(nameSprite.getWidth() > 80) {
             viewState.nameUpdater = new NameUpdater(nameSprite.getWidth(), imageView, -80);
@@ -198,13 +195,5 @@ public class BemCharactersView implements BemInfoView {
             refreshSubView(newState);
         });
         return button;
-    }
-
-    List<SpriteData.Sprite> getIdleForCharacters() {
-        List<SpriteData.Sprite> idleSprites = new ArrayList<>();
-        for(Character<?> character : appState.getCardData().getCharacters()) {
-            idleSprites.add(character.getSprites().get(SELECTION_SPRITE_IDX));
-        }
-        return idleSprites;
     }
 }

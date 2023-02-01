@@ -4,6 +4,7 @@ import com.github.cfogrady.vb.dim.sprite.BemSpriteReader;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import com.github.cfogrady.vb.dim.util.RelativeByteOffsetInputStream;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 
 @RequiredArgsConstructor
+@Slf4j
 public class FirmwareManager {
     public static final String FIRMWARE_LOCATION = "FIRMWARE_LOCATION";
 
@@ -33,16 +35,19 @@ public class FirmwareManager {
             return false;
         }
         File file = new File(firmwareFile);
+        log.info("What is happening. File: {}. Valid: {}", file.getAbsolutePath(), isValidFirmwareLocation(file));
         return isValidFirmwareLocation(file);
     }
 
     public static boolean isValidFirmwareLocation(File file) {
-        return file != null && file.isFile() && file.canRead();
+        log.info("File exists: {}", file.exists());
+        return file != null && file.exists() && file.isFile() && file.canRead();
     }
 
     public FirmwareData loadFirmware() {
         String firmwareLocation = preferences.get(FIRMWARE_LOCATION, null);
         File file = new File(firmwareLocation);
+        log.info("File: {}, exists: {}", file.getAbsolutePath(), file.exists());
         try (FileInputStream fileInput = new FileInputStream(file)) {
             RelativeByteOffsetInputStream input = new RelativeByteOffsetInputStream(fileInput);
             input.readToOffset(SPRITE_DIMENSIONS_LOCATION);

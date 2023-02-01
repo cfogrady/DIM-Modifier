@@ -20,6 +20,7 @@ public class Main extends Application {
         primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("icon.png")));
         FirmwareManager firmwareManager = applicationOrchestrator.getFirmwareManager();
         if(firmwareManager.isValidFirmwareLocationSet()) {
+            applicationOrchestrator.getAppState().setFirmwareData(firmwareManager.loadFirmware());
             applicationOrchestrator.getFirstLoadScene().setupScene();
         } else {
             //firmware load scene

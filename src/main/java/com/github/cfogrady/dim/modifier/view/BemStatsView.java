@@ -106,7 +106,7 @@ public class BemStatsView {
     private void replaceCharacterSprite(SpriteData.Sprite newSprite, StatsViewState viewState) {
         if(newSprite != null) {
             viewState.replaceCurrentSprite(appState, newSprite);
-            if(viewState.spriteIndex == BemCharactersView.SELECTION_SPRITE_IDX) {
+            if(viewState.spriteIndex == AppState.SELECTION_SPRITE_IDX) {
                 viewState.characterRefresher.accept(viewState);
             }
             refreshSpriteArea(viewState);
@@ -114,11 +114,7 @@ public class BemStatsView {
     }
 
     private void refreshPrevSpriteButton(StatsViewState statsViewState) {
-        if(statsViewState.spriteIndex == IDLE_SPRITE_IDX) {
-            previousButton.setDisable(true);
-        } else {
-            previousButton.setDisable(false);
-        }
+        previousButton.setDisable(statsViewState.spriteIndex == IDLE_SPRITE_IDX);
         previousButton.setOnAction(event -> {
             statsViewState.spriteIndex--;
             refreshView(statsViewState);
@@ -126,11 +122,7 @@ public class BemStatsView {
     }
 
     private void refreshNextSpriteButton(StatsViewState statsViewState) {
-        if(statsViewState.spriteIndex == CLOSE_UP_SPRITE_IDX) {
-            nextButton.setDisable(true);
-        } else {
-            nextButton.setDisable(false);
-        }
+        nextButton.setDisable(statsViewState.spriteIndex == CLOSE_UP_SPRITE_IDX);
         nextButton.setOnAction(event -> {
             statsViewState.spriteIndex++;
             refreshView(statsViewState);

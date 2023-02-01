@@ -33,7 +33,7 @@ public class StringIntComboBox extends ComboBox<StringIntComboBox.StringIntPair>
     @Data
     public static class StringIntPair {
         private final String label;
-        private final int value;
+        private final Integer value;
     }
 
     public static class StringIntCell extends ListCell<StringIntPair> {

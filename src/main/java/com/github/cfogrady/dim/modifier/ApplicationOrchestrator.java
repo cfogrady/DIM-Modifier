@@ -18,6 +18,7 @@ import com.github.cfogrady.vb.dim.card.BemCardReader;
 import com.github.cfogrady.vb.dim.card.BemCardWriter;
 import com.github.cfogrady.vb.dim.card.DimCard;
 import com.github.cfogrady.vb.dim.card.DimReader;
+import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -56,17 +57,17 @@ public class ApplicationOrchestrator {
         SpriteImageTranslator spriteImageTranslator = new SpriteImageTranslator();
         ImageIntComboBoxFactory imageIntComboBoxFactory = new ImageIntComboBoxFactory(spriteImageTranslator);
         LoadedSceneFactory loadedSceneFactory = new LoadedSceneFactory(digimonWriter, digimonReader, stage);
-        BemEvolutionsView bemEvolutionsView = new BemEvolutionsView(appState);
+        GridPane transformationGrid = new GridPane();
+        transformationGrid.setGridLinesVisible(true);
+        BemEvolutionsView bemEvolutionsView = new BemEvolutionsView(imageIntComboBoxFactory, appState, transformationGrid);
         Timer timer = new Timer();
         SpriteReplacer spriteReplacer = new SpriteReplacer(appState, stage, spriteImageTranslator);
         BemStatsViewFactory bemStatsViewFactory = new BemStatsViewFactory(appState, spriteImageTranslator, spriteReplacer, imageIntComboBoxFactory);
         BemStatsView bemStatsView = bemStatsViewFactory.buildBemStatsView();
         BemCharactersView bemCharactersView = new BemCharactersView(appState, imageIntComboBoxFactory, spriteImageTranslator, spriteReplacer, timer, bemStatsView, bemEvolutionsView);
         LoadedCardDataScene loadedCardDataScene = new LoadedCardDataScene(dimReader, bemCardDataReader, bemCardDataWriter, bemCharactersView, stage, appState);
-        FirmwareData firmwareData = firmwareManager.loadFirmware();
-        appState.setFirmwareData(firmwareData);
-        FirstLoadScene firstLoadScene = new FirstLoadScene(appState, stage, dimReader, new DimDataFactory(), bemCardDataReader, firmwareData, loadedSceneFactory, loadedCardDataScene);
-        FirmwareLoadScene firmwareLoadScene = new FirmwareLoadScene(stage, firmwareManager, firstLoadScene);
+        FirstLoadScene firstLoadScene = new FirstLoadScene(appState, stage, dimReader, new DimDataFactory(), bemCardDataReader, loadedSceneFactory, loadedCardDataScene);
+        FirmwareLoadScene firmwareLoadScene = new FirmwareLoadScene(stage, firmwareManager, firstLoadScene, appState);
         return ApplicationOrchestrator.builder()
                 .appState(appState)
                 .dimReader(dimReader)

@@ -9,6 +9,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class BemTransformationEntry extends TransformationEntry {
-    private final Integer requiredCompletedAdventureLevel;
-    private final boolean isSecret;
+    private Integer requiredCompletedAdventureLevel;
+    private boolean isSecret;
 }
