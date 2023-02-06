@@ -8,10 +8,7 @@ import com.github.cfogrady.dim.modifier.data.dim.DigimonReader;
 import com.github.cfogrady.dim.modifier.data.dim.DigimonWriter;
 import com.github.cfogrady.dim.modifier.data.dim.DimDataFactory;
 import com.github.cfogrady.dim.modifier.data.firmware.FirmwareManager;
-import com.github.cfogrady.dim.modifier.view.BemCharactersView;
 import com.github.cfogrady.dim.modifier.view.controller.*;
-import com.github.cfogrady.dim.modifier.view.BemStatsView;
-import com.github.cfogrady.dim.modifier.view.BemStatsViewFactory;
 import com.github.cfogrady.vb.dim.card.BemCardReader;
 import com.github.cfogrady.vb.dim.card.BemCardWriter;
 import com.github.cfogrady.vb.dim.card.DimReader;
@@ -37,7 +34,6 @@ public class ApplicationOrchestrator {
     private final BemCardDataReader bemCardDataReader;
     private final DimReader dimReader;
     private final LoadedSceneFactory loadedSceneFactory;
-    private final LoadedCardDataScene loadedCardDataScene;
     private final FirmwareLoadScene firmwareLoadScene;
     private final FirmwareManager firmwareManager;
     private final FirstLoadScene firstLoadScene;
@@ -62,10 +58,6 @@ public class ApplicationOrchestrator {
         RegularTransformationsGridController regularTransformationGridController = new RegularTransformationsGridController(spriteImageTranslator, appState);
         Timer timer = new Timer();
         SpriteReplacer spriteReplacer = new SpriteReplacer(appState, stage, spriteImageTranslator);
-        BemStatsViewFactory bemStatsViewFactory = new BemStatsViewFactory(appState, spriteImageTranslator, spriteReplacer, imageIntComboBoxFactory);
-        BemStatsView bemStatsView = bemStatsViewFactory.buildBemStatsView();
-        BemCharactersView bemCharactersView = new BemCharactersView(appState, imageIntComboBoxFactory, spriteImageTranslator, spriteReplacer, timer, bemStatsView);
-        LoadedCardDataScene loadedCardDataScene = new LoadedCardDataScene(dimReader, bemCardDataReader, bemCardDataWriter, bemCharactersView, stage, appState);
         StatsGridController statsGridController = new StatsGridController(appState, spriteImageTranslator);
         StatsViewController statsViewController = new StatsViewController(appState, spriteImageTranslator, spriteReplacer, statsGridController);
         FXMLLoader loader = new FXMLLoader(ApplicationOrchestrator.class.getResource("/StatsView.fxml"));
@@ -91,7 +83,7 @@ public class ApplicationOrchestrator {
         loader.setControllerFactory(p -> systemViewController);
         Node systemView = loader.load();
         LoadedViewController loadedViewController = new LoadedViewController(appState, charactersView, characterViewController, battlesViewController, battlesView, systemViewController, systemView);
-        FirstLoadScene firstLoadScene = new FirstLoadScene(appState, stage, dimReader, new DimDataFactory(), bemCardDataReader, loadedSceneFactory, loadedCardDataScene, loadedViewController);
+        FirstLoadScene firstLoadScene = new FirstLoadScene(appState, stage, dimReader, new DimDataFactory(), bemCardDataReader, loadedSceneFactory, loadedViewController);
         FirmwareLoadScene firmwareLoadScene = new FirmwareLoadScene(stage, firmwareManager, firstLoadScene, appState);
         return ApplicationOrchestrator.builder()
                 .appState(appState)
@@ -103,7 +95,6 @@ public class ApplicationOrchestrator {
                 .firmwareLoadScene(firmwareLoadScene)
                 .firmwareManager(firmwareManager)
                 .firstLoadScene(firstLoadScene)
-                .loadedCardDataScene(loadedCardDataScene)
                 .loadedSceneFactory(loadedSceneFactory)
                 .timer(timer)
                 .build();

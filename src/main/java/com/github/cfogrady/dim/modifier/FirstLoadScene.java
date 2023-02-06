@@ -27,7 +27,6 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
     private final DimDataFactory dimDataFactory;
     private final BemCardDataReader bemCardDataReader;
     private final LoadedSceneFactory loadedSceneFactory;
-    private final LoadedCardDataScene loadedCardDataScene;
     private final LoadedViewController loadedViewController;
 
     @Override
