@@ -30,8 +30,4 @@ public class CardSprites {
 
     public List<SpriteData.Sprite> getGroupedAdventureBackgrounds() {return backgrounds.subList(2, backgrounds.size()); }
 
-    public void setDisplayBackground(SpriteData.Sprite sprite) {
-        backgrounds.set(0, sprite);
-    }
-
 }

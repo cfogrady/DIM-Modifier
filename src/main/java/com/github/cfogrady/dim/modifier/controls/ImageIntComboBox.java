@@ -7,15 +7,20 @@ import javafx.scene.control.ListCell;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Consumer;
 
 @Slf4j
 public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
+
+    public ImageIntComboBox() {
+        super();
+    }
 
     public ImageIntComboBox(int currentValue, ObservableList<ImageIntPair> valueLabels, Consumer<Integer> valueSetter) {
         this(currentValue, valueLabels, valueSetter, 1.0);
@@ -35,11 +40,22 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
                 valueSetter.accept(newValue);
             });
         }
-        this.setCellFactory(lv -> new ImageIntCell(imageScaler, background));
-        this.setButtonCell(new ImageIntCell(imageScaler, background));
+        this.setCellFactory(lv -> new ImageIntCell(imageScaler, null, background));
+        this.setButtonCell(new ImageIntCell(imageScaler, null, background));
     }
 
-    private ImageIntPair getItemForValue(int value) {
+    public void initialize(Integer currentValue, ObservableList<ImageIntPair> valueLabels, double imageScaler, Background background, String noneText) {
+        this.setItems(valueLabels);
+        this.setValue(getItemForValue(currentValue));
+        this.setCellFactory(lv -> new ImageIntCell(imageScaler, noneText, background));
+        this.setButtonCell(new ImageIntCell(imageScaler, noneText, background));
+    }
+
+    public void initialize(ObservableList<ImageIntPair> valueLabels) {
+        initialize(null, valueLabels, 1.0, null, null);
+    }
+
+    public ImageIntPair getItemForValue(Integer value) {
         for(ImageIntPair option : getItems()) {
             if(option.getValue() == value) {
                 return option;
@@ -49,14 +65,15 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
     }
 
     @Data
-    public static class ImageIntPair {
-        private final Image image;
-        private final int value;
+    public static class ImageIntPair extends LabelValuePair<Integer, Image> {
+        private final Image label;
+        private final Integer value;
     }
 
     @RequiredArgsConstructor
     public static class ImageIntCell extends ListCell<ImageIntPair> {
         private final double scaler;
+        private final String noneText;
         private final Background background;
 
         @Override
@@ -64,14 +81,19 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
             super.updateItem(option, empty) ;
             setText(null);
             setGraphic(null);
-            if (!empty) {
-                ImageView imageView = new ImageView(option.getImage());
-                imageView.setFitWidth(option.getImage().getWidth() * scaler);
-                imageView.setFitHeight(option.getImage().getHeight() * scaler);
+            if(empty || option.getValue() == null) {
+                StackPane stackPane = new StackPane(new Text(noneText == null ? "NONE" : noneText));
+                stackPane.setBackground(background);
+                VBox.setMargin(stackPane, new Insets(10));
+                setGraphic(stackPane);
+            } else if (!empty) {
+                ImageView imageView = new ImageView(option.getLabel());
+                imageView.setFitWidth(option.getLabel().getWidth() * scaler);
+                imageView.setFitHeight(option.getLabel().getHeight() * scaler);
                 if(background != null) {
                     StackPane stackPane = new StackPane(imageView);
-                    stackPane.setMaxHeight(option.getImage().getHeight() * scaler);
-                    stackPane.setMaxWidth(option.getImage().getWidth() * scaler);
+                    stackPane.setMaxHeight(option.getLabel().getHeight() * scaler);
+                    stackPane.setMaxWidth(option.getLabel().getWidth() * scaler);
                     stackPane.setBackground(background);
                     VBox.setMargin(stackPane, new Insets(10));
                     setGraphic(stackPane);

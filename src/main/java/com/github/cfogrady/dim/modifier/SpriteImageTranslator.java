@@ -1,6 +1,9 @@
 package com.github.cfogrady.dim.modifier;
 
+import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.image.*;
 import javafx.scene.paint.Color;
 import lombok.RequiredArgsConstructor;
@@ -10,10 +13,21 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
 public class SpriteImageTranslator {
+
+    public ObservableList<ImageIntComboBox.ImageIntPair> createImageValuePairs(List<SpriteData.Sprite> sprites) {
+        ObservableList<ImageIntComboBox.ImageIntPair> items = FXCollections.observableArrayList();
+        for(int i = 0; i < sprites.size(); i++) {
+            SpriteData.Sprite sprite = sprites.get(i);
+            Image image = loadImageFromSprite(sprite);
+            items.add(new ImageIntComboBox.ImageIntPair(image, i));
+        }
+        return items;
+    }
 
     public WritableImage loadImageFromSprite(SpriteData.Sprite sprite) {
         ByteBuffer byteBuffer = ByteBuffer.wrap(sprite.getBGRA());

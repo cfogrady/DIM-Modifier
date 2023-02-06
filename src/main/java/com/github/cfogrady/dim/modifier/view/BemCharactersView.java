@@ -31,7 +31,6 @@ public class BemCharactersView implements BemInfoView {
     private final SpriteReplacer spriteReplacer;
     private final Timer timer;
     private final BemStatsView bemStatsView;
-    private final BemEvolutionsView bemEvolutionsView;
 
     public static abstract class CharacterViewState implements ViewState {
         int selectedIndex;
@@ -62,8 +61,9 @@ public class BemCharactersView implements BemInfoView {
     }
 
     private VBox characterView;
-    private HBox characterSelector;
+    private HBox characterSelection;
     private HBox subViewButtons;
+    private ImageIntComboBox characterSelector;
 
     private void refreshAll(CharacterViewState characterViewState) {
         refreshCharacterSelector(characterViewState);
@@ -74,22 +74,22 @@ public class BemCharactersView implements BemInfoView {
     private void setupCharacterView() {
         if(characterView == null) {
             characterView = new VBox();
-            characterSelector = new HBox();
-            characterSelector.setSpacing(10);
-            characterSelector.setPadding(new Insets(10));
+            characterSelection = new HBox();
+            characterSelection.setSpacing(10);
+            characterSelection.setPadding(new Insets(10));
             subViewButtons = new HBox();
             subViewButtons.setSpacing(10);
             subViewButtons.setPadding(new Insets(10));
             characterView.setSpacing(10);
             characterView.setPadding(new Insets(10));
-            characterView.getChildren().add(new HBox(characterSelector, subViewButtons));
+            characterView.getChildren().add(new HBox(characterSelection, subViewButtons));
             characterView.getChildren().add(new HBox());
         }
     }
 
     private void refreshCharacterSelector(CharacterViewState viewState) {
-        characterSelector.getChildren().clear();
-        characterSelector.getChildren().addAll(setupSlotSelector(viewState), setupName(viewState));
+        characterSelection.getChildren().clear();
+        characterSelection.getChildren().addAll(setupSlotSelector(viewState), setupName(viewState));
     }
 
     private void refreshViewButtons(CharacterViewState characterViewState) {
@@ -97,14 +97,15 @@ public class BemCharactersView implements BemInfoView {
         this.subViewButtons.getChildren().addAll(setupStatsViewButton(characterViewState), setupEvolutionsViewButton(characterViewState));
     }
 
+//    private void refreshCharacterSelectorChangeAction(CharacterViewState characterViewState) {
+//        characterSelection.getChildren().get(0)
+//    }
+
     private void refreshSubView(ViewState viewState) {
         Node subView;
         if(viewState instanceof BemStatsView.StatsViewState actualState) {
             bemStatsView.refreshView(actualState);
             subView = bemStatsView.getMainView();
-        } else if(viewState instanceof  BemEvolutionsView.EvolutionsViewState evolutionsViewState) {
-            bemEvolutionsView.refreshView(evolutionsViewState);
-            subView = bemEvolutionsView.getMainView();
         } else {
             throw new IllegalArgumentException("BemCharacterView must be a StatsViewState. Received a " + viewState.getClass().getName());
         }
@@ -112,14 +113,8 @@ public class BemCharactersView implements BemInfoView {
     }
 
     private Node setupSlotSelector(CharacterViewState viewState) {
-        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(viewState.selectedIndex, appState.getIdleForCharacters(), newSlot -> {
-            viewState.selectedIndex = newSlot;
-            if(viewState.nameUpdater != null) {
-                viewState.nameUpdater.cancel();
-                viewState.nameUpdater = null;
-            }
-            refreshAll(viewState);
-        });
+        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(viewState.selectedIndex, appState.getIdleForCharacters(), null);
+        comboBox.setOnAction(e -> viewState.selectedIndex = comboBox.getValue().getValue());
         comboBox.setPrefWidth(120);
         return comboBox;
     }
@@ -186,14 +181,6 @@ public class BemCharactersView implements BemInfoView {
     private Button setupEvolutionsViewButton(CharacterViewState viewState) {
         Button button = new Button();
         button.setText("Evolutions");
-        if(viewState instanceof BemEvolutionsView.EvolutionsViewState) {
-            button.setDisable(true);
-        }
-        button.setOnAction(event -> {
-            BemEvolutionsView.EvolutionsViewState newState = BemEvolutionsView.fromCharacterViewState(viewState);
-            refreshViewButtons(newState);
-            refreshSubView(newState);
-        });
         return button;
     }
 }

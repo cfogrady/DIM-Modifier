@@ -20,8 +20,8 @@ public class Character<T extends TransformationEntry> {
     private int bp;
     private int hp;
     private int ap;
-    private int firstPoolBattleChance;
-    private int secondPoolBattleChance;
+    private Integer firstPoolBattleChance;
+    private Integer secondPoolBattleChance;
     private List<SpriteData.Sprite> sprites; // for dim, 6 and 7 for stages 0 and 1 respectively. Everything else 14
     private List<T> transformationEntries;
     private Fusions fusions;

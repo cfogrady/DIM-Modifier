@@ -36,4 +36,8 @@ public class AppState {
         }
         return idleSprites;
     }
+
+    public Character<?> getCharacter(int characterIndex) {
+        return cardData.getCharacters().get(characterIndex);
+    }
 }

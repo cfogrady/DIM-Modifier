@@ -5,6 +5,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import lombok.Setter;
 
 import java.util.function.Consumer;
 
@@ -12,16 +13,24 @@ public class IntegerTextField extends TextField {
 
     private int min;
     private int max;
+    @Setter
+    private boolean allowBlanks;
 
-    public IntegerTextField(int initialValue, Consumer<Integer> valueConsumer) {
+    public IntegerTextField(Integer initialValue, Consumer<Integer> valueConsumer) {
         super();
-        this.setText(Integer.toString(initialValue));
+        if(initialValue != null) {
+            this.setText(Integer.toString(initialValue));
+        }
         this.min = 0;
         this.max = DimReader.NONE_VALUE;
         this.textProperty().addListener((obs,oldv,newv) -> {
             boolean error = false;
             if(newv == null || newv.isBlank()) {
-                error = true;
+                if(allowBlanks) {
+                    valueConsumer.accept(null);
+                } else {
+                    error = true;
+                }
             } else {
                 try {
                     int value = Integer.parseInt(newv);
@@ -48,4 +57,29 @@ public class IntegerTextField extends TextField {
     public void setMax(int max) {
         this.max = max;
     }
+
+    @Override
+    public void replaceText(int start, int end, String text)
+    {
+        if (validate(text))
+        {
+            super.replaceText(start, end, text);
+        }
+    }
+
+    @Override
+    public void replaceSelection(String text)
+    {
+        if (validate(text))
+        {
+            super.replaceSelection(text);
+        }
+    }
+
+    private boolean validate(String text)
+    {
+        return text.matches("[0-9]*");
+    }
+
+
 }

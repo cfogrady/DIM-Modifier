@@ -68,9 +68,9 @@ public class BemCardDataReader {
                 .bp(characterStatEntry.getBp())
                 .ap(characterStatEntry.getAp())
                 .hp(characterStatEntry.getHp())
-                .firstPoolBattleChance(characterStatEntry.getFirstPoolBattleChance())
-                .secondPoolBattleChance(characterStatEntry.getSecondPoolBattleChance())
-                .thirdPoolBattleChance(characterStatEntry.getThirdPoolBattleChance())
+                .firstPoolBattleChance(NoneUtils.nullIfNone(characterStatEntry.getFirstPoolBattleChance()))
+                .secondPoolBattleChance(NoneUtils.nullIfNone(characterStatEntry.getSecondPoolBattleChance()))
+                .thirdPoolBattleChance(NoneUtils.nullIfNone(characterStatEntry.getThirdPoolBattleChance()))
                 .minutesUntilTransformation(getMinutesUntilTransformation(index, bemCard))
                 .transformationEntries(getTransformationsForSlot(index, bemCard, idBySlot))
                 .sprites(getSpritesForSlot(index, bemCard))
@@ -162,14 +162,16 @@ public class BemCardDataReader {
         List<BemAdventure> adventures = new ArrayList<>(bemCard.getBemAdventureLevels().getLevels().size());
         for(BemAdventureLevels.BemAdventureLevel adventureLevel : bemCard.getBemAdventureLevels().getLevels()) {
             UUID giftCharacter = adventureLevel.getGiftCharacterIndex() == NONE_VALUE ? null : idBySlot.get(adventureLevel.getGiftCharacterIndex());
+            Integer smallAttackId = adventureLevel.getSmallAttackId() == bemCard.getBemCharacterStats().getCharacterEntries().get(adventureLevel.getBossCharacterIndex()).getSmallAttackId() ? null : adventureLevel.getSmallAttackId();
+            Integer bigAttackId = adventureLevel.getBigAttackId() == bemCard.getBemCharacterStats().getCharacterEntries().get(adventureLevel.getBossCharacterIndex()).getBigAttackId() ? null : adventureLevel.getBigAttackId();
             adventures.add(BemAdventure.builder()
                             .steps(adventureLevel.getSteps())
                             .bossId(idBySlot.get(adventureLevel.getBossCharacterIndex()))
                             .bossBp(adventureLevel.getBp())
                             .bossAp(adventureLevel.getAp())
                             .bossHp(adventureLevel.getHp())
-                            .smallAttackId(adventureLevel.getSmallAttackId())
-                            .bigAttackId(adventureLevel.getBigAttackId())
+                            .smallAttackId(smallAttackId)
+                            .bigAttackId(bigAttackId)
                             .battleBackground(adventureLevel.getBackground2())
                             .walkingBackground(adventureLevel.getBackground1())
                             .showBossIdentiy(adventureLevel.getShowBossIdentity() == 1)

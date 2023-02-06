@@ -11,7 +11,7 @@ import java.util.List;
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class BemCharacter extends Character<BemTransformationEntry> {
-    private int thirdPoolBattleChance;
+    private Integer thirdPoolBattleChance;
     private Integer minutesUntilTransformation;
     private List<BemSpecificFusion> specificFusions;
 }

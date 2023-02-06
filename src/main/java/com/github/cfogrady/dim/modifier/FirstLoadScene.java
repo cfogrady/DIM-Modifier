@@ -5,7 +5,9 @@ import com.github.cfogrady.dim.modifier.data.bem.BemCardData;
 import com.github.cfogrady.dim.modifier.data.bem.BemCardDataReader;
 import com.github.cfogrady.dim.modifier.data.dim.DimData;
 import com.github.cfogrady.dim.modifier.data.dim.DimDataFactory;
+import com.github.cfogrady.dim.modifier.view.controller.LoadedViewController;
 import com.github.cfogrady.vb.dim.card.*;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
@@ -26,6 +28,7 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
     private final BemCardDataReader bemCardDataReader;
     private final LoadedSceneFactory loadedSceneFactory;
     private final LoadedCardDataScene loadedCardDataScene;
+    private final LoadedViewController loadedViewController;
 
     @Override
     public void setupScene() {
@@ -49,7 +52,12 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
                         BemCardData bemCardData = bemCardDataReader.fromBemCard(bemCard);
                         appState.setRawCard(card);
                         appState.setCardData(bemCardData);
-                        loadedCardDataScene.setupScene(null);
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoadedView.fxml"));
+                        loader.setControllerFactory(p -> loadedViewController);
+                        Scene scene = new Scene(loader.load(), 1280, 720);
+                        loadedViewController.refreshAll();
+                        stage.setScene(scene);
+                        stage.show();
                     } else {
                         throw new IllegalStateException("DimReader returned an unknown type for DimCard");
                     }

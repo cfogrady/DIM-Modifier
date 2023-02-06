@@ -12,8 +12,8 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 public class BemAdventure extends Adventure {
     private boolean showBossIdentiy;
-    private int smallAttackId;
-    private int bigAttackId;
+    private Integer smallAttackId;
+    private Integer bigAttackId;
     private int walkingBackground;
     private int battleBackground;
     private UUID giftCharacter;

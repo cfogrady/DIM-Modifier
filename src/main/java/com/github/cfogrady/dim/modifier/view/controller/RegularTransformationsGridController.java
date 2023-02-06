@@ -1,5 +1,6 @@
-package com.github.cfogrady.dim.modifier.view;
+package com.github.cfogrady.dim.modifier.view.controller;
 
+import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.controls.*;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
@@ -12,61 +13,61 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
-import lombok.Getter;
+import javafx.scene.layout.*;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@RequiredArgsConstructor
-public class BemEvolutionsView {
-    private final ImageIntComboBoxFactory imageIntComboBoxFactory;
+@RequiredArgsConstructor()
+public class RegularTransformationsGridController {
+    private final SpriteImageTranslator spriteImageTranslator;
     private final AppState appState;
-    @Getter
-    private final GridPane mainView;
 
-    public static class EvolutionsViewState extends BemCharactersView.CharacterViewState {
+    @Setter
+    private StackPane stackPane;
+
+    public void refreshView(Character<?> character) {
+        stackPane.getChildren().clear();
+        stackPane.getChildren().add(setupRegularTransformationsGrid(character));
     }
 
-    public static EvolutionsViewState fromCharacterViewState(BemCharactersView.CharacterViewState original) {
-        EvolutionsViewState newState = new EvolutionsViewState();
-        newState.copyFrom(original);
-        return newState;
-    }
+    private GridPane setupRegularTransformationsGrid(Character<?> character) {
+        GridPane gridPane = new GridPane();
+        gridPane.setGridLinesVisible(true);
 
-    public void refreshView(EvolutionsViewState state) {
-        if(mainView.isGridLinesVisible()) {
-            Node node = mainView.getChildren().get(0);
-            mainView.getChildren().clear();
-            mainView.getChildren().add(node);
-        } else {
-            mainView.getChildren().clear();
-        }
         int rowIndex = 0;
-        for(TransformationEntry transformation : state.getCharacter(appState).getTransformationEntries()) {
-            addRow(rowIndex, transformation, state);
+        for(TransformationEntry transformation : character.getTransformationEntries()) {
+            addRow(gridPane, rowIndex, transformation, character);
             rowIndex++;
         }
+        return gridPane;
     }
 
-    private void addRow(int rowIndex, TransformationEntry transformationEntry, EvolutionsViewState state) {
+    private void addRow(GridPane gridPane, int rowIndex, TransformationEntry transformationEntry, Character<?> character) {
         int columnIndex = 0;
-        mainView.add(getEvolveToColumn(transformationEntry), columnIndex++, rowIndex);
-        mainView.add(getVitalValueRequirementLabel(transformationEntry), columnIndex++, rowIndex);
-        mainView.add(getTrophiesRequirementLabel(transformationEntry), columnIndex++, rowIndex);
-        mainView.add(getBattlesRequirementLabel(transformationEntry), columnIndex++, rowIndex);
-        mainView.add(getWinRatioRequirementLabel(transformationEntry), columnIndex++, rowIndex);
+        gridPane.add(getEvolveToColumn(transformationEntry), columnIndex++, rowIndex);
+        gridPane.add(getVitalValueRequirementLabel(transformationEntry), columnIndex++, rowIndex);
+        gridPane.add(getTrophiesRequirementLabel(transformationEntry), columnIndex++, rowIndex);
+        gridPane.add(getBattlesRequirementLabel(transformationEntry), columnIndex++, rowIndex);
+        gridPane.add(getWinRatioRequirementLabel(transformationEntry), columnIndex++, rowIndex);
         if(transformationEntry instanceof BemTransformationEntry bemTransformationEntry) {
-            mainView.add(getAreaCompletionLabel(bemTransformationEntry), columnIndex++, rowIndex);
+            gridPane.add(getAreaCompletionLabel(bemTransformationEntry), columnIndex++, rowIndex);
         }
-        mainView.add(getDeleteButton(transformationEntry, state), columnIndex++, rowIndex);
+        gridPane.add(getDeleteButton(transformationEntry, character), columnIndex++, rowIndex);
     }
 
-    Node getEvolveToColumn(TransformationEntry transformationEntry) {
+    private Node getEvolveToColumn(TransformationEntry transformationEntry) {
         Label label = new Label("Evolve To:");
-        Integer evolveToIndex = appState.getCardData().getUuidToCharacterSlot().get(transformationEntry.getToCharacter());
-        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(evolveToIndex, appState.getIdleForCharacters(), newSlot -> {
-            transformationEntry.setToCharacter(appState.getCardData().getCharacters().get(newSlot).getId());
+        ImageIntComboBox comboBox = new ImageIntComboBox();
+        comboBox.initialize(spriteImageTranslator.createImageValuePairs(appState.getIdleForCharacters()));
+        if(transformationEntry.getToCharacter() != null) {
+            Integer evolveToIndex = appState.getCardData().getUuidToCharacterSlot().get(transformationEntry.getToCharacter());
+            if(evolveToIndex != null) {
+                comboBox.setValue(comboBox.getItemForValue(evolveToIndex));
+            }
+        }
+        comboBox.setOnAction(e -> {
+            int newSlot = comboBox.getValue().getValue().intValue();
+            transformationEntry.setToCharacter(appState.getCharacter(newSlot).getId());
         });
         comboBox.setPrefWidth(120);
         VBox vBox = new VBox(label, comboBox);
@@ -137,12 +138,11 @@ public class BemEvolutionsView {
         return vBox;
     }
 
-    private Node getDeleteButton(TransformationEntry transformationEntry, EvolutionsViewState transformationViewState) {
-        Character<?> character = transformationViewState.getCharacter(appState);
+    private Node getDeleteButton(TransformationEntry transformationEntry, Character<?> character) {
         Button button = new Button("Delete Entry");
         button.setOnAction(e -> {
             character.getTransformationEntries().remove(transformationEntry);
-            refreshView(transformationViewState);
+            refreshView(character);
         });
         GridPane.setMargin(button, new Insets(10));
         return button;

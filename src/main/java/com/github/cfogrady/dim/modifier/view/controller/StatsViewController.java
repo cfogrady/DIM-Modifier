@@ -1,0 +1,132 @@
+package com.github.cfogrady.dim.modifier.view.controller;
+
+import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
+import com.github.cfogrady.dim.modifier.SpriteReplacer;
+import com.github.cfogrady.dim.modifier.data.AppState;
+import com.github.cfogrady.dim.modifier.data.card.Character;
+import com.github.cfogrady.vb.dim.sprite.SpriteData;
+import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+
+import java.io.File;
+import java.net.URL;
+import java.util.List;
+import java.util.ResourceBundle;
+
+@Slf4j
+@RequiredArgsConstructor
+public class StatsViewController implements Initializable {
+    public static final int IDLE_SPRITE_IDX = 1;
+    public static final int CLOSE_UP_SPRITE_IDX = 13;
+
+    private final AppState appState;
+    private final SpriteImageTranslator spriteImageTranslator;
+    private final SpriteReplacer spriteReplacer;
+    private final StatsGridController statsGridController;
+
+    @FXML
+    private StackPane backgroundStackPane;
+    @FXML
+    private ImageView imageView;
+    @FXML
+    private Button prevSpriteButton;
+    @FXML
+    private Button nextSpriteButton;
+    @FXML
+    private StackPane gridContainer;
+
+    @Setter
+    private Runnable refreshIdleSprite;
+    @Setter
+    private Character<?> character;
+    private int spriteOption = 1;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+    }
+
+    public void refreshAll() {
+        refreshSpriteSection();
+        refreshGrid();
+    }
+
+    private void refreshSpriteSection() {
+        SpriteData.Sprite sprite = character.getSprites().get(spriteOption);
+        refreshSprite(sprite);
+        refreshBackground(sprite);
+        refreshSpriteButtons();
+    }
+
+    private void refreshSpriteButtons() {
+        prevSpriteButton.setDisable(spriteOption == IDLE_SPRITE_IDX);
+        prevSpriteButton.setOnAction(event -> {
+            spriteOption--;
+            refreshSprite(character.getSprites().get(spriteOption));
+            refreshSpriteButtons();
+        });
+        nextSpriteButton.setDisable(spriteOption == CLOSE_UP_SPRITE_IDX);
+        nextSpriteButton.setOnAction(event -> {
+            spriteOption++;
+            refreshSprite(character.getSprites().get(spriteOption));
+            refreshSpriteButtons();
+        });
+    }
+
+    private void refreshBackground(SpriteData.Sprite sprite) {
+        backgroundStackPane.setBackground(getBackground()); //160x320
+        backgroundStackPane.setOnDragDropped( e-> {
+            if(e.getDragboard().hasFiles()) {
+                List<File> files = e.getDragboard().getFiles();
+                File file = files.get(0);
+                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
+                replaceCharacterSprite(newSprite);
+            }
+        });
+    }
+
+    private void refreshSprite(SpriteData.Sprite sprite) {
+        setImageViewToSprite(sprite);
+    }
+
+    private void setImageViewToSprite(SpriteData.Sprite sprite) {
+        log.info("Sprite Displayed size {}x{}. Being displayed at {}x{}: ", sprite.getWidth(), sprite.getHeight(), sprite.getWidth()*2, sprite.getHeight()*2);
+        Image image = spriteImageTranslator.loadImageFromSprite(sprite);
+        imageView.setImage(image);
+        imageView.setFitWidth(sprite.getWidth() * 2.0);
+        imageView.setFitHeight(sprite.getHeight() * 2.0);
+        imageView.setOnMouseClicked(click -> {
+            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite, true, true);
+            replaceCharacterSprite(newSprite);
+        });
+    }
+
+    private void replaceCharacterSprite(SpriteData.Sprite newSprite) {
+        if(newSprite != null) {
+            character.getSprites().set(spriteOption, newSprite);
+            if(spriteOption == AppState.SELECTION_SPRITE_IDX) {
+                refreshIdleSprite.run();
+            }
+            refreshSprite(newSprite);
+        }
+    }
+
+    private void refreshGrid() {
+        gridContainer.getChildren().clear();
+        gridContainer.getChildren().add(statsGridController.refreshStatsGrid(character));
+    }
+
+    private Background getBackground() {
+        SpriteData.Sprite sprite = appState.getSelectedBackground();
+        Image image = spriteImageTranslator.loadImageFromSprite(sprite);
+        BackgroundSize size = new BackgroundSize(100, 100, true, true, true, true);
+        BackgroundImage backgroundImage = new BackgroundImage(image, BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER, size);
+        return new Background(backgroundImage);
+    }
+}

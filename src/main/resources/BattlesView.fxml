@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Accordion?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.TitledPane?>
+
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.ScrollPane?>
+<ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/19" fx:controller="com.github.cfogrady.dim.modifier.view.controller.BattlesViewController">
+  <Accordion>
+    <panes>
+      <TitledPane animated="false" text="NFC Battles">
+        <content>
+          <StackPane fx:id="nfcGridHolder"/>
+        </content>
+      </TitledPane>
+      <TitledPane animated="false" text="Adventures">
+        <content>
+          <StackPane fx:id="adventuresGridHolder"/>
+        </content>
+      </TitledPane>
+    </panes>
+  </Accordion>
+</ScrollPane>

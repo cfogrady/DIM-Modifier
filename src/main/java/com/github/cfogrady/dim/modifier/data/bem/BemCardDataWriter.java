@@ -1,5 +1,6 @@
 package com.github.cfogrady.dim.modifier.data.bem;
 
+import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.dim.modifier.utils.NoneUtils;
 import com.github.cfogrady.dim.modifier.utils.NullUtils;
 import com.github.cfogrady.vb.dim.adventure.BemAdventureLevels;
@@ -39,7 +40,7 @@ public class BemCardDataWriter {
     public BemCard mergeBack(BemCardData newData, BemCard original) {
         BemCharacterStats newStats = createStats(original.getBemCharacterStats(), newData.getCharacters());
         BemTransformationRequirements newTransformationRequirements = createTransformationRequirements(original.getBemTransformationRequirements(), newData.getCharacters(), newData.getUuidToCharacterSlot());
-        BemAdventureLevels newAdventures = createAdventures(original.getBemAdventureLevels(), newData.getAdventures(), newData.getUuidToCharacterSlot());
+        BemAdventureLevels newAdventures = createAdventures(original.getBemAdventureLevels(), newData.getAdventures(), newData.getUuidToCharacterSlot(), newData.getCharacters());
         BemAttributeFusions newAttributeFusions = createAttributeFusions(original.getBemAttributeFusions(), newData.getCharacters(), newData.getUuidToCharacterSlot());
         BemSpecificFusions newSpecificFusions = createSpecificFusions(original.getBemSpecificFusions(), newData);
         SpriteData spriteData = createSpriteData(original.getSpriteData(), newData);
@@ -79,9 +80,9 @@ public class BemCardDataWriter {
                         .bp(character.getBp())
                         .ap(character.getAp())
                         .hp(character.getHp())
-                        .firstPoolBattleChance(character.getFirstPoolBattleChance())
-                        .secondPoolBattleChance(character.getSecondPoolBattleChance())
-                        .thirdPoolBattleChance(character.getThirdPoolBattleChance());
+                        .firstPoolBattleChance(NullUtils.getOrDefault(character.getFirstPoolBattleChance(), NONE_VALUE))
+                        .secondPoolBattleChance(NullUtils.getOrDefault(character.getSecondPoolBattleChance(), NONE_VALUE))
+                        .thirdPoolBattleChance(NullUtils.getOrDefault(character.getThirdPoolBattleChance(), NONE_VALUE));
             }
             statBlocks.add(builder.build());
         }
@@ -150,19 +151,22 @@ public class BemCardDataWriter {
         return transformationRequirementBlocks;
     }
 
-    BemAdventureLevels createAdventures(BemAdventureLevels oldAdventures, List<BemAdventure> adventureEntries, Map<UUID, Integer> characterIdToSlot) {
+    BemAdventureLevels createAdventures(BemAdventureLevels oldAdventures, List<BemAdventure> adventureEntries, Map<UUID, Integer> characterIdToSlot, List<BemCharacter> characters) {
         List<BemAdventureLevels.BemAdventureLevel> adventureLevels = new ArrayList<>(adventureEntries.size());
         for(BemAdventure adventureEntry : adventureEntries) {
             int giftCharacter = adventureEntry.getGiftCharacter() == null ? NONE_VALUE : characterIdToSlot.get(adventureEntry.getGiftCharacter());
+            int bossSlotId = characterIdToSlot.get(adventureEntry.getBossId());
+            int smallAttackId = adventureEntry.getSmallAttackId() != null ? adventureEntry.getSmallAttackId() : characters.get(bossSlotId).getSmallAttack();
+            int bigAttackId = adventureEntry.getBigAttackId() != null ? adventureEntry.getBigAttackId() : characters.get(bossSlotId).getBigAttack();
             adventureLevels.add(BemAdventureLevels.BemAdventureLevel.builder()
                     .steps(adventureEntry.getSteps())
-                    .bossCharacterIndex(characterIdToSlot.get(adventureEntry.getBossId()))
+                    .bossCharacterIndex(bossSlotId)
                     .showBossIdentity(adventureEntry.isShowBossIdentiy() ? 1 : 2)
                     .bp(adventureEntry.getBossBp())
                     .hp(adventureEntry.getBossHp())
                     .ap(adventureEntry.getBossAp())
-                    .smallAttackId(adventureEntry.getSmallAttackId())
-                    .bigAttackId(adventureEntry.getBigAttackId())
+                    .smallAttackId(smallAttackId)
+                    .bigAttackId(bigAttackId)
                     .background1(adventureEntry.getWalkingBackground())
                     .background2(adventureEntry.getBattleBackground())
                     .giftCharacterIndex(giftCharacter)

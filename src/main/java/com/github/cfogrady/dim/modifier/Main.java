@@ -6,6 +6,9 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
 @Slf4j
 public class Main extends Application {
     private ApplicationOrchestrator applicationOrchestrator;
@@ -16,7 +19,11 @@ public class Main extends Application {
 
     @Override
     public void start(Stage primaryStage) {
-        applicationOrchestrator = ApplicationOrchestrator.buildOrchestration(primaryStage);
+        try {
+            applicationOrchestrator = ApplicationOrchestrator.buildOrchestration(primaryStage);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
         primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("icon.png")));
         FirmwareManager firmwareManager = applicationOrchestrator.getFirmwareManager();
         if(firmwareManager.isValidFirmwareLocationSet()) {

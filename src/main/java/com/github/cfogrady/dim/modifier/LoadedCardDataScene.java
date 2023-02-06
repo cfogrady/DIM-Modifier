@@ -31,7 +31,7 @@ public class LoadedCardDataScene {
     private final Stage stage;
     private final AppState appState;
 
-    public <T> void setupScene(ViewState viewState) {
+    public void setupScene(ViewState viewState) {
         if(this.appState.getCurrentView() == null) {
             this.appState.setCurrentView(bemCharactersView);
         }

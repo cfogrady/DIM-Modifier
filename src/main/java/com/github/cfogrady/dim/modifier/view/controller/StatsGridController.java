@@ -1,9 +1,10 @@
-package com.github.cfogrady.dim.modifier.view;
+package com.github.cfogrady.dim.modifier.view.controller;
 
 import com.github.cfogrady.dim.modifier.LoadedScene;
+import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
-import com.github.cfogrady.dim.modifier.controls.ImageIntComboBoxFactory;
 import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
+import com.github.cfogrady.dim.modifier.controls.LabelValuePair;
 import com.github.cfogrady.dim.modifier.controls.StringIntComboBox;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
@@ -20,30 +21,23 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import static com.github.cfogrady.dim.modifier.LoadedScene.NONE_LABEL;
 
 @RequiredArgsConstructor
-public class StatsGrid {
-    @Getter
-    private final GridPane gridPane;
-    private final AppState appState;
-    private final ImageIntComboBoxFactory imageIntComboBoxFactory;
-    private final Supplier<Boolean> isSafetyModeOn;
+public class StatsGridController {
+    private final static Background BLACK_BACKGROUND = new Background(new BackgroundFill(Color.color(0,0,0), CornerRadii.EMPTY, Insets.EMPTY));
 
-    public void refreshStatsGrid(Character<?> character) {
-        if(gridPane.isGridLinesVisible()) {
-            Node node = gridPane.getChildren().get(0);
-            gridPane.getChildren().clear();
-            gridPane.getChildren().add(node);
-        } else {
-            gridPane.getChildren().clear();
-        }
+    private final AppState appState;
+    private final SpriteImageTranslator spriteImageTranslator;
+
+
+    public Node refreshStatsGrid(Character<?> character) {
+        GridPane gridPane = new GridPane();
+        gridPane.setGridLinesVisible(true);
         gridPane.add(setupStageLabel(character), 0, 0);
         gridPane.add(setupAttributeLabel(character), 1, 0);
         gridPane.add(setupDispositionLabel(character), 0, 1);
@@ -55,7 +49,7 @@ public class StatsGrid {
         gridPane.setGridLinesVisible(true);
         //gridPane.add(setupLockedLabel(character), 1, 0);
         //gridPane.add(setupDPStarsLabel(character), 0, 3);
-
+        return gridPane;
     }
 
     private Node setupStageLabel(Character<?> character) {
@@ -140,13 +134,12 @@ public class StatsGrid {
     }
 
     private ImageIntComboBox getBemAttributeComboBox(BemCharacter bemCharacter) {
-        Background blackBackground = new Background(new BackgroundFill(Color.color(0,0,0), CornerRadii.EMPTY, Insets.EMPTY));
-        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(bemCharacter.getAttribute() - 1,
-                1.0,
-                blackBackground,
-                appState.getCardData().getCardSprites().getTypes(),
-                newValue -> bemCharacter.setAttribute(newValue+1));
-        return comboBox;
+        ImageIntComboBox imageIntComboBox = new ImageIntComboBox();
+        imageIntComboBox.initialize(bemCharacter.getAttribute()-1, spriteImageTranslator.createImageValuePairs(appState.getCardData().getCardSprites().getTypes()), 1.0, BLACK_BACKGROUND, null);
+        imageIntComboBox.setOnAction(e -> {
+            bemCharacter.setAttribute(imageIntComboBox.getValue().getValue()+1);
+        });
+        return imageIntComboBox;
     }
 
     private Node setupDispositionLabel(Character<?> character) {
@@ -177,7 +170,9 @@ public class StatsGrid {
         Label label = new Label("Small Attack:");
         List<SpriteData.Sprite> attackSprites = appState.getFirmwareData().getSmallAttacks();
         attackSprites.addAll(appState.getCardData().getCardSprites().getSmallAttacks());
-        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(character.getSmallAttack(), attackSprites, character::setSmallAttack);
+        ImageIntComboBox comboBox = new ImageIntComboBox();
+        comboBox.initialize(character.getSmallAttack(), spriteImageTranslator.createImageValuePairs(attackSprites), 1.0, null, null);
+        comboBox.setOnAction(e -> character.setSmallAttack(comboBox.getValue().getValue()));
         comboBox.setPrefWidth(120);
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
@@ -195,13 +190,24 @@ public class StatsGrid {
         Label label = new Label("Big Attack:");
         List<SpriteData.Sprite> attackSprites = appState.getFirmwareData().getBigAttacks();
         attackSprites.addAll(appState.getCardData().getCardSprites().getBigAttacks());
-        ImageIntComboBox comboBox = imageIntComboBoxFactory.createImageIntComboBox(character.getBigAttack(), attackSprites, character::setBigAttack);
+        ImageIntComboBox comboBox = new ImageIntComboBox();
+        comboBox.initialize(character.getBigAttack(), spriteImageTranslator.createImageValuePairs(attackSprites), 1.0, null, null);
+        comboBox.setOnAction(e -> character.setBigAttack(comboBox.getValue().getValue()));
         comboBox.setPrefWidth(120);
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
         GridPane.setMargin(hBox, new Insets(10));
         return hBox;
+    }
+
+    private <V, L, T extends LabelValuePair<V, L>> T getItemForValue(ComboBox<T> comboBox, V value) {
+        for(T option : comboBox.getItems()) {
+            if(option.getValue() == value) {
+                return option;
+            }
+        }
+        return null;
     }
 
 //    private Node setupDPStarsLabel(Character<?> character) {
