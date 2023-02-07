@@ -5,16 +5,25 @@ import javafx.geometry.Insets;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.util.function.Consumer;
 
 public class IntegerTextField extends TextField {
 
+    @Setter
     private int min;
+    @Setter
     private int max;
     @Setter
     private boolean allowBlanks;
+
+    @Setter
+    private Consumer<Integer> changeReceiver;
+
+    public IntegerTextField() {
+    }
 
     public IntegerTextField(Integer initialValue, Consumer<Integer> valueConsumer) {
         super();
@@ -23,11 +32,16 @@ public class IntegerTextField extends TextField {
         }
         this.min = 0;
         this.max = DimReader.NONE_VALUE;
+        this.changeReceiver = valueConsumer;
+        initialize();
+    }
+
+    public void initialize() {
         this.textProperty().addListener((obs,oldv,newv) -> {
             boolean error = false;
             if(newv == null || newv.isBlank()) {
                 if(allowBlanks) {
-                    valueConsumer.accept(null);
+                    changeHandler(null);
                 } else {
                     error = true;
                 }
@@ -38,7 +52,7 @@ public class IntegerTextField extends TextField {
                         error = true;
                     } else {
                         this.setBorder(null);
-                        valueConsumer.accept(value);
+                        changeHandler(value);
                     }
                 } catch (NumberFormatException e) {
                     error = true;
@@ -50,12 +64,10 @@ public class IntegerTextField extends TextField {
         });
     }
 
-    public void setMin(int min) {
-        this.min = min;
-    }
-
-    public void setMax(int max) {
-        this.max = max;
+    public void changeHandler(Integer value) {
+        if(changeReceiver != null) {
+            changeReceiver.accept(value);
+        }
     }
 
     @Override

@@ -26,7 +26,7 @@ public class LoadedViewController implements Initializable {
     private final Node battlesSubView;
     private final SystemViewController systemViewController;
     private final Node systemSubView;
-    private final DimReaderController dimReaderController;
+    private final DimIOController dimIOController;
 
     @FXML
     private Button openButton;
@@ -78,10 +78,11 @@ public class LoadedViewController implements Initializable {
             refreshSubview();
         });
         openButton.setOnAction(this::openButton);
+        saveButton.setOnAction(e -> dimIOController.saveDim());
     }
 
     private void openButton(ActionEvent event) {
-        dimReaderController.openDim(this::clearState);
+        dimIOController.openDim(this::clearState);
     }
 
     private void clearState() {

@@ -1,17 +1,11 @@
 package com.github.cfogrady.dim.modifier.view.controller;
 
-import com.github.cfogrady.dim.modifier.LoadedScene;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.bem.BemCardData;
 import com.github.cfogrady.dim.modifier.data.bem.BemCardDataReader;
-import com.github.cfogrady.dim.modifier.data.dim.DimData;
-import com.github.cfogrady.dim.modifier.data.dim.DimDataFactory;
-import com.github.cfogrady.vb.dim.card.BemCard;
-import com.github.cfogrady.vb.dim.card.Card;
-import com.github.cfogrady.vb.dim.card.DimCard;
-import com.github.cfogrady.vb.dim.card.DimReader;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
+import com.github.cfogrady.dim.modifier.data.bem.BemCardDataWriter;
+import com.github.cfogrady.vb.dim.card.*;
+import javafx.event.ActionEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
@@ -21,10 +15,11 @@ import java.io.*;
 
 @Slf4j
 @RequiredArgsConstructor
-public class DimReaderController {
+public class DimIOController {
     private final Stage stage;
     private final DimReader dimReader;
     private final BemCardDataReader bemCardDataReader;
+    private final BemCardDataWriter bemCardDataWriter;
     private final AppState appState;
 
     public void openDim(Runnable onCompletion) {
@@ -51,6 +46,21 @@ public class DimReaderController {
                 log.error("Couldn't close file???", e);
             }
 
+        }
+    }
+
+    public void saveDim() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save DIM File As...");
+        File file = fileChooser.showSaveDialog(stage);
+        if(file != null) {
+            saveDimToFile(file);
+        }
+    }
+
+    private void saveDimToFile(File file) {
+        if(appState.getCardData() instanceof BemCardData bemCardData && appState.getRawCard() instanceof BemCard bemCard) {
+            bemCardDataWriter.write(file, bemCard, bemCardData);
         }
     }
 }

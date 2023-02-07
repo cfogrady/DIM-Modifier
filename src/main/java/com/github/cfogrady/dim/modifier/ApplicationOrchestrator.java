@@ -1,6 +1,5 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.dim.modifier.controls.ImageIntComboBoxFactory;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.bem.BemCardDataReader;
 import com.github.cfogrady.dim.modifier.data.bem.BemCardDataWriter;
@@ -51,7 +50,7 @@ public class ApplicationOrchestrator {
         DigimonReader digimonReader = new DigimonReader();
         SpriteImageTranslator spriteImageTranslator = new SpriteImageTranslator();
         AppState appState = new AppState();
-        DimReaderController dimReaderController = new DimReaderController(stage, dimReader, bemCardDataReader, appState);
+        DimIOController dimReaderController = new DimIOController(stage, dimReader, bemCardDataReader, bemCardDataWriter, appState);
         LoadedSceneFactory loadedSceneFactory = new LoadedSceneFactory(digimonWriter, digimonReader, stage);
         GridPane transformationGrid = new GridPane();
         transformationGrid.setGridLinesVisible(true);

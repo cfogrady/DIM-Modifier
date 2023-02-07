@@ -1,5 +1,6 @@
 package com.github.cfogrady.dim.modifier.view.controller;
 
+import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
 import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
 import com.github.cfogrady.dim.modifier.data.bem.BemSpecificFusion;
 import com.github.cfogrady.dim.modifier.data.bem.BemTransformationEntry;
@@ -8,7 +9,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
+import javafx.scene.text.Text;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
@@ -21,6 +24,8 @@ public class TransformationViewController implements Initializable {
     private final SpecificFusionGridController specificFusionGridController;
     private final AttributeFusionGridController attributeFusionGridController;
 
+    @FXML
+    private IntegerTextField timeToEvolveBox;
     @FXML
     private Accordion accordion;
     @FXML
@@ -43,12 +48,22 @@ public class TransformationViewController implements Initializable {
         regularTransformationsGridController.setStackPane(regularTransformationHolder);
         specificFusionGridController.setStackPane(specificFusionHolder);
         attributeFusionGridController.setStackPane(attributeFusionHolder);
+        timeToEvolveBox.setAllowBlanks(true);
     }
 
     public void refreshAll() {
         refreshRegularTransformations();
         refreshSpecificFusions();
         refreshAttributeFusions();
+        if(character instanceof BemCharacter bemCharacter) {
+            timeToEvolveBox.setChangeReceiver(null);
+            if(bemCharacter.getMinutesUntilTransformation() != null) {
+                timeToEvolveBox.setText(bemCharacter.getMinutesUntilTransformation().toString());
+            } else {
+                timeToEvolveBox.setText("");
+            }
+            timeToEvolveBox.setChangeReceiver(bemCharacter::setMinutesUntilTransformation);
+        }
     }
 
     private void refreshRegularTransformations() {
