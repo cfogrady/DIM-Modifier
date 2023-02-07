@@ -52,6 +52,10 @@ public class StatsViewController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
     }
 
+    public void clearState() {
+        spriteOption = 1;
+    }
+
     public void refreshAll() {
         refreshSpriteSection();
         refreshGrid();

@@ -5,6 +5,7 @@ import com.github.cfogrady.dim.modifier.data.bem.BemCardData;
 import com.github.cfogrady.dim.modifier.data.bem.BemCardDataReader;
 import com.github.cfogrady.dim.modifier.data.dim.DimData;
 import com.github.cfogrady.dim.modifier.data.dim.DimDataFactory;
+import com.github.cfogrady.dim.modifier.view.controller.DimReaderController;
 import com.github.cfogrady.dim.modifier.view.controller.LoadedViewController;
 import com.github.cfogrady.vb.dim.card.*;
 import javafx.fxml.FXMLLoader;

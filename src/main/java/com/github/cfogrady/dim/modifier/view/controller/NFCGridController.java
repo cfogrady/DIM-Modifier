@@ -15,10 +15,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.function.Function;
 
+@Slf4j
 @RequiredArgsConstructor
 public class NFCGridController {
     public static final int IDLE_SPRITE_IDX = 1;

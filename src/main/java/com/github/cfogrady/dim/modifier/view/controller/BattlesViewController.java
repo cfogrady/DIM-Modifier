@@ -1,6 +1,5 @@
 package com.github.cfogrady.dim.modifier.view.controller;
 
-import com.github.cfogrady.dim.modifier.data.AppState;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.StackPane;

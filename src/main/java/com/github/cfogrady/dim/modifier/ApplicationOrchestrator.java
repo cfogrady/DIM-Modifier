@@ -51,7 +51,7 @@ public class ApplicationOrchestrator {
         DigimonReader digimonReader = new DigimonReader();
         SpriteImageTranslator spriteImageTranslator = new SpriteImageTranslator();
         AppState appState = new AppState();
-        ImageIntComboBoxFactory imageIntComboBoxFactory = new ImageIntComboBoxFactory(spriteImageTranslator);
+        DimReaderController dimReaderController = new DimReaderController(stage, dimReader, bemCardDataReader, appState);
         LoadedSceneFactory loadedSceneFactory = new LoadedSceneFactory(digimonWriter, digimonReader, stage);
         GridPane transformationGrid = new GridPane();
         transformationGrid.setGridLinesVisible(true);
@@ -82,7 +82,7 @@ public class ApplicationOrchestrator {
         loader = new FXMLLoader(ApplicationOrchestrator.class.getResource("/SystemView.fxml"));
         loader.setControllerFactory(p -> systemViewController);
         Node systemView = loader.load();
-        LoadedViewController loadedViewController = new LoadedViewController(appState, charactersView, characterViewController, battlesViewController, battlesView, systemViewController, systemView);
+        LoadedViewController loadedViewController = new LoadedViewController(appState, charactersView, characterViewController, battlesViewController, battlesView, systemViewController, systemView, dimReaderController);
         FirstLoadScene firstLoadScene = new FirstLoadScene(appState, stage, dimReader, new DimDataFactory(), bemCardDataReader, loadedSceneFactory, loadedViewController);
         FirmwareLoadScene firmwareLoadScene = new FirmwareLoadScene(stage, firmwareManager, firstLoadScene, appState);
         return ApplicationOrchestrator.builder()

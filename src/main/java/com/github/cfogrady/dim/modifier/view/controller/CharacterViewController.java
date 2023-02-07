@@ -61,6 +61,11 @@ public class CharacterViewController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
     }
 
+    public void clearState() {
+        characterSelection = 0;
+        statsViewController.clearState();
+    }
+
     public void refreshAll() {
         initializeCharacterSelectionComboBox();
         initializeNameBox();

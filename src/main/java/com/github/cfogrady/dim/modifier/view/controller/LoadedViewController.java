@@ -2,6 +2,7 @@ package com.github.cfogrady.dim.modifier.view.controller;
 
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.card.MetaData;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
@@ -10,10 +11,12 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
+@Slf4j
 @RequiredArgsConstructor
 public class LoadedViewController implements Initializable {
     private final AppState appState;
@@ -23,6 +26,7 @@ public class LoadedViewController implements Initializable {
     private final Node battlesSubView;
     private final SystemViewController systemViewController;
     private final Node systemSubView;
+    private final DimReaderController dimReaderController;
 
     @FXML
     private Button openButton;
@@ -73,6 +77,18 @@ public class LoadedViewController implements Initializable {
             refreshButtons();
             refreshSubview();
         });
+        openButton.setOnAction(this::openButton);
+    }
+
+    private void openButton(ActionEvent event) {
+        dimReaderController.openDim(this::clearState);
+    }
+
+    private void clearState() {
+        appState.setSelectedBackgroundIndex(0);
+        characterViewController.clearState();
+        systemViewController.clearState();
+        refreshAll();
     }
 
     public void refreshAll() {

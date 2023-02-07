@@ -85,6 +85,16 @@ public class SystemViewController implements Initializable {
         initializeBigAttackSprites();
     }
 
+    public void clearState() {
+        textSpriteIndex = 0;
+        stageSelection = 0;
+        attributeSelection = 0;
+        eggSelection = 0;
+        hitSelection = 0;
+        bigAttackSelection = 0;
+        smallAttackSelection = 0;
+    }
+
     public void refreshAll() {
         refreshBackground();
         refreshTextSprite();
