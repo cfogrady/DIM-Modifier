@@ -9,8 +9,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Consumer;
@@ -65,6 +65,7 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
     }
 
     @Data
+    @EqualsAndHashCode(callSuper = true)
     public static class ImageIntPair extends LabelValuePair<Integer, Image> {
         private final Image label;
         private final Integer value;
@@ -83,7 +84,6 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
             setGraphic(null);
             if(empty || option.getValue() == null) {
                 StackPane stackPane = new StackPane(new Text(noneText == null ? "NONE" : noneText));
-                stackPane.setBackground(background);
                 VBox.setMargin(stackPane, new Insets(10));
                 setGraphic(stackPane);
             } else if (!empty) {
