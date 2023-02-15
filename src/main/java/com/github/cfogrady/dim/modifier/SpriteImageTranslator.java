@@ -6,18 +6,29 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.image.*;
 import javafx.scene.paint.Color;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.List;
 
 @RequiredArgsConstructor
 @Slf4j
 public class SpriteImageTranslator {
+    @Getter
+    private final SpriteData.Sprite blankCharacterSprite;
+    @Getter
+    private final SpriteData.Sprite blankNameSprite;
+    @Getter
+    private final SpriteData.Sprite blankBackgroundSprite;
+
+    public SpriteImageTranslator() {
+        blankCharacterSprite = loadSprite(this.getClass().getClassLoader().getResourceAsStream("BlankCharacter.png"));
+        blankNameSprite = loadSprite(this.getClass().getClassLoader().getResourceAsStream("BlankName.png"));
+        blankBackgroundSprite = loadSprite(this.getClass().getClassLoader().getResourceAsStream("BlankBackground.png"));
+    }
 
     public ObservableList<ImageIntComboBox.ImageIntPair> createImageValuePairs(List<SpriteData.Sprite> sprites) {
         ObservableList<ImageIntComboBox.ImageIntPair> items = FXCollections.observableArrayList();
@@ -36,10 +47,16 @@ public class SpriteImageTranslator {
         return new WritableImage(pixelBuffer);
     }
 
-    public SpriteData.Sprite loadSprite(File file) throws IOException {
-        FileInputStream inputStream = new FileInputStream(file);
+    public SpriteData.Sprite loadSprite(File file) {
+        try(FileInputStream inputStream = new FileInputStream(file)) {
+            return loadSprite(inputStream);
+        } catch (IOException ioe) {
+            throw new UncheckedIOException(ioe);
+        }
+    }
+
+    private SpriteData.Sprite loadSprite(InputStream inputStream) {
         Image image = new Image(inputStream);
-        inputStream.close();
         int width = (int) image.getWidth();
         int height = (int) image.getHeight();
         byte[] pixelData = convertToR5G6B5(image.getPixelReader(), width, height);

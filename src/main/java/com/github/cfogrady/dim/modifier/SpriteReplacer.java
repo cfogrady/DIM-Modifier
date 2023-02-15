@@ -45,15 +45,13 @@ public class SpriteReplacer {
             fileChooser.setInitialDirectory(appState.getLastOpenedFilePath());
         }
         File file = fileChooser.showOpenDialog(stage);
+        if(file != null) {
+            appState.setLastOpenedFilePath(file.getParentFile());
+        }
         return replaceSprite(sameWidth ? sprite.getWidth() : null, sameHeight ? sprite.getHeight() : null, file);
     }
 
     private SpriteData.Sprite loadSpriteFromFile(File file) {
-        try {
-            return spriteImageTranslator.loadSprite(file);
-        } catch (IOException ioe) {
-            log.error("Couldn't load image file!", ioe);
-            throw new UncheckedIOException(ioe);
-        }
+        return spriteImageTranslator.loadSprite(file);
     }
 }

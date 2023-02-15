@@ -5,16 +5,21 @@ import javafx.geometry.Insets;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Consumer;
 
+@Slf4j
 public class IntegerTextField extends TextField {
 
     @Setter
+    @Getter
     private int min;
     @Setter
+    @Getter
     private int max;
     @Setter
     private boolean allowBlanks;
@@ -23,6 +28,10 @@ public class IntegerTextField extends TextField {
     private Consumer<Integer> changeReceiver;
 
     public IntegerTextField() {
+        super();
+        this.min = 0;
+        this.max = DimReader.NONE_VALUE;
+        initialize();
     }
 
     public IntegerTextField(Integer initialValue, Consumer<Integer> valueConsumer) {

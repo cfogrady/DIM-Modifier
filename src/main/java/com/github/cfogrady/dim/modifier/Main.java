@@ -25,19 +25,28 @@ public class Main extends Application {
             throw new UncheckedIOException(e);
         }
         primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("icon.png")));
-        FirmwareManager firmwareManager = applicationOrchestrator.getFirmwareManager();
-        if(firmwareManager.isValidFirmwareLocationSet()) {
-            applicationOrchestrator.getAppState().setFirmwareData(firmwareManager.loadFirmware());
-            applicationOrchestrator.getFirstLoadScene().setupScene();
-        } else {
-            //firmware load scene
-            applicationOrchestrator.getFirmwareLoadScene().setupScene();
-        }
+        loadFirstScene();
     }
 
     @Override
     public void stop() {
         applicationOrchestrator.getTimer().cancel();
         applicationOrchestrator.getTimer().purge();
+    }
+
+    private void loadFirstScene() {
+        FirmwareManager firmwareManager = applicationOrchestrator.getFirmwareManager();
+        if(firmwareManager.isValidFirmwareLocationSet()) {
+            try {
+                applicationOrchestrator.getAppState().setFirmwareData(firmwareManager.loadFirmware());
+                applicationOrchestrator.getFirstLoadScene().setupScene();
+            } catch (IOException ioe) {
+                log.error("Unable to load firmware. Please select firmware location.", ioe);
+                applicationOrchestrator.getFirmwareLoadScene().setupScene();
+            }
+        } else {
+            //firmware load scene
+            applicationOrchestrator.getFirmwareLoadScene().setupScene();
+        }
     }
 }

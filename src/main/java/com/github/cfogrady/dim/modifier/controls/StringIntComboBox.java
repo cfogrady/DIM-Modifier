@@ -4,6 +4,7 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.function.Consumer;
 
@@ -42,6 +43,7 @@ public class StringIntComboBox extends ComboBox<StringIntComboBox.StringIntPair>
     }
 
     @Data
+    @EqualsAndHashCode(callSuper = true)
     public static class StringIntPair extends LabelValuePair<Integer, String> {
         private final String label;
         private final Integer value;

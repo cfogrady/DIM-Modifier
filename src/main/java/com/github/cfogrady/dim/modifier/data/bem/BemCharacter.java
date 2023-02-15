@@ -13,5 +13,4 @@ import java.util.List;
 public class BemCharacter extends Character<BemTransformationEntry> {
     private Integer thirdPoolBattleChance;
     private Integer minutesUntilTransformation;
-    private List<BemSpecificFusion> specificFusions;
 }

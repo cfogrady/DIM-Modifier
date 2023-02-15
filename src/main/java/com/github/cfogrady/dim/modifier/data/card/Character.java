@@ -1,6 +1,5 @@
 package com.github.cfogrady.dim.modifier.data.card;
 
-import com.github.cfogrady.dim.modifier.data.dim.Fusions;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -25,4 +24,5 @@ public class Character<T extends TransformationEntry> {
     private List<SpriteData.Sprite> sprites; // for dim, 6 and 7 for stages 0 and 1 respectively. Everything else 14
     private List<T> transformationEntries;
     private Fusions fusions;
+    private List<SpecificFusion> specificFusions;
 }

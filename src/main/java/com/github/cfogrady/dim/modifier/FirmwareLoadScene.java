@@ -14,24 +14,29 @@ import java.io.*;
 
 @RequiredArgsConstructor
 @Slf4j
-public class FirmwareLoadScene implements com.github.cfogrady.dim.modifier.Scene {
+public class FirmwareLoadScene {
     private final Stage stage;
     private final FirmwareManager firmwareManager;
     private final FirstLoadScene firstLoadScene;
     private final AppState appState;
 
-    @Override
     public void setupScene() {
         Button button = new Button();
-        button.setText("Locate Firmware");
+        button.setText("Locate BE Firmware");
         button.setOnAction(event -> {
+            //TODO: Set file extension to on file chooser to firmware extension
             FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Select Firmware File");
+            fileChooser.setTitle("Select BE Firmware File");
             File file = fileChooser.showOpenDialog(stage);
             if(FirmwareManager.isValidFirmwareLocation(file)) {
-                firmwareManager.setFirmwareLocation(file);
-                appState.setFirmwareData(firmwareManager.loadFirmware());
-                firstLoadScene.setupScene();
+                try {
+                    firmwareManager.setFirmwareLocation(file);
+                    appState.setFirmwareData(firmwareManager.loadFirmware());
+                    firstLoadScene.setupScene();
+                } catch (IOException e) {
+                    log.error("Unable to read firmware. Are you sure this is BE firmware?");
+                    firmwareManager.clearFirmwareLocation();
+                }
             }
         });
         Scene scene = new Scene(new StackPane(button), 640, 480);

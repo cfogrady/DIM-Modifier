@@ -6,7 +6,7 @@
 
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.control.ScrollPane?>
-<ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/19" fx:controller="com.github.cfogrady.dim.modifier.view.controller.BattlesViewController">
+<ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/19" fx:controller="com.github.cfogrady.dim.modifier.controllers.BattlesViewController">
   <Accordion>
     <panes>
       <TitledPane animated="false" text="NFC Battles">

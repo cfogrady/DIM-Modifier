@@ -1,12 +1,9 @@
 package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.dim.modifier.data.AppState;
-import com.github.cfogrady.dim.modifier.data.bem.BemCardData;
-import com.github.cfogrady.dim.modifier.data.bem.BemCardDataReader;
-import com.github.cfogrady.dim.modifier.data.dim.DimData;
-import com.github.cfogrady.dim.modifier.data.dim.DimDataFactory;
-import com.github.cfogrady.dim.modifier.view.controller.LoadedViewController;
-import com.github.cfogrady.vb.dim.card.*;
+import com.github.cfogrady.dim.modifier.data.card.CardData;
+import com.github.cfogrady.dim.modifier.controllers.LoadedViewController;
+import com.github.cfogrady.dim.modifier.data.card.CardDataIO;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -20,16 +17,12 @@ import java.io.*;
 
 @RequiredArgsConstructor
 @Slf4j
-public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
+public class FirstLoadScene {
     private final AppState appState;
     private final Stage stage;
-    private final DimReader dimReader;
-    private final DimDataFactory dimDataFactory;
-    private final BemCardDataReader bemCardDataReader;
-    private final LoadedSceneFactory loadedSceneFactory;
+    private final CardDataIO cardDataIO;
     private final LoadedViewController loadedViewController;
 
-    @Override
     public void setupScene() {
         Button button = new Button();
         button.setText("Open DIM File");
@@ -38,39 +31,35 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
             fileChooser.setTitle("Select DIM File");
             File file = fileChooser.showOpenDialog(stage);
             if(file != null) {
-                InputStream fileInputStream;
-                try {
-                    fileInputStream = new FileInputStream(file);
-                    Card card = dimReader.readDimCardData(fileInputStream, false);
-                    fileInputStream.close();
-                    if(card instanceof DimCard dimCard) {
-                        DimData dimData = dimDataFactory.fromDimContent(dimCard);
-                        LoadedScene scene = loadedSceneFactory.createLoadedScene(appState.getFirmwareData(), dimCard, dimData);
-                        scene.setupScene();
-                    } else if(card instanceof BemCard bemCard) {
-                        BemCardData bemCardData = bemCardDataReader.fromBemCard(bemCard);
-                        appState.setRawCard(card);
-                        appState.setCardData(bemCardData);
-                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoadedView.fxml"));
-                        loader.setControllerFactory(p -> loadedViewController);
-                        Scene scene = new Scene(loader.load(), 1280, 720);
-                        loadedViewController.refreshAll();
-                        stage.setScene(scene);
-                        stage.show();
-                    } else {
-                        throw new IllegalStateException("DimReader returned an unknown type for DimCard");
-                    }
-                } catch (FileNotFoundException e) {
-                    log.error("Couldn't find selected file.", e);
-                } catch (IOException e) {
-                    log.error("Couldn't close file???", e);
-                }
-
+                loadCard(file);
+                setupLoadedDataView();
             }
         });
         Scene scene = new Scene(new StackPane(button), 640, 480);
 
         stage.setScene(scene);
         stage.show();
+    }
+
+    private void loadCard(File file) {
+        try(FileInputStream fileInputStream = new FileInputStream(file)) {
+            CardData<?, ?, ?> cardData = cardDataIO.readFromStream(fileInputStream);
+            appState.setCardData(cardData);
+        } catch (IOException e) {
+            log.error("Error loading file: {}", file.getAbsolutePath(), e);
+        }
+    }
+
+    private void setupLoadedDataView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoadedView.fxml"));
+            loader.setControllerFactory(p -> loadedViewController);
+            Scene scene = new Scene(loader.load(), 1280, 720);
+            loadedViewController.refreshAll();
+            stage.setScene(scene);
+            stage.show();
+        } catch (IOException e) {
+            log.error("Unable to load layout for loaded data view!", e);
+        }
     }
 }

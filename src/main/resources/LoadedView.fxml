@@ -9,7 +9,7 @@
 
 
 <?import javafx.scene.layout.AnchorPane?>
-<VBox xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.github.cfogrady.dim.modifier.view.controller.LoadedViewController">
+<VBox xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.github.cfogrady.dim.modifier.controllers.LoadedViewController">
    <children>
       <HBox alignment="CENTER_LEFT" spacing="10.0">
          <padding>

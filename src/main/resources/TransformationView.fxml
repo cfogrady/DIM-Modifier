@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.text.Text?>
 
-<ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.github.cfogrady.dim.modifier.view.controller.TransformationViewController">
+<ScrollPane fitToWidth="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.github.cfogrady.dim.modifier.controllers.TransformationViewController">
    <content>
       <VBox>
          <children>
@@ -22,8 +22,8 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                </padding>
                <children>
-                  <Text>Time To Evolve:</Text>
-                  <IntegerTextField fx:id="timeToEvolveBox"/>
+                  <Text>Time To Transformation:</Text>
+                  <IntegerTextField fx:id="timeToTransformationBox" max="2000"/>
                </children>
             </HBox>
             <Accordion fx:id="accordion">

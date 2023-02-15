@@ -29,6 +29,10 @@ public class FirmwareManager {
         preferences.put(FIRMWARE_LOCATION, file.getAbsolutePath());
     }
 
+    public void clearFirmwareLocation() {
+        preferences.put(FIRMWARE_LOCATION, null);
+    }
+
     public boolean isValidFirmwareLocationSet() {
         String firmwareFile = preferences.get(FIRMWARE_LOCATION, null);
         if(firmwareFile == null) {
@@ -44,7 +48,7 @@ public class FirmwareManager {
         return file != null && file.exists() && file.isFile() && file.canRead();
     }
 
-    public FirmwareData loadFirmware() {
+    public FirmwareData loadFirmware() throws IOException {
         String firmwareLocation = preferences.get(FIRMWARE_LOCATION, null);
         File file = new File(firmwareLocation);
         log.info("File: {}, exists: {}", file.getAbsolutePath(), file.exists());
@@ -55,7 +59,7 @@ public class FirmwareManager {
             input.readToOffset(SPRITE_PACKAGE_LOCATION);
             return new FirmwareData(bemSpriteReader.getSpriteData(input, dimensionsList));
         } catch (IOException ioe) {
-            throw new UncheckedIOException(ioe);
+            throw ioe;
         }
     }
 }
