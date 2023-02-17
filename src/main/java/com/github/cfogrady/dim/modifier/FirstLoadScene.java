@@ -54,9 +54,10 @@ public class FirstLoadScene {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoadedView.fxml"));
             loader.setControllerFactory(p -> loadedViewController);
-            Scene scene = new Scene(loader.load(), 1280, 720);
+            Scene scene = new Scene(loader.load(), 1420, 720);
             loadedViewController.refreshAll();
             stage.setScene(scene);
+            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
             log.error("Unable to load layout for loaded data view!", e);

@@ -12,6 +12,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import lombok.RequiredArgsConstructor;
@@ -51,6 +52,7 @@ public class RegularTransformationsGridController {
         gridPane.add(getWinRatioRequirementLabel(transformationEntry), columnIndex++, rowIndex);
         if(transformationEntry instanceof BemTransformationEntry bemTransformationEntry) {
             gridPane.add(getAreaCompletionLabel(bemTransformationEntry), columnIndex++, rowIndex);
+            gridPane.add(getSecretLabel(bemTransformationEntry), columnIndex++, rowIndex);
         }
         gridPane.add(getDeleteButton(transformationEntry, character), columnIndex++, rowIndex);
     }
@@ -136,6 +138,16 @@ public class RegularTransformationsGridController {
         vBox.setSpacing(10);
         GridPane.setMargin(vBox, new Insets(10));
         return vBox;
+    }
+
+    private Node getSecretLabel(BemTransformationEntry transformationEntry) {
+        CheckBox checkBox = new CheckBox("Secret");
+        checkBox.setSelected(transformationEntry.isSecret());
+        checkBox.setOnMouseClicked(e -> {
+            transformationEntry.setSecret(checkBox.isSelected());
+        });
+        GridPane.setMargin(checkBox, new Insets(10));
+        return checkBox;
     }
 
     private Node getDeleteButton(TransformationEntry transformationEntry, Character<?> character) {

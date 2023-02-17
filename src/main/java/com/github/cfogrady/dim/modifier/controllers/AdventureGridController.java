@@ -11,6 +11,7 @@ import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.scene.control.CheckBox;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
@@ -94,9 +95,10 @@ public class AdventureGridController {
         gridPane.add(getTitleText("Boss HP"), columnIndex++, 0);
         gridPane.add(getTitleText("Boss AP"), columnIndex++, 0);
         if(appState.getCardData() instanceof BemCardData) {
-            gridPane.add(getTitleText("Reward Character"), columnIndex++, 0);
             gridPane.add(getTitleText("Boss Small Attack"), columnIndex++, 0);
             gridPane.add(getTitleText("Boss Big Attack"), columnIndex++, 0);
+            gridPane.add(getTitleText("Boss Is Secret"), columnIndex++, 0);
+            gridPane.add(getTitleText("Reward Character"), columnIndex++, 0);
             gridPane.add(getTitleText("Walking Background"), columnIndex++, 0);
             gridPane.add(getTitleText("Battle Background"), columnIndex++, 0);
         }
@@ -121,12 +123,21 @@ public class AdventureGridController {
         gridPane.add(createIntegerTextField(adventure::getBossHp, adventure::setBossHp), columnIndex++, rowIndex);
         gridPane.add(createIntegerTextField(adventure::getBossAp, adventure::setBossAp), columnIndex++, rowIndex);
         if(adventure instanceof BemAdventure bemAdventure) {
-            gridPane.add(createCharacterSelectorComboBox(bemAdventure::getGiftCharacter, bemAdventure::setGiftCharacter, imageOptions.getCharacterOptionsWithNoneOption()), columnIndex++, rowIndex);
+            gridPane.add(createCheckbox("Show Boss Preview", bemAdventure::isShowBossIdentiy, bemAdventure::setShowBossIdentiy), columnIndex++, rowIndex);
             gridPane.add(createSmallAttackSelection(bemAdventure, imageOptions.getSmallAttackSpriteOptions()), columnIndex++, rowIndex);
             gridPane.add(createBigAttackSelection(bemAdventure, imageOptions.getBigAttackSpriteOptions()), columnIndex++, rowIndex);
+            gridPane.add(createCharacterSelectorComboBox(bemAdventure::getGiftCharacter, bemAdventure::setGiftCharacter, imageOptions.getCharacterOptionsWithNoneOption()), columnIndex++, rowIndex);
             gridPane.add(createBackgroundSelection(bemAdventure::getWalkingBackground, bemAdventure::setWalkingBackground, imageOptions.getBackgroundOptions()), columnIndex++, rowIndex);
             gridPane.add(createBackgroundSelection(bemAdventure::getBattleBackground, bemAdventure::setBattleBackground, imageOptions.getBackgroundOptions()), columnIndex++, rowIndex);
         }
+    }
+
+    private CheckBox createCheckbox(String text, Supplier<Boolean> getter, Consumer<Boolean> setter) {
+        CheckBox checkBox = new CheckBox(text);
+        checkBox.setSelected(getter.get());
+        checkBox.setOnMouseClicked(e -> setter.accept(checkBox.isSelected()));
+        GridPane.setMargin(checkBox, new Insets(10));
+        return checkBox;
     }
 
     private ImageIntComboBox createCharacterSelectorComboBox(Supplier<UUID> getter, Consumer<UUID> setter, ObservableList<ImageIntComboBox.ImageIntPair> characterOptions) {
