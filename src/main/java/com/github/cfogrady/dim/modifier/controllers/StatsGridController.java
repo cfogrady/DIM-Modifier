@@ -6,7 +6,6 @@ import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
 import com.github.cfogrady.dim.modifier.controls.LabelValuePair;
 import com.github.cfogrady.dim.modifier.controls.StringIntComboBox;
 import com.github.cfogrady.dim.modifier.data.AppState;
-import com.github.cfogrady.dim.modifier.data.bem.BemCardData;
 import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.dim.modifier.data.dim.DimCharacter;
@@ -123,12 +122,13 @@ public class StatsGridController {
         hBox.setSpacing(10);
         hBox.setAlignment(Pos.CENTER_LEFT);
         GridPane.setMargin(hBox, new Insets(10));
-        if(character instanceof BemCharacter bemCharacter) {
-            hBox.getChildren().add(getBemAttributeComboBox(bemCharacter));
-        } else {
-            StringIntComboBox comboBox = new StringIntComboBox(character.getAttribute(), getAttributes(), character::setAttribute);
-            hBox.getChildren().add(comboBox);
-        }
+        hBox.getChildren().add(getSpriteAttributeComboBox(character));
+//        if(character instanceof BemCharacter bemCharacter) {
+//            hBox.getChildren().add(getSpriteAttributeComboBox(bemCharacter));
+//        } else {
+//            StringIntComboBox comboBox = new StringIntComboBox(character.getAttribute(), getAttributes(), character::setAttribute);
+//            hBox.getChildren().add(comboBox);
+//        }
         return hBox;
     }
 
@@ -140,9 +140,9 @@ public class StatsGridController {
         return FXCollections.observableArrayList(virus, data, vaccine, free);
     }
 
-    private ImageIntComboBox getBemAttributeComboBox(BemCharacter bemCharacter) {
+    private ImageIntComboBox getSpriteAttributeComboBox(Character<?> bemCharacter) {
         ImageIntComboBox imageIntComboBox = new ImageIntComboBox();
-        ObservableList<ImageIntComboBox.ImageIntPair> options = spriteImageTranslator.createImageValuePairs(appState.getCardData().getCardSprites().getTypes());
+        ObservableList<ImageIntComboBox.ImageIntPair> options = spriteImageTranslator.createImageValuePairs(appState.getAttributes());
         options.add(0, new ImageIntComboBox.ImageIntPair(null, null));
         Integer attributeComboValue = bemCharacter.getAttribute() == 0 ? null : bemCharacter.getAttribute() - 1;
         imageIntComboBox.initialize(attributeComboValue, options, 1.0, BLACK_BACKGROUND, "None");
@@ -154,7 +154,7 @@ public class StatsGridController {
     }
 
     private Node setupDispositionLabel(Character<?> character) {
-        Label label = new Label("Disposition:");
+        Label label = new Label("Activity Type:");
         StringIntComboBox comboBox = new StringIntComboBox(character.getActivityType(), getActivityTypes(), character::setActivityType);
         HBox hBox = new HBox(label, comboBox);
         hBox.setSpacing(10);

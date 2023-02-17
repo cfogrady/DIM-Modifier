@@ -82,6 +82,10 @@ public class FirmwareData {
         return bigAttackIndexes.length;
     }
 
+    public List<SpriteData.Sprite> getTypes() {
+        return spriteData.getSprites().subList(232, 236);
+    }
+
     public SpriteData.Sprite getSpriteByIndex(int index) {
         return spriteData.getSprites().get(index);
     }

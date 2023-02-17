@@ -1,6 +1,7 @@
 package com.github.cfogrady.dim.modifier.data;
 
 
+import com.github.cfogrady.dim.modifier.data.bem.BemCardData;
 import com.github.cfogrady.dim.modifier.data.card.CardData;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.dim.modifier.data.firmware.FirmwareData;
@@ -35,5 +36,13 @@ public class AppState {
 
     public Character<?> getCharacter(int characterIndex) {
         return cardData.getCharacters().get(characterIndex);
+    }
+
+    public List<SpriteData.Sprite> getAttributes() {
+        if(cardData instanceof BemCardData bemCardData) {
+            return bemCardData.getCardSprites().getTypes();
+        } else {
+            return firmwareData.getTypes();
+        }
     }
 }

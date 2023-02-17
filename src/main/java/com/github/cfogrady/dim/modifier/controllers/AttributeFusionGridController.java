@@ -53,7 +53,7 @@ public class AttributeFusionGridController {
         HBox hBox = new HBox();
         hBox.setSpacing(10);
         hBox.setPadding(new Insets(10));
-        List<SpriteData.Sprite> attributeSprites = appState.getCardData().getCardSprites().getTypes();
+        List<SpriteData.Sprite> attributeSprites = appState.getAttributes();
         if(attributeSprites != null) {
             StackPane stackPane = new StackPane();
             stackPane.setBackground(BLACK_BACKGROUND);
