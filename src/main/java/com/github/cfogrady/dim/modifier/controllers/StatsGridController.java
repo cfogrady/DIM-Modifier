@@ -41,18 +41,21 @@ public class StatsGridController {
         stackPane.getChildren().clear();
         GridPane gridPane = new GridPane();
         gridPane.setGridLinesVisible(true);
-        gridPane.add(setupStageLabel(character), 0, 0);
-        gridPane.add(setupAttributeLabel(character), 1, 0);
-        gridPane.add(setupDispositionLabel(character), 0, 1);
-        gridPane.add(setupBPLabel(character), 1, 1);
-        gridPane.add(setupHpLabel(character), 0, 2);
-        gridPane.add(setupApLabel(character), 1, 2);
-        gridPane.add(setupSmallAttackLabel(character), 0, 3);
-        gridPane.add(setupBigAttackLabel(character), 1, 3);
+        int rowIndex = 0;
+        gridPane.add(setupStageLabel(character), 0, rowIndex);
+        gridPane.add(setupAttributeLabel(character), 1, rowIndex++);
+        gridPane.add(setupDispositionLabel(character), 0, rowIndex);
+        if(character instanceof DimCharacter dimCharacter) {
+            gridPane.add(setupLockedLabel(dimCharacter), 1, rowIndex++);
+            gridPane.add(setupDPStarsLabel(dimCharacter), 0, rowIndex);
+        }
+        gridPane.add(setupBPLabel(character), 1, rowIndex++);
+        gridPane.add(setupHpLabel(character), 0, rowIndex);
+        gridPane.add(setupApLabel(character), 1, rowIndex++);
+        gridPane.add(setupSmallAttackLabel(character), 0, rowIndex);
+        gridPane.add(setupBigAttackLabel(character), 1, rowIndex++);
         gridPane.setGridLinesVisible(true);
         stackPane.getChildren().add(gridPane);
-        //gridPane.add(setupLockedLabel(character), 1, 0);
-        //gridPane.add(setupDPStarsLabel(character), 0, 3);
     }
 
     private Node setupStageLabel(Character<?> character) {
@@ -91,25 +94,25 @@ public class StatsGridController {
         return hBox;
     }
 
-//    private Node setupLockedLabel(Character<?> character) {
-//        Label label = new Label("Requires Unlock:");
-//        ComboBox<Boolean> comboBox = new ComboBox<>();
-//        comboBox.setItems(FXCollections.observableArrayList(false, true));
-//        comboBox.setValue(monsterSlot.getStatBlock().isUnlockRequired());
-//        if(selectionState.isSafetyModeOn() && selectionState.isOnBabySlot()) {
-//            comboBox.setDisable(true);
-//        }
-//        comboBox.setOnAction(event -> {
-//            boolean value = comboBox.getValue();
-//            monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().unlockRequired(value).build());
-//        });
-//        comboBox.setPrefWidth(80);
-//        HBox hBox = new HBox(label, comboBox);
-//        hBox.setSpacing(10);
-//        hBox.setAlignment(Pos.CENTER_LEFT);
-//        GridPane.setMargin(hBox, new Insets(10));
-//        return hBox;
-//    }
+    private Node setupLockedLabel(DimCharacter character) {
+        Label label = new Label("Requires Unlock:");
+        ComboBox<Boolean> comboBox = new ComboBox<>();
+        comboBox.setItems(FXCollections.observableArrayList(false, true));
+        comboBox.setValue(character.isFinishAdventureToUnlock());
+        if(character.getStage() < 2) {
+            comboBox.setDisable(true);
+        }
+        comboBox.setOnAction(event -> {
+            boolean value = comboBox.getValue();
+            character.setFinishAdventureToUnlock(value);
+        });
+        comboBox.setPrefWidth(80);
+        HBox hBox = new HBox(label, comboBox);
+        hBox.setSpacing(10);
+        hBox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hBox, new Insets(10));
+        return hBox;
+    }
 
     private Node setupAttributeLabel(Character<?> character) {
         if(character.getStage() < 2 && character instanceof DimCharacter) {
@@ -221,23 +224,25 @@ public class StatsGridController {
         return null;
     }
 
-//    private Node setupDPStarsLabel(Character<?> character) {
-//        if(monsterSlot.getStatBlock().getStage() < 2) {
-//            Label label = new Label("DP (stars): " + NONE_LABEL);
-//            GridPane.setMargin(label, new Insets(10));
-//            return label;
-//        }
-//        Label label = new Label("DP (stars):");
-//        IntegerTextField integerTextField = new IntegerTextField(monsterSlot.getStatBlock().getDpStars(), value ->
-//                monsterSlot.setStatBlock(monsterSlot.getStatBlock().toBuilder().dpStars(value).build()));
-//        integerTextField.setPrefWidth(60);
-//        integerTextField.setMax(10);
-//        HBox hbox = new HBox(label, integerTextField);
-//        hbox.setSpacing(10);
-//        hbox.setAlignment(Pos.CENTER_LEFT);
-//        GridPane.setMargin(hbox, new Insets(10));
-//        return hbox;
-//    }
+    private Node setupDPStarsLabel(DimCharacter character) {
+        if(character.getStage() < 2) {
+            Label label = new Label("DP (stars): " + NONE_LABEL);
+            GridPane.setMargin(label, new Insets(10));
+            return label;
+        }
+        Label label = new Label("DP (stars):");
+        IntegerTextField integerTextField = new IntegerTextField();
+        integerTextField.initialize();
+        integerTextField.setText(Integer.toString(character.getStars()));
+        integerTextField.setChangeReceiver(character::setStars);
+        integerTextField.setPrefWidth(60);
+        integerTextField.setMax(10);
+        HBox hbox = new HBox(label, integerTextField);
+        hbox.setSpacing(10);
+        hbox.setAlignment(Pos.CENTER_LEFT);
+        GridPane.setMargin(hbox, new Insets(10));
+        return hbox;
+    }
 
     private Node setupBPLabel(Character<?> character) {
         if(character.getStage() < 2) {
