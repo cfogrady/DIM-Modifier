@@ -8,7 +8,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.TransferMode;
+import javafx.scene.layout.StackPane;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
 import java.net.URL;
@@ -16,6 +19,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 @RequiredArgsConstructor
+@Slf4j
 public class SystemViewController implements Initializable {
     private final AppState appState;
     private final SpriteImageTranslator spriteImageTranslator;
@@ -24,11 +28,15 @@ public class SystemViewController implements Initializable {
     @FXML
     ImageView backgroundsView;
     @FXML
+    StackPane backgroundSpriteContainer;
+    @FXML
     Button prevBackgroundButton;
     @FXML
     Button nextBackgroundButton;
     @FXML
     ImageView textSpritesView;
+    @FXML
+    StackPane textSpriteContainer;
     @FXML
     Button prevTextSpriteButton;
     @FXML
@@ -36,11 +44,15 @@ public class SystemViewController implements Initializable {
     @FXML
     ImageView stageSpritesView;
     @FXML
+    StackPane stageSpriteContainer;
+    @FXML
     Button prevStageButton;
     @FXML
     Button nextStageButton;
     @FXML
     ImageView attributeSpritesView;
+    @FXML
+    StackPane attributeSpriteContainer;
     @FXML
     Button prevAttributeButton;
     @FXML
@@ -48,7 +60,11 @@ public class SystemViewController implements Initializable {
     @FXML
     ImageView iconSpriteView;
     @FXML
+    StackPane iconSpriteContainer;
+    @FXML
     ImageView eggSpritesView;
+    @FXML
+    StackPane eggSpriteContainer;
     @FXML
     Button prevEggButton;
     @FXML
@@ -56,15 +72,21 @@ public class SystemViewController implements Initializable {
     @FXML
     ImageView hitSpritesView;
     @FXML
+    StackPane hitSpriteContainer;
+    @FXML
     Button prevHitButton;
     @FXML
     Button nextHitButton;
+    @FXML
+    StackPane smallAttackSpriteContainer;
     @FXML
     ImageView smallAttackSpritesView;
     @FXML
     Button prevSmallAttackButton;
     @FXML
     Button nextSmallAttackButton;
+    @FXML
+    StackPane bigAttackSpriteContainer;
     @FXML
     ImageView bigAttackSpritesView;
     @FXML
@@ -121,21 +143,34 @@ public class SystemViewController implements Initializable {
             appState.setSelectedBackgroundIndex(newBackgroundIndex);
             refreshBackground();
         });
-        backgroundsView.setOnMouseClicked(e -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(appState.getSelectedBackground(), true, true);
+        backgroundSpriteContainer.setOnMouseClicked(e -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
             if(newSprite != null) {
                 appState.getCardData().getCardSprites().getBackgrounds().set(appState.getSelectedBackgroundIndex(), newSprite);
                 refreshBackground();
             }
         });
-        backgroundsView.setOnDragDropped( e-> {
+        backgroundSpriteContainer.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
-                SpriteData.Sprite sprite = appState.getSelectedBackground();
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
                 appState.getCardData().getCardSprites().getBackgrounds().set(appState.getSelectedBackgroundIndex(), newSprite);
                 refreshBackground();
+            }
+        });
+        backgroundSpriteContainer.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
             }
         });
     }
@@ -158,21 +193,34 @@ public class SystemViewController implements Initializable {
             }
             refreshTextSprite();
         });
-        textSpritesView.setOnMouseClicked(e -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(getTextSprite(), true, true);
+        textSpriteContainer.setOnMouseClicked(e -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
             if(newSprite != null) {
                 setTextSprite(newSprite);
                 refreshTextSprite();
             }
         });
-        textSpritesView.setOnDragDropped( e-> {
+        textSpriteContainer.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
-                SpriteData.Sprite sprite = getTextSprite();
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
                 setTextSprite(newSprite);
                 refreshTextSprite();
+            }
+        });
+        textSpriteContainer.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
             }
         });
     }
@@ -222,21 +270,34 @@ public class SystemViewController implements Initializable {
             }
             refreshStageSprite();
         });
-        stageSpritesView.setOnMouseClicked(e -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(getStageSprite(), true, true);
+        stageSpriteContainer.setOnMouseClicked(e -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
             if(newSprite != null) {
                 setStageSprite(newSprite);
                 refreshStageSprite();
             }
         });
-        stageSpritesView.setOnDragDropped( e-> {
+        stageSpriteContainer.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
-                SpriteData.Sprite sprite = getStageSprite();
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
                 setStageSprite(newSprite);
                 refreshStageSprite();
+            }
+        });
+        stageSpriteContainer.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
             }
         });
     }
@@ -267,21 +328,34 @@ public class SystemViewController implements Initializable {
             }
             refreshAttributeSprite();
         });
-        attributeSpritesView.setOnMouseClicked(e -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(getAttributeSprite(), true, true);
+        attributeSpriteContainer.setOnMouseClicked(e -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
             if(newSprite != null) {
                 setAttributeSprite(newSprite);
                 refreshAttributeSprite();
             }
         });
-        attributeSpritesView.setOnDragDropped( e-> {
+        attributeSpriteContainer.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
-                SpriteData.Sprite sprite = getAttributeSprite();
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
                 setAttributeSprite(newSprite);
                 refreshAttributeSprite();
+            }
+        });
+        attributeSpriteContainer.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
             }
         });
     }
@@ -299,21 +373,34 @@ public class SystemViewController implements Initializable {
     }
 
     private void initializeLogoSprites() {
-        iconSpriteView.setOnMouseClicked(e -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(appState.getCardData().getCardSprites().getLogo(), true, true);
+        iconSpriteContainer.setOnMouseClicked(e -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
             if(newSprite != null) {
                 appState.getCardData().getCardSprites().setLogo(newSprite);
                 refreshLogoSprite();
             }
         });
-        iconSpriteView.setOnDragDropped( e-> {
+        iconSpriteContainer.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
-                SpriteData.Sprite sprite = appState.getCardData().getCardSprites().getLogo();
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
                 appState.getCardData().getCardSprites().setLogo(newSprite);
                 refreshLogoSprite();
+            }
+        });
+        iconSpriteContainer.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
             }
         });
     }
@@ -336,21 +423,34 @@ public class SystemViewController implements Initializable {
             }
             refreshEggSprite();
         });
-        eggSpritesView.setOnMouseClicked(e -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(getEggSprite(), true, true);
+        eggSpriteContainer.setOnMouseClicked(e -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
             if(newSprite != null) {
                 setEggSprite(newSprite);
                 refreshEggSprite();
             }
         });
-        eggSpritesView.setOnDragDropped( e-> {
+        eggSpriteContainer.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
-                SpriteData.Sprite sprite = getEggSprite();
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
                 setEggSprite(newSprite);
                 refreshEggSprite();
+            }
+        });
+        eggSpriteContainer.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
             }
         });
     }
@@ -381,21 +481,34 @@ public class SystemViewController implements Initializable {
             }
             refreshHitSprite();
         });
-        hitSpritesView.setOnMouseClicked(e -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(getHitSprite(), true, true);
+        hitSpriteContainer.setOnMouseClicked(e -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
             if(newSprite != null) {
                 setHitSprite(newSprite);
                 refreshHitSprite();
             }
         });
-        hitSpritesView.setOnDragDropped( e-> {
+        hitSpriteContainer.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
-                SpriteData.Sprite sprite = getHitSprite();
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
                 setHitSprite(newSprite);
                 refreshHitSprite();
+            }
+        });
+        hitSpriteContainer.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
             }
         });
     }
@@ -426,21 +539,36 @@ public class SystemViewController implements Initializable {
             }
             refreshSmallAttackSprite();
         });
-        smallAttackSpritesView.setOnMouseClicked(e -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(getSmallAttackSprite(), true, true);
+        smallAttackSpriteContainer.setOnMouseClicked(e -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
             if(newSprite != null) {
                 setSmallAttackSprite(newSprite);
                 refreshSmallAttackSprite();
             }
         });
-        smallAttackSpritesView.setOnDragDropped( e-> {
+        smallAttackSpriteContainer.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
-                SpriteData.Sprite sprite = getSmallAttackSprite();
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
-                setSmallAttackSprite(newSprite);
-                refreshSmallAttackSprite();
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
+                if(newSprite != null) {
+                    setSmallAttackSprite(newSprite);
+                    refreshSmallAttackSprite();
+                }
+            }
+        });
+        smallAttackSpriteContainer.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
             }
         });
     }
@@ -471,21 +599,36 @@ public class SystemViewController implements Initializable {
             }
             refreshBigAttackSprite();
         });
-        bigAttackSpritesView.setOnMouseClicked(e -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(getBigAttackSprite(), true, true);
+        bigAttackSpriteContainer.setOnMouseClicked(e -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
             if(newSprite != null) {
                 setBigAttackSprite(newSprite);
                 refreshBigAttackSprite();
             }
         });
-        bigAttackSpritesView.setOnDragDropped( e-> {
+        bigAttackSpriteContainer.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
-                SpriteData.Sprite sprite = getBigAttackSprite();
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
-                setBigAttackSprite(newSprite);
-                refreshBigAttackSprite();
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
+                if(newSprite != null) {
+                    setBigAttackSprite(newSprite);
+                    refreshBigAttackSprite();
+                }
+            }
+        });
+        bigAttackSpriteContainer.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
             }
         });
     }

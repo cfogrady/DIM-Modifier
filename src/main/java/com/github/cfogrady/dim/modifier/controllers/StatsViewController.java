@@ -10,6 +10,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -86,13 +87,31 @@ public class StatsViewController implements Initializable {
 
     private void refreshBackground(SpriteData.Sprite sprite) {
         backgroundStackPane.setBackground(getBackground()); //160x320
+        backgroundStackPane.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
+                } else {
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
+                }
+            }
+        });
         backgroundStackPane.setOnDragDropped( e-> {
             if(e.getDragboard().hasFiles()) {
                 List<File> files = e.getDragboard().getFiles();
                 File file = files.get(0);
-                SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite.getWidth(), sprite.getHeight(), file);
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
                 replaceCharacterSprite(newSprite);
             }
+        });
+        backgroundStackPane.setOnMouseClicked(click -> {
+            SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFileChooser();
+            replaceCharacterSprite(newSprite);
         });
     }
 
@@ -106,10 +125,6 @@ public class StatsViewController implements Initializable {
         imageView.setImage(image);
         imageView.setFitWidth(sprite.getWidth() * 2.0);
         imageView.setFitHeight(sprite.getHeight() * 2.0);
-        imageView.setOnMouseClicked(click -> {
-            SpriteData.Sprite newSprite = spriteReplacer.replaceSprite(sprite, true, true);
-            replaceCharacterSprite(newSprite);
-        });
     }
 
     private void replaceCharacterSprite(SpriteData.Sprite newSprite) {

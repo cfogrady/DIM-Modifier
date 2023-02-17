@@ -37,6 +37,21 @@ public class SpriteReplacer {
         return null;
     }
 
+    public SpriteData.Sprite loadSpriteFromFileChooser() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select sprite replacement.");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image format", "*.png", "*.bmp"));
+        if(appState.getLastOpenedFilePath() != null) {
+            fileChooser.setInitialDirectory(appState.getLastOpenedFilePath());
+        }
+        File file = fileChooser.showOpenDialog(stage);
+        if(file != null) {
+            appState.setLastOpenedFilePath(file.getParentFile());
+            return loadSpriteFromFile(file);
+        }
+        return null;
+    }
+
     public SpriteData.Sprite replaceSprite(SpriteData.Sprite sprite, boolean sameWidth, boolean sameHeight) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select sprite replacement. Should be " + sprite.getWidth() + " x " + sprite.getHeight());
@@ -51,7 +66,7 @@ public class SpriteReplacer {
         return replaceSprite(sameWidth ? sprite.getWidth() : null, sameHeight ? sprite.getHeight() : null, file);
     }
 
-    private SpriteData.Sprite loadSpriteFromFile(File file) {
+    public SpriteData.Sprite loadSpriteFromFile(File file) {
         return spriteImageTranslator.loadSprite(file);
     }
 }
