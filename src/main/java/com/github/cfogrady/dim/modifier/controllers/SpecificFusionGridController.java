@@ -30,10 +30,10 @@ public class SpecificFusionGridController {
 
     public void refreshView(Character<?> character) {
         stackPane.getChildren().clear();
-        stackPane.getChildren().add(setupSpecificFusionsGrid((BemCharacter) character));
+        stackPane.getChildren().add(setupSpecificFusionsGrid(character));
     }
 
-    private GridPane setupSpecificFusionsGrid(BemCharacter character) {
+    private GridPane setupSpecificFusionsGrid(Character<?> character) {
         GridPane gridPane = new GridPane();
         gridPane.setGridLinesVisible(true);
 
@@ -48,13 +48,13 @@ public class SpecificFusionGridController {
     private void addRow(GridPane gridPane, int rowIndex, SpecificFusion fusion, Character<?> character) {
         int columnIndex = 0;
         VBox supportCharacterColumn = getSupportCharacterColumn(fusion);
-        gridPane.add(getSupportDimIdColumn((BemCharacter) character, fusion, supportCharacterColumn), columnIndex++, rowIndex);
+        gridPane.add(getSupportDimIdColumn(fusion, supportCharacterColumn), columnIndex++, rowIndex);
         gridPane.add(supportCharacterColumn, columnIndex++, rowIndex);
         gridPane.add(getEvolveToColumn(fusion), columnIndex++, rowIndex);
-        gridPane.add(getDeleteButton(fusion, (BemCharacter) character), columnIndex++, rowIndex);
+        gridPane.add(getDeleteButton(fusion, character), columnIndex++, rowIndex);
     }
 
-    private Node getSupportDimIdColumn(BemCharacter character, SpecificFusion fusion, VBox supportCharacterColumn) {
+    private Node getSupportDimIdColumn(SpecificFusion fusion, VBox supportCharacterColumn) {
         VBox vBox = new VBox();
         vBox.setSpacing(10);
         vBox.setPadding(new Insets(10));
@@ -97,7 +97,7 @@ public class SpecificFusionGridController {
             });
             vBox.getChildren().add(imageIntComboBox);
         } else {
-            IntegerTextField slotId = new IntegerTextField(fusion.getPartnerDimSlotId(), v -> fusion.setPartnerDimSlotId(v));
+            IntegerTextField slotId = new IntegerTextField(fusion.getPartnerDimSlotId(), fusion::setPartnerDimSlotId);
             slotId.setMax(22);
             vBox.getChildren().add(slotId);
         }
@@ -125,7 +125,7 @@ public class SpecificFusionGridController {
         return vBox;
     }
 
-    private Node getDeleteButton(SpecificFusion fusion, BemCharacter character) {
+    private Node getDeleteButton(SpecificFusion fusion, Character<?> character) {
         Button button = new Button("Delete Entry");
         button.setOnAction(e -> {
             character.getSpecificFusions().remove(fusion);
