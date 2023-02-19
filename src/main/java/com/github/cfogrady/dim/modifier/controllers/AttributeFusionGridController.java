@@ -31,7 +31,7 @@ public class AttributeFusionGridController {
     @Setter
     private StackPane stackPane;
 
-    public void refreshAll(Character<?> character) {
+    public void refreshAll(Character<?, ?> character) {
         stackPane.getChildren().clear();
         stackPane.getChildren().add(setupGrid(character.getFusions()));
     }

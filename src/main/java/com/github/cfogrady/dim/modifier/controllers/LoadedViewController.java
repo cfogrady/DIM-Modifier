@@ -33,8 +33,6 @@ public class LoadedViewController implements Initializable {
     @FXML
     private Button saveButton;
     @FXML
-    private CheckBox onlySafeValuesCheckbox;
-    @FXML
     private Text dimIdText;
     @FXML
     private Text revisionIdText;
@@ -94,10 +92,6 @@ public class LoadedViewController implements Initializable {
 
     public void refreshAll() {
         MetaData metaData = appState.getCardData().getMetaData();
-        onlySafeValuesCheckbox.setSelected(appState.isSafetyModeOn());
-        onlySafeValuesCheckbox.setOnAction(e -> {
-            appState.setSafetyModeOn(!appState.isSafetyModeOn());
-        });
         dimIdText.setText("DIM ID: " + metaData.getId());
         revisionIdText.setText("Revision: " + metaData.getRevision());
         factoryDateText.setText("Factory Date: " + metaData.getYear() + "/" + metaData.getMonth() + "/" + metaData.getDay());

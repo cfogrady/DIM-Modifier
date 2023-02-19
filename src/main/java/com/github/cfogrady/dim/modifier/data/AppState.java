@@ -18,7 +18,6 @@ public class AppState {
 
     private FirmwareData firmwareData;
     private CardData<?, ?, ?> cardData;
-    private boolean safetyModeOn;
     private File lastOpenedFilePath;
     private int selectedBackgroundIndex;
 
@@ -28,13 +27,13 @@ public class AppState {
 
     public List<SpriteData.Sprite> getIdleForCharacters() {
         List<SpriteData.Sprite> idleSprites = new ArrayList<>();
-        for(Character<?> character : getCardData().getCharacters()) {
+        for(Character<?, ?> character : getCardData().getCharacters()) {
             idleSprites.add(character.getSprites().get(SELECTION_SPRITE_IDX));
         }
         return idleSprites;
     }
 
-    public Character<?> getCharacter(int characterIndex) {
+    public Character<?, ?> getCharacter(int characterIndex) {
         return cardData.getCharacters().get(characterIndex);
     }
 

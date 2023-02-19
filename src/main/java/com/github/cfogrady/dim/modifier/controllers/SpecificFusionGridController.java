@@ -28,12 +28,12 @@ public class SpecificFusionGridController {
     @Setter
     private StackPane stackPane;
 
-    public void refreshView(Character<?> character) {
+    public void refreshView(Character<?, ?> character) {
         stackPane.getChildren().clear();
         stackPane.getChildren().add(setupSpecificFusionsGrid(character));
     }
 
-    private GridPane setupSpecificFusionsGrid(Character<?> character) {
+    private GridPane setupSpecificFusionsGrid(Character<?, ?> character) {
         GridPane gridPane = new GridPane();
         gridPane.setGridLinesVisible(true);
 
@@ -45,7 +45,7 @@ public class SpecificFusionGridController {
         return gridPane;
     }
 
-    private void addRow(GridPane gridPane, int rowIndex, SpecificFusion fusion, Character<?> character) {
+    private void addRow(GridPane gridPane, int rowIndex, SpecificFusion fusion, Character<?, ?> character) {
         int columnIndex = 0;
         VBox supportCharacterColumn = getSupportCharacterColumn(fusion);
         gridPane.add(getSupportDimIdColumn(fusion, supportCharacterColumn), columnIndex++, rowIndex);
@@ -115,7 +115,7 @@ public class SpecificFusionGridController {
         }
         comboBox.setOnAction(e -> {
             int newSlot = comboBox.getValue().getValue();
-            Character<?> newEvolveToCharacter = appState.getCharacter(newSlot);
+            Character<?, ?> newEvolveToCharacter = appState.getCharacter(newSlot);
             fusion.setEvolveToCharacterId(newEvolveToCharacter.getId());
         });
         comboBox.setPrefWidth(120);
@@ -125,7 +125,7 @@ public class SpecificFusionGridController {
         return vBox;
     }
 
-    private Node getDeleteButton(SpecificFusion fusion, Character<?> character) {
+    private Node getDeleteButton(SpecificFusion fusion, Character<?, ?> character) {
         Button button = new Button("Delete Entry");
         button.setOnAction(e -> {
             character.getSpecificFusions().remove(fusion);

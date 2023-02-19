@@ -38,7 +38,7 @@ public class TransformationViewController implements Initializable {
     private Button specificFusionButton;
 
     @Setter
-    private Character<?> character;
+    private Character<?, ?> character;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {

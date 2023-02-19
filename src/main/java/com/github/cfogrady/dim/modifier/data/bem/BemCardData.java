@@ -15,12 +15,4 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
 
-    @Override
-    protected BemCharacter createNewCharacter() {
-        return BemCharacter.builder()
-                .id(UUID.randomUUID())
-                .transformationEntries(new ArrayList<>())
-                .specificFusions(new ArrayList<>())
-                .fusions(Fusions.builder().build()).id(UUID.randomUUID()).build();
-    }
 }

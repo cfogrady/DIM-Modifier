@@ -1,15 +1,17 @@
 package com.github.cfogrady.dim.modifier.data.card;
 
+import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Data
-@SuperBuilder
-public class Character<T extends TransformationEntry> {
+@SuperBuilder(toBuilder = true)
+public abstract class Character<T extends TransformationEntry, T2 extends Character<T, T2>> {
     private UUID id; //This is transient. Used to keep track of evolutions while slot indexes are being changed.
     private int stage;
     private int attribute;
@@ -25,4 +27,7 @@ public class Character<T extends TransformationEntry> {
     private List<T> transformationEntries;
     private Fusions fusions;
     private List<SpecificFusion> specificFusions;
+
+    public abstract T2 copyCharacter(SpriteImageTranslator spriteImageTranslator);
+
 }

@@ -64,6 +64,9 @@ public class CharacterViewController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initializeAddCharacterButton();
+        statsViewController.setRefreshIdleSprite(this::initializeCharacterSelectionComboBox);
+        statsViewController.setRefreshAll(this::refreshAll);
+        statsViewController.initialize(location, resources);
     }
 
     public void clearState() {
@@ -104,7 +107,7 @@ public class CharacterViewController implements Initializable {
     }
 
     private void initializeNameBox() {
-        Character<?> character = appState.getCardData().getCharacters().get(characterSelection);
+        Character<?, ?> character = appState.getCardData().getCharacters().get(characterSelection);
         SpriteData.Sprite nameSprite = character.getSprites().get(0);
         Image image = spriteImageTranslator.loadImageFromSprite(nameSprite);
         ImageView imageView = new ImageView(image);
@@ -121,7 +124,6 @@ public class CharacterViewController implements Initializable {
             SpriteData.Sprite newNameSprite = spriteReplacer.replaceSprite(nameSprite, false, true);
             if(newNameSprite != null) {
                 character.getSprites().set(0, newNameSprite);
-                //TODO: Make sure this works. Received bug report of it failing for an older version.
                 initializeNameBox();
             }
         });
@@ -152,7 +154,6 @@ public class CharacterViewController implements Initializable {
         switch(subViewSelection) {
             case STATS -> {
                 statsViewController.setCharacter(appState.getCharacter(characterSelection));
-                statsViewController.setRefreshIdleSprite(this::initializeCharacterSelectionComboBox);
                 statsViewController.refreshAll();
                 subView.getChildren().add(statsSubView);
             }

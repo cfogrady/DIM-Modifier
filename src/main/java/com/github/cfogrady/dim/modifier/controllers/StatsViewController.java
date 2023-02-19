@@ -25,7 +25,6 @@ import java.util.ResourceBundle;
 @RequiredArgsConstructor
 public class StatsViewController implements Initializable {
     public static final int IDLE_SPRITE_IDX = 1;
-    public static final int CLOSE_UP_SPRITE_IDX = 13;
 
     private final AppState appState;
     private final SpriteImageTranslator spriteImageTranslator;
@@ -46,12 +45,15 @@ public class StatsViewController implements Initializable {
     @Setter
     private Runnable refreshIdleSprite;
     @Setter
-    private Character<?> character;
+    private Runnable refreshAll;
+    @Setter
+    private Character<?, ?> character;
     private int spriteOption = 1;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         statsGridController.setStackPane(gridContainer);
+        statsGridController.setResetView(refreshAll);
     }
 
     public void clearState() {
@@ -64,6 +66,9 @@ public class StatsViewController implements Initializable {
     }
 
     private void refreshSpriteSection() {
+        if(spriteOption >= character.getSprites().size()) {
+            spriteOption = IDLE_SPRITE_IDX;
+        }
         SpriteData.Sprite sprite = character.getSprites().get(spriteOption);
         refreshSprite(sprite);
         refreshBackground(sprite);
@@ -77,7 +82,7 @@ public class StatsViewController implements Initializable {
             refreshSprite(character.getSprites().get(spriteOption));
             refreshSpriteButtons();
         });
-        nextSpriteButton.setDisable(spriteOption == CLOSE_UP_SPRITE_IDX);
+        nextSpriteButton.setDisable(spriteOption == character.getSprites().size() - 1);
         nextSpriteButton.setOnAction(event -> {
             spriteOption++;
             refreshSprite(character.getSprites().get(spriteOption));

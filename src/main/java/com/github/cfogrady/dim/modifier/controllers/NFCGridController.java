@@ -48,7 +48,7 @@ public class NFCGridController {
         Text pool3Totals = new Text();
         setupTotals(gridPane, pool1Totals, pool2Totals, pool3Totals);
         int rowIndex = 2;
-        for(Character<?> character : appState.getCardData().getCharacters()) {
+        for(Character<?, ?> character : appState.getCardData().getCharacters()) {
             if(character.getStage() >= 2) {
                 addRow(gridPane, character, pool1Totals, pool2Totals, pool3Totals, rowIndex++);
             }
@@ -94,7 +94,7 @@ public class NFCGridController {
         }
     }
 
-    private void addRow(GridPane gridPane, Character<?> character, Text pool1Totals, Text pool2Totals, Text pool3Totals, int rowIndex) {
+    private void addRow(GridPane gridPane, Character<?, ?> character, Text pool1Totals, Text pool2Totals, Text pool3Totals, int rowIndex) {
         int columnIndex = 0;
         ImageView imageView = new ImageView(spriteImageTranslator.loadImageFromSprite(character.getSprites().get(IDLE_SPRITE_IDX)));
         GridPane.setMargin(imageView, INSETS);
@@ -124,7 +124,7 @@ public class NFCGridController {
         }
     }
 
-    private <T extends Character<?>> void refreshPoolTotal(List<T> characterList, Text poolText, Function<T, Integer> battleChanceFetcher) {
+    private <T extends Character<?, ?>> void refreshPoolTotal(List<T> characterList, Text poolText, Function<T, Integer> battleChanceFetcher) {
         int total = getStageTotals(characterList, battleChanceFetcher);
         poolText.setText(Integer.toString(total));
         if(total != 100) {
@@ -134,7 +134,7 @@ public class NFCGridController {
         }
     }
 
-    private <T extends Character<?>> int getStageTotals(List<T> characterList, Function<T, Integer> battleChanceFetcher) {
+    private <T extends Character<?, ?>> int getStageTotals(List<T> characterList, Function<T, Integer> battleChanceFetcher) {
         int total = 0;
         for(T character : characterList) {
             Integer chance = battleChanceFetcher.apply(character);

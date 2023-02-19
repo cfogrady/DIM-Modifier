@@ -21,7 +21,7 @@ public abstract class CardDataRreader<
         SpecificFusionT extends SpecificFusions.SpecificFusionEntry,
         CardType extends Card<?, ?, ? extends TransformationRequirements<CardTransformationT>, ? extends AdventureLevels<CardAdventureT>, ?, ? extends SpecificFusions<SpecificFusionT>>,
         TransformationType extends TransformationEntry,
-        CharacterType extends Character<TransformationType>,
+        CharacterType extends Character<TransformationType, CharacterType>,
         AdventureType extends Adventure,
         CardDataType extends CardData<CharacterType, AdventureType, CardType>
         > {
@@ -156,7 +156,7 @@ public abstract class CardDataRreader<
 
     protected abstract List<SpriteData.Sprite> getSpritesForSlot(int index, CardType card);
 
-    protected abstract Character.CharacterBuilder<TransformationType, ? extends CharacterType, ?> getCharacterBuilder(int index, CardType card, List<UUID> idBySlot);
+    protected abstract Character.CharacterBuilder<TransformationType, CharacterType, ? extends CharacterType, ?> getCharacterBuilder(int index, CardType card, List<UUID> idBySlot);
 
     protected abstract CardData.CardDataBuilder<CharacterType, AdventureType, CardType, ? extends CardDataType, ?> getCardDataBuilder();
 

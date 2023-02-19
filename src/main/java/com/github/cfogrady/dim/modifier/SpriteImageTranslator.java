@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 @RequiredArgsConstructor
@@ -20,12 +21,23 @@ public class SpriteImageTranslator {
     @Getter
     private final SpriteData.Sprite blankCharacterSprite;
     @Getter
+    private final SpriteData.Sprite blankBabyCharacterSprite;
+    @Getter
     private final SpriteData.Sprite blankNameSprite;
     @Getter
     private final SpriteData.Sprite blankBackgroundSprite;
 
+    public List<SpriteData.Sprite> createDummySprites(int number, SpriteData.Sprite sprite) {
+        List<SpriteData.Sprite> sprites = new ArrayList<>();
+        for(int i= 0; i < number; i++) {
+            sprites.add(sprite);
+        }
+        return sprites;
+    }
+
     public SpriteImageTranslator() {
         blankCharacterSprite = loadSprite(this.getClass().getClassLoader().getResourceAsStream("BlankCharacter.png"));
+        blankBabyCharacterSprite = loadSprite(this.getClass().getClassLoader().getResourceAsStream("BlankBabyCharacter.png"));
         blankNameSprite = loadSprite(this.getClass().getClassLoader().getResourceAsStream("BlankName.png"));
         blankBackgroundSprite = loadSprite(this.getClass().getClassLoader().getResourceAsStream("BlankBackground.png"));
     }

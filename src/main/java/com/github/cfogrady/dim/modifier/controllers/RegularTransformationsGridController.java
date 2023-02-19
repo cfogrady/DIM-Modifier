@@ -26,12 +26,12 @@ public class RegularTransformationsGridController {
     @Setter
     private StackPane stackPane;
 
-    public void refreshView(Character<?> character) {
+    public void refreshView(Character<?, ?> character) {
         stackPane.getChildren().clear();
         stackPane.getChildren().add(setupRegularTransformationsGrid(character));
     }
 
-    private GridPane setupRegularTransformationsGrid(Character<?> character) {
+    private GridPane setupRegularTransformationsGrid(Character<?, ?> character) {
         GridPane gridPane = new GridPane();
         gridPane.setGridLinesVisible(true);
 
@@ -43,7 +43,7 @@ public class RegularTransformationsGridController {
         return gridPane;
     }
 
-    private void addRow(GridPane gridPane, int rowIndex, TransformationEntry transformationEntry, Character<?> character) {
+    private void addRow(GridPane gridPane, int rowIndex, TransformationEntry transformationEntry, Character<?, ?> character) {
         int columnIndex = 0;
         gridPane.add(getEvolveToColumn(transformationEntry), columnIndex++, rowIndex);
         gridPane.add(getVitalValueRequirementLabel(transformationEntry), columnIndex++, rowIndex);
@@ -150,7 +150,7 @@ public class RegularTransformationsGridController {
         return checkBox;
     }
 
-    private Node getDeleteButton(TransformationEntry transformationEntry, Character<?> character) {
+    private Node getDeleteButton(TransformationEntry transformationEntry, Character<?, ?> character) {
         Button button = new Button("Delete Entry");
         button.setOnAction(e -> {
             character.getTransformationEntries().remove(transformationEntry);

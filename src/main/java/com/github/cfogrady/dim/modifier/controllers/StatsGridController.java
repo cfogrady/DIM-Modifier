@@ -35,9 +35,11 @@ public class StatsGridController {
 
     @Setter
     private StackPane stackPane;
+    @Setter
+    private Runnable resetView;
 
 
-    public void refreshStatsGrid(Character<?> character) {
+    public void refreshStatsGrid(Character<?, ?> character) {
         stackPane.getChildren().clear();
         GridPane gridPane = new GridPane();
         gridPane.setGridLinesVisible(true);
@@ -58,15 +60,18 @@ public class StatsGridController {
         stackPane.getChildren().add(gridPane);
     }
 
-    private Node setupStageLabel(Character<?> character) {
+    private Node setupStageLabel(Character<?, ?> character) {
         Label label = new Label("Stage: ");
         ComboBox<Integer> comboBox = new ComboBox<>();
         comboBox.setValue(character.getStage() + 1);
-        comboBox.setItems(FXCollections.observableArrayList(1, 2, 3, 4, 5, 6, 7, 8));
+        comboBox.setItems(FXCollections.observableArrayList(appState.getCardData().getTotalAvailableStages()));
         comboBox.setOnAction(event -> {
             int value = comboBox.getValue() - 1;
             boolean changedBattleReadiness = value < 2 != character.getStage() < 2;
+            int oldValue = character.getStage();
             character.setStage(value);
+            boolean resetView = false;
+            boolean refreshGrid = false;
             if(changedBattleReadiness) {
                 if(value < 2) {
                     character.setBp(DimReader.NONE_VALUE);
@@ -81,8 +86,18 @@ public class StatsGridController {
                     } else {
                         character.setBigAttack(DimReader.NONE_VALUE);
                         character.setSmallAttack(DimReader.NONE_VALUE);
+                        character.setAttribute(0);
                     }
                 }
+                refreshGrid = true;
+            }
+            if(character instanceof DimCharacter dimCharacter && (value < 2 || oldValue < 2)) {
+                dimCharacter.handleSpriteChange(oldValue, value, spriteImageTranslator);
+                resetView = true;
+            }
+            if(resetView) {
+                this.resetView.run();
+            } else if(refreshGrid) {
                 refreshStatsGrid(character);
             }
         });
@@ -114,7 +129,7 @@ public class StatsGridController {
         return hBox;
     }
 
-    private Node setupAttributeLabel(Character<?> character) {
+    private Node setupAttributeLabel(Character<?, ?> character) {
         if(character.getStage() < 2 && character instanceof DimCharacter) {
             Label label = new Label("Attribute: " + character.getAttribute());
             GridPane.setMargin(label, new Insets(10));
@@ -143,7 +158,7 @@ public class StatsGridController {
         return FXCollections.observableArrayList(virus, data, vaccine, free);
     }
 
-    private ImageIntComboBox getSpriteAttributeComboBox(Character<?> bemCharacter) {
+    private ImageIntComboBox getSpriteAttributeComboBox(Character<?, ?> bemCharacter) {
         ImageIntComboBox imageIntComboBox = new ImageIntComboBox();
         ObservableList<ImageIntComboBox.ImageIntPair> options = spriteImageTranslator.createImageValuePairs(appState.getAttributes());
         options.add(0, new ImageIntComboBox.ImageIntPair(null, null));
@@ -156,7 +171,7 @@ public class StatsGridController {
         return imageIntComboBox;
     }
 
-    private Node setupDispositionLabel(Character<?> character) {
+    private Node setupDispositionLabel(Character<?, ?> character) {
         Label label = new Label("Activity Type:");
         StringIntComboBox comboBox = new StringIntComboBox(character.getActivityType(), getActivityTypes(), character::setActivityType);
         HBox hBox = new HBox(label, comboBox);
@@ -175,7 +190,7 @@ public class StatsGridController {
         return FXCollections.observableArrayList(stoic, active, normal, indoor, lazy);
     }
 
-    private Node setupSmallAttackLabel(Character<?> character) {
+    private Node setupSmallAttackLabel(Character<?, ?> character) {
         if(character.getStage() < 2) {
             Label label = new Label("Small Attack: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
@@ -195,7 +210,7 @@ public class StatsGridController {
         return hBox;
     }
 
-    private Node setupBigAttackLabel(Character<?> character) {
+    private Node setupBigAttackLabel(Character<?, ?> character) {
         if(character.getStage() < 2) {
             Label label = new Label("Big Attack: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
@@ -244,7 +259,7 @@ public class StatsGridController {
         return hbox;
     }
 
-    private Node setupBPLabel(Character<?> character) {
+    private Node setupBPLabel(Character<?, ?> character) {
         if(character.getStage() < 2) {
             Label label = new Label("BP: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
@@ -261,7 +276,7 @@ public class StatsGridController {
         return hbox;
     }
 
-    private Node setupHpLabel(Character<?> character) {
+    private Node setupHpLabel(Character<?, ?> character) {
         if(character.getStage() < 2) {
             Label label = new Label("HP: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
@@ -278,7 +293,7 @@ public class StatsGridController {
         return hbox;
     }
 
-    private Node setupApLabel(Character<?> character) {
+    private Node setupApLabel(Character<?, ?> character) {
         if(character.getStage() < 2) {
             Label label = new Label("AP: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));

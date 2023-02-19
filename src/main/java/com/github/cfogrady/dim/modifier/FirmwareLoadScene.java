@@ -24,7 +24,6 @@ public class FirmwareLoadScene {
         Button button = new Button();
         button.setText("Locate BE Firmware");
         button.setOnAction(event -> {
-            //TODO: Set file extension to on file chooser to firmware extension
             FileChooser fileChooser = new FileChooser();
             fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("BE Firmware", "*.vb2"));
             fileChooser.setTitle("Select BE Firmware File");

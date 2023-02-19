@@ -12,12 +12,14 @@ import com.github.cfogrady.vb.dim.fusion.AttributeFusions;
 import com.github.cfogrady.vb.dim.fusion.BemSpecificFusions;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import com.github.cfogrady.vb.dim.transformation.BemTransformationRequirements;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 public class BemCardDataWriter extends CardDataWriter<
         BemCharacterStats.BemCharacterStatEntry,
         BemCharacterStats,
@@ -163,7 +165,6 @@ public class BemCardDataWriter extends CardDataWriter<
         sprites.addAll(cardSprites.getBigAttacks());
         List<BemCharacter> characters = bemData.getCharacters();
         for(BemCharacter character : characters) {
-            // use correct number of sprites for monsters with lower level than stage 2
             sprites.addAll(character.getSprites());
         }
         return builder.sprites(sprites).build();

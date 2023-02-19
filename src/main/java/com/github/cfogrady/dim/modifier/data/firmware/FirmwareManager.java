@@ -39,19 +39,16 @@ public class FirmwareManager {
             return false;
         }
         File file = new File(firmwareFile);
-        log.info("What is happening. File: {}. Valid: {}", file.getAbsolutePath(), isValidFirmwareLocation(file));
         return isValidFirmwareLocation(file);
     }
 
     public static boolean isValidFirmwareLocation(File file) {
-        log.info("File exists: {}", file.exists());
         return file != null && file.exists() && file.isFile() && file.canRead();
     }
 
     public FirmwareData loadFirmware() throws IOException {
         String firmwareLocation = preferences.get(FIRMWARE_LOCATION, null);
         File file = new File(firmwareLocation);
-        log.info("File: {}, exists: {}", file.getAbsolutePath(), file.exists());
         try (FileInputStream fileInput = new FileInputStream(file)) {
             RelativeByteOffsetInputStream input = new RelativeByteOffsetInputStream(fileInput);
             input.readToOffset(SPRITE_DIMENSIONS_LOCATION);

@@ -33,7 +33,7 @@ public abstract class CardDataWriter<
         SpecificFusionT extends SpecificFusions<SpecificFusionEntryT>,
         CardType extends Card<?, CardStatsT, CardTransformationT, CardAdventureT, CardAttributeFusionT, SpecificFusionT>,
         TransformationType extends TransformationEntry,
-        CharacterType extends Character<TransformationType>,
+        CharacterType extends Character<TransformationType, CharacterType>,
         AdventureType extends Adventure,
         CardDataType extends CardData<CharacterType, AdventureType, CardType>
         > {
