@@ -1,13 +1,14 @@
 package com.github.cfogrady.dim.modifier.controllers;
 
 import com.github.cfogrady.dim.modifier.data.AppState;
+import com.github.cfogrady.dim.modifier.data.bem.BemCardData;
 import com.github.cfogrady.dim.modifier.data.card.MetaData;
+import com.github.cfogrady.dim.modifier.data.dim.DimCardData;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import lombok.RequiredArgsConstructor;
@@ -24,8 +25,10 @@ public class LoadedViewController implements Initializable {
     private final CharacterViewController characterViewController;
     private final BattlesViewController battlesViewController;
     private final Node battlesSubView;
-    private final SystemViewController systemViewController;
-    private final Node systemSubView;
+    private final BemSystemViewController bemSystemViewController;
+    private final Node bemSystemSubView;
+    private final DimSystemViewController dimSystemViewController;
+    private final Node dimSystemSubView;
     private final DimIOController dimIOController;
 
     @FXML
@@ -86,7 +89,8 @@ public class LoadedViewController implements Initializable {
     private void clearState() {
         appState.setSelectedBackgroundIndex(0);
         characterViewController.clearState();
-        systemViewController.clearState();
+        bemSystemViewController.clearState();
+        dimSystemViewController.clearState();
         refreshAll();
     }
 
@@ -123,8 +127,15 @@ public class LoadedViewController implements Initializable {
                 return battlesSubView;
             }
             case SYSTEM -> {
-                systemViewController.refreshAll();
-                return systemSubView;
+                if(appState.getCardData() instanceof BemCardData) {
+                    bemSystemViewController.refreshAll();
+                    return bemSystemSubView;
+                } else if(appState.getCardData() instanceof DimCardData) {
+                    dimSystemViewController.refreshAll();
+                    return dimSystemSubView;
+                } else {
+                    throw new IllegalArgumentException("Cannot load system view for unknown card type " + appState.getCardData().getClass().getName());
+                }
             }
             default -> {
                 return null;

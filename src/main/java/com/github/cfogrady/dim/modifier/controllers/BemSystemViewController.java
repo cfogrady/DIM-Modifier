@@ -20,7 +20,7 @@ import java.util.ResourceBundle;
 
 @RequiredArgsConstructor
 @Slf4j
-public class SystemViewController implements Initializable {
+public class BemSystemViewController implements Initializable {
     private final AppState appState;
     private final SpriteImageTranslator spriteImageTranslator;
     private final SpriteReplacer spriteReplacer;

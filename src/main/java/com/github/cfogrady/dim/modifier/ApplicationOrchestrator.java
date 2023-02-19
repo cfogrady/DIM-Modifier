@@ -69,11 +69,15 @@ public class ApplicationOrchestrator {
         loader = new FXMLLoader(ApplicationOrchestrator.class.getResource("/BattlesView.fxml"));
         loader.setControllerFactory(p -> battlesViewController);
         Node battlesView = loader.load();
-        SystemViewController systemViewController = new SystemViewController(appState, spriteImageTranslator, spriteReplacer);
-        loader = new FXMLLoader(ApplicationOrchestrator.class.getResource("/SystemView.fxml"));
-        loader.setControllerFactory(p -> systemViewController);
-        Node systemView = loader.load();
-        LoadedViewController loadedViewController = new LoadedViewController(appState, charactersView, characterViewController, battlesViewController, battlesView, systemViewController, systemView, dimReaderController);
+        BemSystemViewController bemSystemViewController = new BemSystemViewController(appState, spriteImageTranslator, spriteReplacer);
+        loader = new FXMLLoader(ApplicationOrchestrator.class.getResource("/BemSystemView.fxml"));
+        loader.setControllerFactory(p -> bemSystemViewController);
+        Node bemSystemView = loader.load();
+        DimSystemViewController dimSystemViewController = new DimSystemViewController(appState, spriteImageTranslator, spriteReplacer);
+        loader = new FXMLLoader(ApplicationOrchestrator.class.getResource("/DimSystemView.fxml"));
+        loader.setControllerFactory(p -> dimSystemViewController);
+        Node dimSystemView = loader.load();
+        LoadedViewController loadedViewController = new LoadedViewController(appState, charactersView, characterViewController, battlesViewController, battlesView, bemSystemViewController, bemSystemView, dimSystemViewController, dimSystemView, dimReaderController);
         FirstLoadScene firstLoadScene = new FirstLoadScene(appState, stage, cardDataIO, loadedViewController);
         FirmwareLoadScene firmwareLoadScene = new FirmwareLoadScene(stage, firmwareManager, firstLoadScene, appState);
         return ApplicationOrchestrator.builder()

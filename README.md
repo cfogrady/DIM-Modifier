@@ -1,4 +1,17 @@
 # DIM-Modifier
+
+## To Do For 2.0:
+* Good Sprite Size enforcement
+* Pop Up Notification/confirmation
+* Validation
+* Verify Specific Fusion working for characters with and without next steps
+* Export System (or maybe all) sprites
+* Sprite Sheet export/import
+* Stats export/import
+
+
+## About
+
 This software is meant for personal use in the reading and re-writing of DIM image files.
 
 It displays all sprites, stats, evolutions, fusions, and adventures.
