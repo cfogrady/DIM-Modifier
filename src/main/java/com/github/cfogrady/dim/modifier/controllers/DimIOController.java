@@ -17,6 +17,9 @@ import java.util.List;
 @Slf4j
 @RequiredArgsConstructor
 public class DimIOController {
+    public static final String BULLET = "\u2022";
+    public static final String ERROR_SEPARATOR = System.lineSeparator() + BULLET + " ";
+
     private final Stage stage;
     private final CardDataIO cardDataIO;
     private final AppState appState;
@@ -42,7 +45,7 @@ public class DimIOController {
     public void saveDim() {
         List<String> errors = appState.getCardData().checkForErrors();
         if(!errors.isEmpty()) {
-            Alert alert = new Alert(Alert.AlertType.NONE, "Cannot save. Errors in card data:" + System.lineSeparator() + String.join(System.lineSeparator(), errors));
+            Alert alert = new Alert(Alert.AlertType.NONE, "Cannot save. Errors in card data:" + ERROR_SEPARATOR + String.join(ERROR_SEPARATOR, errors));
             alert.getButtonTypes().add(ButtonType.OK);
             alert.show();
             return;

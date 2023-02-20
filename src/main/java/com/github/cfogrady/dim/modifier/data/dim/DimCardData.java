@@ -35,6 +35,11 @@ public class DimCardData extends CardData<DimCharacter, Adventure, DimCard> {
         return errors;
     }
 
+    @Override
+    public int getNumberOfAvailableCharacterSlots() {
+        return 17;
+    }
+
     public List<String> validateBabySlots() {
         List<String> errors = new ArrayList<>();
         boolean mismatch = false;
@@ -42,12 +47,14 @@ public class DimCardData extends CardData<DimCharacter, Adventure, DimCard> {
             DimCharacter character = getCharacters().get(i);
             if(i < 2 && i != character.getStage()) {
                 mismatch = true;
-            } else if(character.getStage() < 2) {
+            } else if(i >= 2 && character.getStage() < 2) {
                 mismatch = true;
             }
         }
         if(mismatch) {
-            errors.add("• Slots 1 and 2 must have characters at phase 1 and 2 respectively. Phase 1 and 2 characters can only be in these slots.");
+            errors.add("Characters in the first two slotsSlots 1-2 must have characters" + System.lineSeparator() +
+                    "  at phase 1 and 2 respectively. Phase 1 and 2 characters can only" + System.lineSeparator() +
+                    "  be in these slots.");
         }
         return errors;
     }
@@ -56,11 +63,11 @@ public class DimCardData extends CardData<DimCharacter, Adventure, DimCard> {
         List<String> errors = new ArrayList<>();
         int firstPoolTotal = CardData.getBattleChanceTotal(getCharacters(), DimCharacter::getFirstPoolBattleChance);
         if(firstPoolTotal != 100) {
-            errors.add("• Phase 3/4 Battle Pool Chances do not total 100%");
+            errors.add("Phase 3/4 Battle Pool Chances do not total 100%");
         }
         int secondPoolTotal = CardData.getBattleChanceTotal(getCharacters(), DimCharacter::getSecondPoolBattleChance);
         if(secondPoolTotal != 100) {
-            errors.add("• Phase 5/6 Battle Pool Chances do not total 100%");
+            errors.add("Phase 5/6 Battle Pool Chances do not total 100%");
         }
         return errors;
     }
@@ -72,7 +79,8 @@ public class DimCardData extends CardData<DimCharacter, Adventure, DimCard> {
             total += character.getSpecificFusions().size();
         }
         if(total > 1) {
-            errors.add("• Only a single specific fusion can exist on a DIM. " + total + " specific fusions detected.");
+            errors.add("Only a single specific fusion can exist on a DIM." + System.lineSeparator()
+                    + "  " + total + " specific fusions detected.");
         }
         return errors;
     }

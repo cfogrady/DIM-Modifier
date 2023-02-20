@@ -28,19 +28,24 @@ public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
         return errors;
     }
 
+    @Override
+    public int getNumberOfAvailableCharacterSlots() {
+        return 23;
+    }
+
     private List<String> validateNFCBattlesTotal100() {
         List<String> errors = new ArrayList<>();
         int firstPoolTotal = CardData.getBattleChanceTotal(getCharacters(), BemCharacter::getFirstPoolBattleChance);
         if(firstPoolTotal != 100) {
-            errors.add("• Phase 3/4 Battle Pool Chances do not total 100%");
+            errors.add("Phase 3/4 Battle Pool Chances do not total 100%");
         }
         int secondPoolTotal = CardData.getBattleChanceTotal(getCharacters(), BemCharacter::getSecondPoolBattleChance);
         if(secondPoolTotal != 100) {
-            errors.add("• Phase 5/6 Battle Pool Chances do not total 100%");
+            errors.add("Phase 5/6 Battle Pool Chances do not total 100%");
         }
         int thridPoolTotal = CardData.getBattleChanceTotal(getCharacters(), BemCharacter::getThirdPoolBattleChance);
         if(thridPoolTotal != 100) {
-            errors.add("• Phase 7+ Battle Pool Chances do not total 100%");
+            errors.add("Phase 7+ Battle Pool Chances do not total 100%");
         }
         return errors;
     }
@@ -57,7 +62,7 @@ public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
                 if(spriteDimensions == null) {
                     spriteDimensions = character.getSprites().get(i).getSpriteDimensions();
                 } else if(!spriteDimensions.equals(character.getSprites().get(i).getSpriteDimensions())) {
-                    errors.add("• Character " + characterIdx + " has a mixture of sprite dimensions." + System.lineSeparator() + "Sprites used by the phase must be uniform.");
+                    errors.add("Character " + characterIdx + " has a mixture of sprite dimensions." + System.lineSeparator() + "  Sprites used by the phase must be uniform.");
                     break;
                 }
             }

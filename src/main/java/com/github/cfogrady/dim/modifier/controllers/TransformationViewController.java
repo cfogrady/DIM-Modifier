@@ -82,10 +82,8 @@ public class TransformationViewController implements Initializable {
     private void refreshSpecificFusions() {
         specificFusionGridController.refreshView(character);
         specificFusionButton.setOnAction(e -> {
-            if (character instanceof BemCharacter bemCharacter) {
-                bemCharacter.getSpecificFusions().add(SpecificFusion.builder().build());
-                refreshSpecificFusions();
-            }
+            character.getSpecificFusions().add(SpecificFusion.builder().build());
+            refreshSpecificFusions();
         });
     }
 }

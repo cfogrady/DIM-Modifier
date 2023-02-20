@@ -1,9 +1,6 @@
 package com.github.cfogrady.dim.modifier.data.card;
 
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
-import com.github.cfogrady.dim.modifier.data.bem.BemAdventure;
-import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
-import com.github.cfogrady.dim.modifier.data.bem.BemTransformationEntry;
 import com.github.cfogrady.vb.dim.card.Card;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
@@ -17,6 +14,7 @@ import java.util.function.Function;
 @Data
 @SuperBuilder
 public abstract class CardData<T1 extends Character<?, T1>, T2 extends Adventure, T3 extends Card<?, ?, ?, ?, ?, ?>> {
+
     private final T3 originalCard;
     private MetaData metaData;
     private List<T1> characters;
@@ -53,6 +51,8 @@ public abstract class CardData<T1 extends Character<?, T1>, T2 extends Adventure
 
     public abstract List<String> checkForErrors();
 
+    public abstract int getNumberOfAvailableCharacterSlots();
+
     public static <T extends Character<?, T>> int getBattleChanceTotal(List<T> characters, Function<T, Integer> getter) {
         int total = 0;
         for(T character : characters){
@@ -71,7 +71,7 @@ public abstract class CardData<T1 extends Character<?, T1>, T2 extends Adventure
             for(TransformationEntry transformationEntry : character.getTransformationEntries()) {
                 UUID uuid = transformationEntry.getToCharacter();
                 if(uuid == null || getUuidToCharacterSlot().get(uuid) == null) {
-                    errors.add("• Character " + i + " has transformation without transformation result character.");
+                    errors.add("Character " + i + " has transformation without transformation result character.");
                 }
             }
             i++;
@@ -85,7 +85,7 @@ public abstract class CardData<T1 extends Character<?, T1>, T2 extends Adventure
             T2 adventure = getAdventures().get(adventureIdx);
             UUID uuid = adventure.getBossId();
             if(uuid == null || getUuidToCharacterSlot().get(uuid) == null) {
-                errors.add("• Adventure " + adventureIdx + " has missing boss character.");
+                errors.add("Adventure " + adventureIdx + " has missing boss character.");
             }
         }
         return errors;
@@ -98,13 +98,15 @@ public abstract class CardData<T1 extends Character<?, T1>, T2 extends Adventure
             for(SpecificFusion specificFusion : character.getSpecificFusions()) {
                 UUID uuid = specificFusion.getEvolveToCharacterId();
                 if(uuid == null || getUuidToCharacterSlot().get(uuid) == null) {
-                    errors.add("• Character " + characterIdx + " has specific fusion to deleted character.");
+                    errors.add("Character " + characterIdx + " has specific fusion to missing character.");
                 }
                 if(specificFusion.getPartnerDimId() == getMetaData().getId()) {
                     uuid = specificFusion.getSameBemPartnerCharacter();
                     if(uuid == null || getUuidToCharacterSlot().get(uuid) == null) {
-                        errors.add("• Character " + characterIdx + " has specific fusion with deleted character.");
+                        errors.add("Character " + characterIdx + " has specific fusion with missing character.");
                     }
+                } else if(specificFusion.getPartnerDimSlotId() == null) {
+                    errors.add("Character " + characterIdx + " has specific fusion with missing character.");
                 }
             }
         }

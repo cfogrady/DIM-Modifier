@@ -98,7 +98,7 @@ public class SpecificFusionGridController {
             vBox.getChildren().add(imageIntComboBox);
         } else {
             IntegerTextField slotId = new IntegerTextField(fusion.getPartnerDimSlotId(), fusion::setPartnerDimSlotId);
-            slotId.setMax(22);
+            slotId.setMax(appState.getCardData().getNumberOfAvailableCharacterSlots()-1);
             vBox.getChildren().add(slotId);
         }
     }
