@@ -230,15 +230,6 @@ public class StatsGridController {
         return hBox;
     }
 
-    private <V, L, T extends LabelValuePair<V, L>> T getItemForValue(ComboBox<T> comboBox, V value) {
-        for(T option : comboBox.getItems()) {
-            if(option.getValue() == value) {
-                return option;
-            }
-        }
-        return null;
-    }
-
     private Node setupDPStarsLabel(DimCharacter character) {
         if(character.getStage() < 2) {
             Label label = new Label("DP (stars): " + NONE_LABEL);
@@ -260,15 +251,24 @@ public class StatsGridController {
     }
 
     private Node setupBPLabel(Character<?, ?> character) {
+        String labelText;
+        int maxBpStat;
+        if(character instanceof BemCharacter) {
+            labelText = "BP:";
+            maxBpStat = 10000;
+        } else {
+            labelText = "DP:";
+            maxBpStat = 75;
+        }
         if(character.getStage() < 2) {
-            Label label = new Label("BP: " + NONE_LABEL);
+            Label label = new Label(labelText + " " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
             return label;
         }
-        Label label = new Label("BP:");
+        Label label = new Label(labelText);
         IntegerTextField integerTextField = new IntegerTextField(character.getBp(), character::setBp);
         integerTextField.setPrefWidth(60);
-        integerTextField.setMax(10000);
+        integerTextField.setMax(maxBpStat);
         HBox hbox = new HBox(label, integerTextField);
         hbox.setSpacing(10);
         hbox.setAlignment(Pos.CENTER_LEFT);
@@ -277,6 +277,7 @@ public class StatsGridController {
     }
 
     private Node setupHpLabel(Character<?, ?> character) {
+        int maxHpStat = character instanceof BemCharacter ? 10000 : 22;
         if(character.getStage() < 2) {
             Label label = new Label("HP: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
@@ -285,7 +286,7 @@ public class StatsGridController {
         Label label = new Label("HP:");
         IntegerTextField integerTextField = new IntegerTextField(character.getHp(), character::setHp);
         integerTextField.setPrefWidth(60);
-        integerTextField.setMax(10000);
+        integerTextField.setMax(maxHpStat);
         HBox hbox = new HBox(label, integerTextField);
         hbox.setSpacing(10);
         hbox.setAlignment(Pos.CENTER_LEFT);
@@ -294,6 +295,7 @@ public class StatsGridController {
     }
 
     private Node setupApLabel(Character<?, ?> character) {
+        int maxApStat = character instanceof BemCharacter ? 10000 : 12;
         if(character.getStage() < 2) {
             Label label = new Label("AP: " + NONE_LABEL);
             GridPane.setMargin(label, new Insets(10));
@@ -301,7 +303,7 @@ public class StatsGridController {
         }
         Label label = new Label("AP:");
         IntegerTextField integerTextField = new IntegerTextField(character.getAp(), character::setAp);
-        integerTextField.setMax(10000);
+        integerTextField.setMax(maxApStat);
         integerTextField.setPrefWidth(60);
         HBox hbox = new HBox(label, integerTextField);
         hbox.setSpacing(10);

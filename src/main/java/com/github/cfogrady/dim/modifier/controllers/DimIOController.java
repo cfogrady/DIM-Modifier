@@ -3,12 +3,16 @@ package com.github.cfogrady.dim.modifier.controllers;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.card.CardData;
 import com.github.cfogrady.dim.modifier.data.card.CardDataIO;
+import com.github.cfogrady.dim.modifier.data.card.CardSprites;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.*;
+import java.util.List;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -36,6 +40,13 @@ public class DimIOController {
     }
 
     public void saveDim() {
+        List<String> errors = appState.getCardData().checkForErrors();
+        if(!errors.isEmpty()) {
+            Alert alert = new Alert(Alert.AlertType.NONE, "Cannot save. Errors in card data:" + System.lineSeparator() + String.join(System.lineSeparator(), errors));
+            alert.getButtonTypes().add(ButtonType.OK);
+            alert.show();
+            return;
+        }
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save DIM File As...");
         File file = fileChooser.showSaveDialog(stage);

@@ -60,10 +60,10 @@ public class NFCGridController {
         CardData<?,?, ?> cardData = appState.getCardData();
         int columnIndex = 0;
         gridPane.add(getTitleText("Character"), columnIndex++, 0);
-        gridPane.add(getTitleText("Stage 3/4 Chance"), columnIndex++, 0);
-        gridPane.add(getTitleText("Stage 5/6 Chance"), columnIndex++, 0);
+        gridPane.add(getTitleText("Phase 3/4 Chance"), columnIndex++, 0);
+        gridPane.add(getTitleText("Phasse 5/6 Chance"), columnIndex++, 0);
         if(cardData instanceof BemCardData) {
-            gridPane.add(getTitleText("Stage 7+ Chance"), columnIndex++, 0);
+            gridPane.add(getTitleText("Phase 7+ Chance"), columnIndex++, 0);
         }
     }
 
@@ -124,24 +124,13 @@ public class NFCGridController {
         }
     }
 
-    private <T extends Character<?, ?>> void refreshPoolTotal(List<T> characterList, Text poolText, Function<T, Integer> battleChanceFetcher) {
-        int total = getStageTotals(characterList, battleChanceFetcher);
+    private <T extends Character<?, T>> void refreshPoolTotal(List<T> characters, Text poolText, Function<T, Integer> battleChanceFetcher) {
+        int total = CardData.getBattleChanceTotal(characters, battleChanceFetcher);
         poolText.setText(Integer.toString(total));
         if(total != 100) {
             poolText.setFill(Color.RED);
         } else {
             poolText.setFill(Color.BLACK);
         }
-    }
-
-    private <T extends Character<?, ?>> int getStageTotals(List<T> characterList, Function<T, Integer> battleChanceFetcher) {
-        int total = 0;
-        for(T character : characterList) {
-            Integer chance = battleChanceFetcher.apply(character);
-            if(chance != null) {
-                total+= chance;
-            }
-        }
-        return total;
     }
 }

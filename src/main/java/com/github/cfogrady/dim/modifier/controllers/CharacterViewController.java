@@ -4,13 +4,16 @@ import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.SpriteReplacer;
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
 import com.github.cfogrady.dim.modifier.data.AppState;
+import com.github.cfogrady.dim.modifier.data.card.CardSprites;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
@@ -20,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -106,6 +110,8 @@ public class CharacterViewController implements Initializable {
         });
     }
 
+    private static final String NAME_TEXT_ERROR = "Name sprites must be a multiple of 80 pixels in width and 15 pixels in height. Examples: 80x15, 160x15, 240x15, etc.";
+
     private void initializeNameBox() {
         Character<?, ?> character = appState.getCardData().getCharacters().get(characterSelection);
         SpriteData.Sprite nameSprite = character.getSprites().get(0);
@@ -123,8 +129,15 @@ public class CharacterViewController implements Initializable {
         nameBox.setOnMouseClicked(event -> {
             SpriteData.Sprite newNameSprite = spriteReplacer.replaceSprite(nameSprite, false, true);
             if(newNameSprite != null) {
-                character.getSprites().set(0, newNameSprite);
-                initializeNameBox();
+                SpriteData.SpriteDimensions newSpriteDimensions = newNameSprite.getSpriteDimensions();
+                if(newSpriteDimensions.getHeight() == 15 && newSpriteDimensions.getWidth()%80 == 0) {
+                    character.getSprites().set(0, newNameSprite);
+                    initializeNameBox();
+                } else {
+                    Alert alert = new Alert(Alert.AlertType.NONE, NAME_TEXT_ERROR);
+                    alert.getButtonTypes().add(ButtonType.OK);
+                    alert.show();
+                }
             }
         });
     }

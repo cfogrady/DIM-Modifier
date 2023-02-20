@@ -1,17 +1,22 @@
 package com.github.cfogrady.dim.modifier.data.card;
 
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
+import com.github.cfogrady.dim.modifier.data.bem.BemAdventure;
+import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
+import com.github.cfogrady.dim.modifier.data.bem.BemTransformationEntry;
 import com.github.cfogrady.vb.dim.card.Card;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 @Data
 @SuperBuilder
-public class CardData<T1 extends Character<?, T1>, T2 extends Adventure, T3 extends Card<?, ?, ?, ?, ?, ?>> {
+public abstract class CardData<T1 extends Character<?, T1>, T2 extends Adventure, T3 extends Card<?, ?, ?, ?, ?, ?>> {
     private final T3 originalCard;
     private MetaData metaData;
     private List<T1> characters;
@@ -44,5 +49,65 @@ public class CardData<T1 extends Character<?, T1>, T2 extends Adventure, T3 exte
         for(int i = index; i < characters.size(); i++) {
             uuidToCharacterSlot.put(characters.get(i).getId(), i);
         }
+    }
+
+    public abstract List<String> checkForErrors();
+
+    public static <T extends Character<?, T>> int getBattleChanceTotal(List<T> characters, Function<T, Integer> getter) {
+        int total = 0;
+        for(T character : characters){
+            Integer value = getter.apply(character);
+            if(value != null) {
+                total += value;
+            }
+        }
+        return total;
+    }
+
+    protected List<String> validateAllTransformationsExist() {
+        List<String> errors = new ArrayList<>();
+        int i = 0;
+        for(T1 character : getCharacters()) {
+            for(TransformationEntry transformationEntry : character.getTransformationEntries()) {
+                UUID uuid = transformationEntry.getToCharacter();
+                if(uuid == null || getUuidToCharacterSlot().get(uuid) == null) {
+                    errors.add("• Character " + i + " has transformation without transformation result character.");
+                }
+            }
+            i++;
+        }
+        return errors;
+    }
+
+    protected List<String> validateAllAdventureCharactersExist() {
+        List<String> errors = new ArrayList<>();
+        for(int adventureIdx = 0; adventureIdx < getAdventures().size(); adventureIdx++) {
+            T2 adventure = getAdventures().get(adventureIdx);
+            UUID uuid = adventure.getBossId();
+            if(uuid == null || getUuidToCharacterSlot().get(uuid) == null) {
+                errors.add("• Adventure " + adventureIdx + " has missing boss character.");
+            }
+        }
+        return errors;
+    }
+
+    protected List<String> validateSpecificFusionExist() {
+        List<String> errors = new ArrayList<>();
+        for(int characterIdx = 0; characterIdx < getCharacters().size(); characterIdx++) {
+            T1 character = getCharacters().get(characterIdx);
+            for(SpecificFusion specificFusion : character.getSpecificFusions()) {
+                UUID uuid = specificFusion.getEvolveToCharacterId();
+                if(uuid == null || getUuidToCharacterSlot().get(uuid) == null) {
+                    errors.add("• Character " + characterIdx + " has specific fusion to deleted character.");
+                }
+                if(specificFusion.getPartnerDimId() == getMetaData().getId()) {
+                    uuid = specificFusion.getSameBemPartnerCharacter();
+                    if(uuid == null || getUuidToCharacterSlot().get(uuid) == null) {
+                        errors.add("• Character " + characterIdx + " has specific fusion with deleted character.");
+                    }
+                }
+            }
+        }
+        return errors;
     }
 }
