@@ -4,7 +4,6 @@ import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.SpriteReplacer;
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
 import com.github.cfogrady.dim.modifier.data.AppState;
-import com.github.cfogrady.dim.modifier.data.card.CardSprites;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.fxml.FXML;
@@ -23,7 +22,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.URL;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -53,6 +51,10 @@ public class CharacterViewController implements Initializable {
     @FXML
     private Button deleteCharacterButton;
     @FXML
+    private Button exportCharacterSpritesButton;
+    @FXML
+    private Button importCharacterSpritesButton;
+    @FXML
     private AnchorPane subView;
 
     private enum SubViewSelection {
@@ -67,7 +69,7 @@ public class CharacterViewController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        initializeAddCharacterButton();
+        initializeCharacterButtons();
         statsViewController.setRefreshIdleSprite(this::initializeCharacterSelectionComboBox);
         statsViewController.setRefreshAll(this::refreshAll);
         statsViewController.initialize(location, resources);
@@ -85,7 +87,7 @@ public class CharacterViewController implements Initializable {
         initializeSubView();
     }
 
-    private void initializeAddCharacterButton() {
+    private void initializeCharacterButtons() {
         newCharacterButton.setOnAction(e -> {
             appState.getCardData().addCharacter(characterSelection, spriteImageTranslator);
             refreshAll();
@@ -93,6 +95,9 @@ public class CharacterViewController implements Initializable {
         deleteCharacterButton.setOnAction(e -> {
             appState.getCardData().deleteCharacter(characterSelection);
             refreshAll();
+        });
+        exportCharacterSpritesButton.setOnAction(e -> {
+            spriteImageTranslator.exportCharacterSpriteSheet(appState.getCharacter(characterSelection));
         });
     }
 
