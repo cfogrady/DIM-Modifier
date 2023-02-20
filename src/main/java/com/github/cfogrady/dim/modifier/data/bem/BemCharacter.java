@@ -14,6 +14,11 @@ import java.util.List;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 public class BemCharacter extends Character<BemTransformationEntry, BemCharacter> {
+    public static final List<SpriteData.SpriteDimensions> ALLOWED_DIMENSIONS = List.of(
+            SpriteData.SpriteDimensions.builder().width(64).height(56).build(),
+            SpriteData.SpriteDimensions.builder().width(32).height(24).build()
+            );
+
     private Integer thirdPoolBattleChance;
     private Integer minutesUntilTransformation;
 
@@ -28,5 +33,20 @@ public class BemCharacter extends Character<BemTransformationEntry, BemCharacter
                 .specificFusions(new ArrayList<>())
                 .sprites(sprites)
                 .build();
+    }
+
+    @Override
+    public boolean isSpriteSizeValid(SpriteData.SpriteDimensions spriteDimensions) {
+        for(SpriteData.SpriteDimensions allowedSpriteDimension : ALLOWED_DIMENSIONS) {
+            if(allowedSpriteDimension.equals(spriteDimensions)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public List<SpriteData.SpriteDimensions> getValidDimensions() {
+        return ALLOWED_DIMENSIONS;
     }
 }

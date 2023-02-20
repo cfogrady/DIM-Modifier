@@ -1,13 +1,10 @@
 package com.github.cfogrady.dim.modifier.data.card;
 
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
-import com.github.cfogrady.dim.modifier.data.bem.CardSprites;
 import com.github.cfogrady.vb.dim.card.Card;
-import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Data;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;

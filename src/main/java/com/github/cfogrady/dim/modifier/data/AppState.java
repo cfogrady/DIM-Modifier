@@ -44,4 +44,8 @@ public class AppState {
             return firmwareData.getTypes();
         }
     }
+
+    public void setBackgroundSprite(SpriteData.Sprite sprite) {
+        getCardData().getCardSprites().getBackgrounds().set(getSelectedBackgroundIndex(), sprite);
+    }
 }

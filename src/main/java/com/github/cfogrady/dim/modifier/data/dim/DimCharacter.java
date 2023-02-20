@@ -15,6 +15,12 @@ import java.util.List;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 public class DimCharacter extends Character<TransformationEntry, DimCharacter> {
+    public static final SpriteData.SpriteDimensions ALLOWED_ADULT_DIMENSIONS =
+            SpriteData.SpriteDimensions.builder().width(64).height(56).build();
+
+    public static final SpriteData.SpriteDimensions ALLOWED_BABY_DIMENSIONS =
+            SpriteData.SpriteDimensions.builder().width(32).height(24).build();
+
     private Integer hoursUntilTransformation;
     private int stars;
     private boolean finishAdventureToUnlock;
@@ -36,6 +42,24 @@ public class DimCharacter extends Character<TransformationEntry, DimCharacter> {
                 .specificFusions(new ArrayList<>())
                 .sprites(sprites)
                 .build();
+    }
+
+    @Override
+    public boolean isSpriteSizeValid(SpriteData.SpriteDimensions spriteDimensions) {
+        if(getStage() < 2) {
+            return spriteDimensions.equals(ALLOWED_BABY_DIMENSIONS);
+        } else {
+            return spriteDimensions.equals(ALLOWED_ADULT_DIMENSIONS);
+        }
+    }
+
+    @Override
+    public List<SpriteData.SpriteDimensions> getValidDimensions() {
+        if(getStage() < 2) {
+            return List.of(ALLOWED_BABY_DIMENSIONS);
+        } else {
+            return List.of(ALLOWED_ADULT_DIMENSIONS);
+        }
     }
 
     public void handleSpriteChange(int oldValue, int newValue, SpriteImageTranslator spriteImageTranslator) {

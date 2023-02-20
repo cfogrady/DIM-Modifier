@@ -1,13 +1,13 @@
 # DIM-Modifier
 
 ## To Do For 2.0:
-* Good Sprite Size enforcement
-* Pop Up Notification/confirmation
 * Validation
 * Verify Specific Fusion working for characters with and without next steps
+***
+Stretch Goals
 * Export System (or maybe all) sprites
 * Sprite Sheet export/import
-* Stats export/import
+* Character Stats export/import
 
 
 ## About

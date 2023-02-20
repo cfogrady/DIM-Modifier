@@ -3,11 +3,12 @@ package com.github.cfogrady.dim.modifier.controllers;
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.SpriteReplacer;
 import com.github.cfogrady.dim.modifier.data.AppState;
+import com.github.cfogrady.dim.modifier.data.card.CardSprites;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.TransferMode;
@@ -134,11 +135,18 @@ public class StatsViewController implements Initializable {
 
     private void replaceCharacterSprite(SpriteData.Sprite newSprite) {
         if(newSprite != null) {
-            character.getSprites().set(spriteOption, newSprite);
-            if(spriteOption == AppState.SELECTION_SPRITE_IDX) {
-                refreshIdleSprite.run();
+            SpriteData.SpriteDimensions proposedDimensions = newSprite.getSpriteDimensions();
+            if(character.isSpriteSizeValid(proposedDimensions)) {
+                character.getSprites().set(spriteOption, newSprite);
+                if(spriteOption == AppState.SELECTION_SPRITE_IDX) {
+                    refreshIdleSprite.run();
+                }
+                refreshSprite(newSprite);
+            } else {
+                Alert alert = new Alert(Alert.AlertType.NONE, CardSprites.getDimensionsText(proposedDimensions, character.getValidDimensions()));
+                alert.getButtonTypes().add(ButtonType.OK);
+                alert.show();
             }
-            refreshSprite(newSprite);
         }
     }
 

@@ -1,6 +1,7 @@
 package com.github.cfogrady.dim.modifier.data.bem;
 
 import com.github.cfogrady.dim.modifier.data.card.CardDataRreader;
+import com.github.cfogrady.dim.modifier.data.card.CardSprites;
 import com.github.cfogrady.dim.modifier.utils.NoneUtils;
 import com.github.cfogrady.vb.dim.adventure.BemAdventureLevels;
 import com.github.cfogrady.vb.dim.card.BemCard;

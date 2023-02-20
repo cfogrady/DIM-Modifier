@@ -30,4 +30,8 @@ public abstract class Character<T extends TransformationEntry, T2 extends Charac
 
     public abstract T2 copyCharacter(SpriteImageTranslator spriteImageTranslator);
 
+    public abstract boolean isSpriteSizeValid(SpriteData.SpriteDimensions spriteDimensions);
+
+    public abstract List<SpriteData.SpriteDimensions> getValidDimensions();
+
 }

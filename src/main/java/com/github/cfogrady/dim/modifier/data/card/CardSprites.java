@@ -1,4 +1,4 @@
-package com.github.cfogrady.dim.modifier.data.bem;
+package com.github.cfogrady.dim.modifier.data.card;
 
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Builder;
@@ -29,5 +29,15 @@ public class CardSprites {
     public SpriteData.Sprite getBattleBackground() { return backgrounds.get(1); }
 
     public List<SpriteData.Sprite> getGroupedAdventureBackgrounds() {return backgrounds.subList(2, backgrounds.size()); }
+
+    public static String getDimensionsText(SpriteData.SpriteDimensions proposedDimensions, List<SpriteData.SpriteDimensions> allowedDimensions) {
+        StringBuilder str = new StringBuilder("Invalid Sprite Dimensions ")
+                .append(proposedDimensions.getWidth()).append("x").append(proposedDimensions.getHeight()).append(System.lineSeparator())
+                .append("Allowed Dimensions:");
+        for(SpriteData.SpriteDimensions dimensionOptions : allowedDimensions) {
+            str = str.append(System.lineSeparator()).append(dimensionOptions.getWidth()).append("x").append(dimensionOptions.getHeight());
+        }
+        return str.toString();
+    }
 
 }
