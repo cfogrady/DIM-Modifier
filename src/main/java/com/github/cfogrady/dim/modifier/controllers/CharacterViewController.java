@@ -15,13 +15,16 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.TransferMode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -131,24 +134,48 @@ public class CharacterViewController implements Initializable {
             nameUpdater = new NameUpdater(nameSprite.getWidth(), imageView, -80);
             timer.scheduleAtFixedRate(nameUpdater, 0, 33);
         }
-        //nameBox.setBackground();
         nameBox.getChildren().clear();
         nameBox.getChildren().add(imageView);
-        //stackPane.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
         nameBox.setOnMouseClicked(event -> {
             SpriteData.Sprite newNameSprite = spriteReplacer.replaceSprite(nameSprite, false, true);
             if(newNameSprite != null) {
-                SpriteData.SpriteDimensions newSpriteDimensions = newNameSprite.getSpriteDimensions();
-                if(newSpriteDimensions.getHeight() == 15 && newSpriteDimensions.getWidth()%80 == 0) {
-                    character.getSprites().set(0, newNameSprite);
-                    initializeNameBox();
+                replaceNameSprite(character, newNameSprite);
+            }
+        });
+        nameBox.setOnDragDropped( e-> {
+            if(e.getDragboard().hasFiles()) {
+                List<File> files = e.getDragboard().getFiles();
+                File file = files.get(0);
+                SpriteData.Sprite newSprite = spriteReplacer.loadSpriteFromFile(file);
+                replaceNameSprite(character, newSprite);
+            }
+        });
+        nameBox.setOnDragOver(e -> {
+            if (e.getDragboard().hasImage()) {
+                e.acceptTransferModes(TransferMode.ANY);
+                log.info("Drag Over Image");
+                e.consume();
+            } else if(e.getDragboard().hasFiles()) {
+                if (e.getDragboard().getFiles().size() > 1) {
+                    log.info("Can only load 1 file at a time");
                 } else {
-                    Alert alert = new Alert(Alert.AlertType.NONE, NAME_TEXT_ERROR);
-                    alert.getButtonTypes().add(ButtonType.OK);
-                    alert.show();
+                    e.acceptTransferModes(TransferMode.ANY);
+                    e.consume();
                 }
             }
         });
+    }
+
+    private void replaceNameSprite(Character<?, ?> character, SpriteData.Sprite nameSprite) {
+        SpriteData.SpriteDimensions newSpriteDimensions = nameSprite.getSpriteDimensions();
+        if(newSpriteDimensions.getHeight() == 15 && newSpriteDimensions.getWidth()%80 == 0) {
+            character.getSprites().set(0, nameSprite);
+            initializeNameBox();
+        } else {
+            Alert alert = new Alert(Alert.AlertType.NONE, NAME_TEXT_ERROR);
+            alert.getButtonTypes().add(ButtonType.OK);
+            alert.show();
+        }
     }
 
     private void refreshButtons() {
