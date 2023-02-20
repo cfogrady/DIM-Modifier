@@ -99,6 +99,10 @@ public class CharacterViewController implements Initializable {
         exportCharacterSpritesButton.setOnAction(e -> {
             spriteImageTranslator.exportCharacterSpriteSheet(appState.getCharacter(characterSelection));
         });
+        importCharacterSpritesButton.setOnAction(e -> {
+            spriteImageTranslator.importSpriteSheet(appState.getCharacter(characterSelection));
+            refreshAll();
+        });
     }
 
     private void initializeCharacterSelectionComboBox() {

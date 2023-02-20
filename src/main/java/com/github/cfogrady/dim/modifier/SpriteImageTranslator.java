@@ -2,10 +2,12 @@ package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
 import com.github.cfogrady.dim.modifier.data.AppState;
+import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.*;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
@@ -90,12 +92,81 @@ public class SpriteImageTranslator {
     }
 
     public void importSpriteSheet(Character<?, ?> character) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Import Sprite Sheet:");
+        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image format", "*.png", "*.bmp"));
+        if(appState.getLastOpenedFilePath() != null) {
+            fileChooser.setInitialDirectory(appState.getLastOpenedFilePath());
+        }
+        File file = fileChooser.showOpenDialog(stage);
+        if(file != null) {
+            loadSpriteSheet(character, file);
+        }
+    }
 
+    public void loadSpriteSheet(Character<?, ?> character, File file) {
+        try {
+            BufferedImage image = ImageIO.read(file);
+            if(character instanceof BemCharacter) {
+                loadSpriteSheetNormally(character, image);
+            } else if(character.getStage() >= 2) {
+                loadSpriteSheetNormally(character, image);
+            } else {
+                loadBabySpriteSheet(character, image);
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
+
+    private void loadBabySpriteSheet(Character<?, ?> character, BufferedImage spriteSheet) {
+        character.getSprites().set(1, readSprite(spriteSheet, 1, 1, 32, 24));
+        character.getSprites().set(2, readSprite(spriteSheet, 66, 1, 32, 24));
+        character.getSprites().set(3, readSprite(spriteSheet, 131, 1, 32, 24));
+        character.getSprites().set(4, readSprite(spriteSheet, 1, 115, 32, 24));
+        character.getSprites().set(5, readSprite(spriteSheet, 66, 115, 32, 24));
+        if(character.getSprites().size() == 7) {
+            character.getSprites().set(7, readBackground(spriteSheet));
+        }
+    }
+
+    private void loadSpriteSheetNormally(Character<?, ?> character, BufferedImage spriteSheet) {
+        character.getSprites().set(1, readSprite(spriteSheet, 1, 1, 64, 56));
+        character.getSprites().set(2, readSprite(spriteSheet, 66, 1, 64, 56));
+        character.getSprites().set(3, readSprite(spriteSheet, 131, 1, 64, 56));
+        character.getSprites().set(4, readSprite(spriteSheet, 196, 1, 64, 56));
+        character.getSprites().set(5, readSprite(spriteSheet, 1, 58, 64, 56));
+        character.getSprites().set(6, readSprite(spriteSheet, 66, 58, 64, 56));
+        character.getSprites().set(7, readSprite(spriteSheet, 131, 58, 64, 56));
+        character.getSprites().set(8, readSprite(spriteSheet, 196, 58, 64, 56));
+        character.getSprites().set(9, readSprite(spriteSheet, 1, 115, 64, 56));
+        character.getSprites().set(10, readSprite(spriteSheet, 66, 115, 64, 56));
+        character.getSprites().set(11, readSprite(spriteSheet, 131, 115, 64, 56));
+        character.getSprites().set(12, readSprite(spriteSheet, 196, 115, 64, 56));
+        character.getSprites().set(13, readBackground(spriteSheet));
+    }
+
+    private SpriteData.Sprite readSprite(BufferedImage spriteSheet, int x, int y, int width, int height) {
+        int fetchX = (64-width)/2;
+        int fetchY = 56-height;
+        BufferedImage image = spriteSheet.getSubimage(x + fetchX, y + fetchY, width, height);
+        byte[] pixelData = convertToR5G6B5(SwingFXUtils.toFXImage(image, null).getPixelReader(), width, height);
+        SpriteData.Sprite sprite = SpriteData.Sprite.builder().width(width).height(height).pixelData(pixelData).build();
+        return sprite;
+    }
+
+    private SpriteData.Sprite readBackground(BufferedImage spriteSheet) {
+        int width = 80;
+        int height = 160;
+        BufferedImage image = spriteSheet.getSubimage(261, 1, width, height);
+        byte[] pixelData = convertToR5G6B5(SwingFXUtils.toFXImage(image, null).getPixelReader(), width, height);
+        SpriteData.Sprite sprite = SpriteData.Sprite.builder().width(width).height(height).pixelData(pixelData).build();
+        return sprite;
     }
 
     public void exportCharacterSpriteSheet(Character<?, ?> character) {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save spritesheet as:");
+        fileChooser.setTitle("Save Sprite Sheet As:");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Image format", "*.png"));
         if(appState.getLastOpenedFilePath() != null) {
             fileChooser.setInitialDirectory(appState.getLastOpenedFilePath());
