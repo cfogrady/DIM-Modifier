@@ -1,12 +1,11 @@
 # DIM-Modifier
 
 ## To Do For 2.0:
+* Testing
 * Verify Specific Fusion working for characters with and without next steps
 ***
 Stretch Goals
-* Sprite Sheet export/import
 * Character Stats export/import
-* Export System (or maybe all) sprites
 
 ## About
 

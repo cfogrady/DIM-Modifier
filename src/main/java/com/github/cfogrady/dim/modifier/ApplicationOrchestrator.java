@@ -41,8 +41,9 @@ public class ApplicationOrchestrator {
         BemCardDataReader bemCardDataReader = new BemCardDataReader();
         BemCardDataWriter bemCardDataWriter = new BemCardDataWriter(dimWriter);
         CardDataIO cardDataIO = new CardDataIO(dimReader, dimCardDataWriter, dimCardDataReader, bemCardDataWriter, bemCardDataReader);
-        SpriteImageTranslator spriteImageTranslator = new SpriteImageTranslator();
         AppState appState = new AppState();
+        SpriteImageTranslator spriteImageTranslator = new SpriteImageTranslator(appState, stage);
+
         DimIOController dimReaderController = new DimIOController(stage, cardDataIO, appState);
         GridPane transformationGrid = new GridPane();
         transformationGrid.setGridLinesVisible(true);
