@@ -100,6 +100,7 @@ public class SpriteImageTranslator {
         }
         File file = fileChooser.showOpenDialog(stage);
         if(file != null) {
+            appState.setLastOpenedFilePath(file.getParentFile());
             loadSpriteSheet(character, file);
         }
     }
@@ -126,7 +127,7 @@ public class SpriteImageTranslator {
         character.getSprites().set(4, readSprite(spriteSheet, 1, 115, 32, 24));
         character.getSprites().set(5, readSprite(spriteSheet, 66, 115, 32, 24));
         if(character.getSprites().size() == 7) {
-            character.getSprites().set(7, readBackground(spriteSheet));
+            character.getSprites().set(6, readBackground(spriteSheet));
         }
     }
 
@@ -173,6 +174,7 @@ public class SpriteImageTranslator {
         }
         File file = fileChooser.showSaveDialog(stage);
         if(file != null) {
+            appState.setLastOpenedFilePath(file.getParentFile());
             List<SpriteData.Sprite> sprites = character.getSprites();
             if(sprites.size() == 14) {
                 exportCharacterSpriteSheet(file, sprites.subList(1, sprites.size()));
