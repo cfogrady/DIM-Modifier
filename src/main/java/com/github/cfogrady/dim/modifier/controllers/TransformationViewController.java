@@ -5,6 +5,7 @@ import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
 import com.github.cfogrady.dim.modifier.data.card.SpecificFusion;
 import com.github.cfogrady.dim.modifier.data.bem.BemTransformationEntry;
 import com.github.cfogrady.dim.modifier.data.card.Character;
+import com.github.cfogrady.dim.modifier.data.dim.DimCharacter;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
@@ -61,6 +62,14 @@ public class TransformationViewController implements Initializable {
                 timeToTransformationBox.setText("");
             }
             timeToTransformationBox.setChangeReceiver(bemCharacter::setMinutesUntilTransformation);
+        } else if(character instanceof DimCharacter dimCharacter) {
+            timeToTransformationBox.setChangeReceiver(null);
+            if(dimCharacter.getHoursUntilTransformation() != null) {
+                timeToTransformationBox.setText(dimCharacter.getHoursUntilTransformation().toString());
+            } else {
+                timeToTransformationBox.setText("");
+            }
+            timeToTransformationBox.setChangeReceiver(dimCharacter::setHoursUntilTransformation);
         }
     }
 
