@@ -65,8 +65,12 @@ public class BemCardDataWriter extends CardDataWriter<
         return builder.build();
     }
 
+    private static final SpriteData.SpriteDimensions DEFAULT_SIZE = SpriteData.SpriteDimensions.builder().width(64).height(56).build();
+
     @Override
     protected BemCharacterStats.BemCharacterStatEntry.BemCharacterStatEntryBuilder<?, ?> getStatsBuilder(BemCharacter character) {
+        SpriteData.SpriteDimensions dimensions = character.getSprites().get(1).getSpriteDimensions();
+        int size = dimensions.equals(DEFAULT_SIZE) ? 2 : 0;
         return BemCharacterStats.BemCharacterStatEntry.builder()
                 .spriteResizeFlag(2)
                 .thirdPoolBattleChance(character.getStage() < 2 ? NONE_VALUE : NullUtils.getOrDefault(character.getThirdPoolBattleChance(), NONE_VALUE));
