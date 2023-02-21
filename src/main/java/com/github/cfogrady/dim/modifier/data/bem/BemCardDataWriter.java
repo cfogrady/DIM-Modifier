@@ -11,6 +11,7 @@ import com.github.cfogrady.vb.dim.character.BemCharacterStats;
 import com.github.cfogrady.vb.dim.character.CharacterStats;
 import com.github.cfogrady.vb.dim.fusion.AttributeFusions;
 import com.github.cfogrady.vb.dim.fusion.BemSpecificFusions;
+import com.github.cfogrady.vb.dim.header.BemHeader;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import com.github.cfogrady.vb.dim.transformation.BemTransformationRequirements;
 import lombok.extern.slf4j.Slf4j;
@@ -42,9 +43,10 @@ public class BemCardDataWriter extends CardDataWriter<
     }
 
     @Override
-    protected BemCard internalMergeBack(BemCharacterStats stats, BemTransformationRequirements transformations, BemAdventureLevels adventures,
+    protected BemCard internalMergeBack(BemCard original, BemCharacterStats stats, BemTransformationRequirements transformations, BemAdventureLevels adventures,
                                         AttributeFusions attributeFusions, BemSpecificFusions specificFusionT, SpriteData spriteData) {
         return BemCard.builder()
+                .header(original.getHeader())
                 .characterStats(stats)
                 .transformationRequirements(transformations)
                 .adventureLevels(adventures)

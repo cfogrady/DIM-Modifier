@@ -14,6 +14,7 @@ import com.github.cfogrady.vb.dim.fusion.AttributeFusions;
 import com.github.cfogrady.vb.dim.fusion.DimFusions;
 import com.github.cfogrady.vb.dim.fusion.DimSpecificFusions;
 import com.github.cfogrady.vb.dim.fusion.SpecificFusions;
+import com.github.cfogrady.vb.dim.header.DimHeader;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import com.github.cfogrady.vb.dim.transformation.DimEvolutionRequirements;
 import com.github.cfogrady.vb.dim.transformation.TransformationRequirements;
@@ -47,8 +48,9 @@ public class DimCardDataWriter extends CardDataWriter<
     }
 
     @Override
-    protected DimCard internalMergeBack(DimStats stats, DimEvolutionRequirements transformations, DimAdventures adventures, DimFusions attributeFusions, DimSpecificFusions dimSpecificFusions, SpriteData spriteData) {
+    protected DimCard internalMergeBack(DimCard original, DimStats stats, DimEvolutionRequirements transformations, DimAdventures adventures, DimFusions attributeFusions, DimSpecificFusions dimSpecificFusions, SpriteData spriteData) {
         return DimCard.builder()
+                .header(original.getHeader())
                 .characterStats(stats)
                 .transformationRequirements(transformations)
                 .adventureLevels(adventures)

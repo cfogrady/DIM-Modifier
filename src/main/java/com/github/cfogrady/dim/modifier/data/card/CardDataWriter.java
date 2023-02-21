@@ -58,10 +58,10 @@ public abstract class CardDataWriter<
         CardAttributeFusionT newAttributeFusions = createAttributeFusions(data.getOriginalCard().getAttributeFusions(), data.getCharacters(), data.getUuidToCharacterSlot());
         SpecificFusionT newSpecificFusions = createSpecificFusions(data.getOriginalCard().getSpecificFusions(), data);
         SpriteData spriteData = createSpriteData(data.getOriginalCard().getSpriteData(), data);
-        return internalMergeBack(newStats, newTransformationRequirements, newAdventures, newAttributeFusions, newSpecificFusions, spriteData);
+        return internalMergeBack(data.getOriginalCard(), newStats, newTransformationRequirements, newAdventures, newAttributeFusions, newSpecificFusions, spriteData);
     }
 
-    protected abstract CardType internalMergeBack(CardStatsT stats, CardTransformationT transformations, CardAdventureT adventures, CardAttributeFusionT attributeFusions, SpecificFusionT specificFusionT, SpriteData spriteData);
+    protected abstract CardType internalMergeBack(CardType original, CardStatsT stats, CardTransformationT transformations, CardAdventureT adventures, CardAttributeFusionT attributeFusions, SpecificFusionT specificFusionT, SpriteData spriteData);
 
     protected CardStatsT createStats(CardStatsT oldStats, List<CharacterType> characters) {
         List<CardStatsEntryT> statBlocks = new ArrayList<>(characters.size());

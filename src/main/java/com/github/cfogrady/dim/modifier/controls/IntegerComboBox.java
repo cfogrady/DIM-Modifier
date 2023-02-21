@@ -18,7 +18,7 @@ public class IntegerComboBox extends ComboBox<Integer> {
         this.setItems(createList(range, includeNoneValue));
         this.setValue(getItemForValue(currentValue));
         this.setOnAction(e -> {
-            int newValue = this.getValue();
+            Integer newValue = this.getValue();
             valueSetter.accept(newValue);
         });
         this.setCellFactory(lv -> new IntegerCell(offset));
