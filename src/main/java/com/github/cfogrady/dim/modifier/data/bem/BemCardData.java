@@ -40,7 +40,8 @@ public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
         for(int i = 0; i < getCharacters().size(); i++) {
             BemCharacter character = getCharacters().get(i);
             if(character.hasTransformations() && (character.getMinutesUntilTransformation() == null || character.getMinutesUntilTransformation() == 0)) {
-                errors.add("Character " + i + " has transformations, but not time until transformations set.");
+                errors.add("Character " + i + " has transformations," + System.lineSeparator() +
+                        "  but time until transformations is not set.");
             }
         }
         return errors;

@@ -65,7 +65,8 @@ public class DimCardData extends CardData<DimCharacter, Adventure, DimCard> {
         for(int i = 0; i < getCharacters().size(); i++) {
             DimCharacter character = getCharacters().get(i);
             if(character.hasTransformations() && (character.getHoursUntilTransformation() == null || character.getHoursUntilTransformation() == 0)) {
-                errors.add("Character " + i + " has transformations, but not time until transformations set.");
+                errors.add("Character " + i + " has transformations," + System.lineSeparator() +
+                        "  but time until transformations is not set.");
             }
         }
         return errors;
