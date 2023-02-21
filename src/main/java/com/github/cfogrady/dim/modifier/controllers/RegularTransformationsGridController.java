@@ -78,18 +78,6 @@ public class RegularTransformationsGridController {
         return vBox;
     }
 
-    private Node setupMinutesUntilEvolutionLabel(BemCharacter character) {
-        Label label = new Label("Hours Until Evolution (" + DimReader.NONE_VALUE + " for NONE):");
-        IntegerTextField integerTextField = new IntegerTextField(character.getMinutesUntilTransformation(), character::setMinutesUntilTransformation);
-        integerTextField.setPrefWidth(60);
-        integerTextField.setMin(1);
-        HBox hbox = new HBox(label, integerTextField);
-        hbox.setSpacing(10);
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        GridPane.setMargin(hbox, new Insets(10));
-        return hbox;
-    }
-
     private Node getVitalValueRequirementLabel(TransformationEntry transformationEntry) {
         Label label = new Label("Vital Value Requirement:");
         IntegerTextField textField = new IntegerTextField(transformationEntry.getVitalRequirements(), transformationEntry::setVitalRequirements);

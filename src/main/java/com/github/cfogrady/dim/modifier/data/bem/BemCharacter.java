@@ -9,6 +9,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @SuperBuilder(toBuilder = true)
@@ -29,6 +30,7 @@ public class BemCharacter extends Character<BemTransformationEntry, BemCharacter
         sprites.addAll(spriteImageTranslator.createDummySprites(12, spriteImageTranslator.getBlankCharacterSprite()));
         sprites.add(spriteImageTranslator.getBlankBackgroundSprite());
         return this.toBuilder()
+                .id(UUID.randomUUID())
                 .transformationEntries(new ArrayList<>())
                 .specificFusions(new ArrayList<>())
                 .sprites(sprites)
