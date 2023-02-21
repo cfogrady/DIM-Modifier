@@ -77,12 +77,12 @@ public class StatsGridController {
                     character.setBp(DimReader.NONE_VALUE);
                     character.setHp(DimReader.NONE_VALUE);
                     character.setAp(DimReader.NONE_VALUE);
-                    character.setFirstPoolBattleChance(DimReader.NONE_VALUE);
-                    character.setSecondPoolBattleChance(DimReader.NONE_VALUE);
+                    character.setFirstPoolBattleChance(null);
+                    character.setSecondPoolBattleChance(null);
                     if(character instanceof BemCharacter bemCharacter) {
                         character.setBigAttack(255);
                         character.setSmallAttack(255);
-                        bemCharacter.setThirdPoolBattleChance(DimReader.NONE_VALUE);
+                        bemCharacter.setThirdPoolBattleChance(null);
                     } else {
                         character.setBigAttack(DimReader.NONE_VALUE);
                         character.setSmallAttack(DimReader.NONE_VALUE);

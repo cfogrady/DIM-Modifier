@@ -56,6 +56,9 @@ public abstract class CardData<T1 extends Character<?, T1>, T2 extends Adventure
     public static <T extends Character<?, T>> int getBattleChanceTotal(List<T> characters, Function<T, Integer> getter) {
         int total = 0;
         for(T character : characters){
+            if(character.getStage() < 2) {
+                continue;
+            }
             Integer value = getter.apply(character);
             if(value != null) {
                 total += value;
