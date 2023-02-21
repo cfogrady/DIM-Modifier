@@ -196,6 +196,7 @@ public class CharacterViewController implements Initializable {
             initializeSubView();
             refreshButtons();
         });
+        newCharacterButton.setDisable(appState.getCardData().getCharacters().size() >= appState.getCardData().getNumberOfAvailableCharacterSlots());
     }
 
     private void initializeSubView() {
