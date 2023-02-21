@@ -27,6 +27,7 @@ public class DimCardData extends CardData<DimCharacter, Adventure, DimCard> {
     public List<String> checkForErrors() {
         List<String> errors = new ArrayList<>();
         errors.addAll(validateAllTransformationsExist());
+        errors.addAll(validateAllTransformationsHaveTime());
         errors.addAll(validateSpecificFusionExist());
         errors.addAll(validateSingleSpecificFusionExist());
         errors.addAll(validateAllAdventureCharactersExist());
@@ -55,6 +56,17 @@ public class DimCardData extends CardData<DimCharacter, Adventure, DimCard> {
             errors.add("Characters in the first two slotsSlots 1-2 must have characters" + System.lineSeparator() +
                     "  at phase 1 and 2 respectively. Phase 1 and 2 characters can only" + System.lineSeparator() +
                     "  be in these slots.");
+        }
+        return errors;
+    }
+
+    private List<String> validateAllTransformationsHaveTime() {
+        List<String> errors = new ArrayList<>();
+        for(int i = 0; i < getCharacters().size(); i++) {
+            DimCharacter character = getCharacters().get(i);
+            if(character.hasTransformations() && (character.getHoursUntilTransformation() == null || character.getHoursUntilTransformation() == 0)) {
+                errors.add("Character " + i + " has transformations, but not time until transformations set.");
+            }
         }
         return errors;
     }

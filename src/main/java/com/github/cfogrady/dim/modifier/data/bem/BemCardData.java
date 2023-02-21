@@ -1,6 +1,7 @@
 package com.github.cfogrady.dim.modifier.data.bem;
 
 import com.github.cfogrady.dim.modifier.data.card.CardData;
+import com.github.cfogrady.dim.modifier.data.dim.DimCharacter;
 import com.github.cfogrady.vb.dim.card.BemCard;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Data;
@@ -21,6 +22,7 @@ public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
     public List<String> checkForErrors() {
         List<String> errors = new ArrayList<>();
         errors.addAll(validateAllTransformationsExist());
+        errors.addAll(validateAllTransformationsHaveTime());
         errors.addAll(validateSpecificFusionExist());
         errors.addAll(validateAllAdventureCharactersExist());
         errors.addAll(validateNFCBattlesTotal100());
@@ -31,6 +33,17 @@ public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
     @Override
     public int getNumberOfAvailableCharacterSlots() {
         return 23;
+    }
+
+    private List<String> validateAllTransformationsHaveTime() {
+        List<String> errors = new ArrayList<>();
+        for(int i = 0; i < getCharacters().size(); i++) {
+            BemCharacter character = getCharacters().get(i);
+            if(character.hasTransformations() && (character.getMinutesUntilTransformation() == null || character.getMinutesUntilTransformation() == 0)) {
+                errors.add("Character " + i + " has transformations, but not time until transformations set.");
+            }
+        }
+        return errors;
     }
 
     private List<String> validateNFCBattlesTotal100() {

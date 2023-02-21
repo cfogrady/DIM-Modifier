@@ -34,4 +34,8 @@ public abstract class Character<T extends TransformationEntry, T2 extends Charac
 
     public abstract List<SpriteData.SpriteDimensions> getValidDimensions();
 
+    public boolean hasTransformations() {
+        return !transformationEntries.isEmpty() || !fusions.isEmpty() || !specificFusions.isEmpty();
+    }
+
 }
