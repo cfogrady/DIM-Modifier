@@ -1,23 +1,30 @@
 # DIM-Modifier
 
-## To Do For 2.0:
-* Testing
-* Verify Specific Fusion working for characters with and without next steps
-***
-Stretch Goals
-* Character Stats export/import
-
 ## About
 
 This software is meant for personal use in the reading and re-writing of DIM image files.
 
 It displays all sprites, stats, evolutions, fusions, and adventures.
 
-The `b` key can also be pressed to display some solid color backgrounds.
+## Usage
+When this application first loads, it requires the user to direct it to the BE firmware provided by Bandai. This firmware can be found at https://toy.bandai.co.jp/special/vbbedl/pc_download/
 
-The application supports changing sprite sizes, but compatibility with VB can't be guaranteed if sprite dimensions are changed.
+The firmware is used for the display of attack sprites and attribute symbols.
 
-Names can be changed by clicking on the name on the Stats page.
+The application is broken into three sections: Characters, Battles, and System
+
+### Characters Section
+This section contains the stats, sprites, and various transformations for each character.
+
+Sprites in this section can be replaced by either clicking a sprite, by dragging and dropping an image file, or by importing a sprite sheet.
+
+### Battles Section
+This section contains the NFC Battle Pools and Adventure Missions
+
+### System Section
+This contains various system sprites like backgrounds, custom attacks, attributes, icon, etc.
+
+Sprites in this section can be replaced by clicking a sprite or by dragging and dropping an image file.
 
 ## Development
 This project relies on the VB-DIM-Reader library found at https://github.com/cfogrady/VB-DIM-Reader
@@ -31,4 +38,3 @@ To run the project in debug execute `./gradlew -DDEBUG=true run` and connect wit
 
 ### Build Image
 To build a deployable image run `gradlew.bat buildImageWin` from the project's root directory. Similar commands exist for linux, but haven't been tested yet.
-
