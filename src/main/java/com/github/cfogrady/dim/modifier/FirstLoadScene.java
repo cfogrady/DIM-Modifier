@@ -1,11 +1,10 @@
 package com.github.cfogrady.dim.modifier;
 
-import com.github.cfogrady.dim.modifier.data.DigimonReader;
-import com.github.cfogrady.dim.modifier.data.DigimonWriter;
-import com.github.cfogrady.dim.modifier.data.DimData;
-import com.github.cfogrady.dim.modifier.data.DimDataFactory;
-import com.github.cfogrady.vb.dim.reader.content.DimContent;
-import com.github.cfogrady.vb.dim.reader.reader.DimReader;
+import com.github.cfogrady.dim.modifier.data.AppState;
+import com.github.cfogrady.dim.modifier.data.card.CardData;
+import com.github.cfogrady.dim.modifier.controllers.LoadedViewController;
+import com.github.cfogrady.dim.modifier.data.card.CardDataIO;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.StackPane;
@@ -18,13 +17,13 @@ import java.io.*;
 
 @RequiredArgsConstructor
 @Slf4j
-public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
+public class FirstLoadScene {
+    private final AppState appState;
     private final Stage stage;
-    private final DimDataFactory dimDataFactory;
+    private final CardDataIO cardDataIO;
+    private final LoadedViewController loadedViewController;
 
-    @Override
     public void setupScene() {
-        DimReader reader = new DimReader();
         Button button = new Button();
         button.setText("Open DIM File");
         button.setOnAction(event -> {
@@ -32,25 +31,36 @@ public class FirstLoadScene implements com.github.cfogrady.dim.modifier.Scene {
             fileChooser.setTitle("Select DIM File");
             File file = fileChooser.showOpenDialog(stage);
             if(file != null) {
-                InputStream fileInputStream = null;
-                try {
-                    fileInputStream = new FileInputStream(file);
-                    DimContent content = reader.readDimData(fileInputStream, false);
-                    fileInputStream.close();
-                    DimData dimData = dimDataFactory.fromDimContent(content);
-                    LoadedScene scene = new LoadedScene(content, dimData, stage, new DigimonWriter(), new DigimonReader());
-                    scene.setupScene();
-                } catch (FileNotFoundException e) {
-                    log.error("Couldn't find selected file.", e);
-                } catch (IOException e) {
-                    log.error("Couldn't close file???", e);
-                }
-
+                loadCard(file);
+                setupLoadedDataView();
             }
         });
         Scene scene = new Scene(new StackPane(button), 640, 480);
 
         stage.setScene(scene);
         stage.show();
+    }
+
+    private void loadCard(File file) {
+        try(FileInputStream fileInputStream = new FileInputStream(file)) {
+            CardData<?, ?, ?> cardData = cardDataIO.readFromStream(fileInputStream);
+            appState.setCardData(cardData);
+        } catch (IOException e) {
+            log.error("Error loading file: {}", file.getAbsolutePath(), e);
+        }
+    }
+
+    private void setupLoadedDataView() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoadedView.fxml"));
+            loader.setControllerFactory(p -> loadedViewController);
+            Scene scene = new Scene(loader.load(), 1420, 720);
+            loadedViewController.refreshAll();
+            stage.setScene(scene);
+            stage.centerOnScreen();
+            stage.show();
+        } catch (IOException e) {
+            log.error("Unable to load layout for loaded data view!", e);
+        }
     }
 }

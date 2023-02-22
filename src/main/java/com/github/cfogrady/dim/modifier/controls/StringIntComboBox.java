@@ -4,10 +4,15 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.function.Consumer;
 
 public class StringIntComboBox extends ComboBox<StringIntComboBox.StringIntPair> {
+
+    public StringIntComboBox() {
+        super();
+    }
 
     public StringIntComboBox(int currentValue, ObservableList<StringIntPair> valueLabels,  Consumer<Integer> valueSetter) {
         super();
@@ -17,6 +22,13 @@ public class StringIntComboBox extends ComboBox<StringIntComboBox.StringIntPair>
             int newValue = this.getValue().getValue();
             valueSetter.accept(newValue);
         });
+        this.setCellFactory(lv -> new StringIntCell());
+        this.setButtonCell(new StringIntCell());
+    }
+
+    public void initialize(int currentValue, ObservableList<StringIntPair> valueLabels) {
+        this.setItems(valueLabels);
+        this.setValue(getItemForValue(currentValue));
         this.setCellFactory(lv -> new StringIntCell());
         this.setButtonCell(new StringIntCell());
     }
@@ -31,9 +43,10 @@ public class StringIntComboBox extends ComboBox<StringIntComboBox.StringIntPair>
     }
 
     @Data
-    public static class StringIntPair {
+    @EqualsAndHashCode(callSuper = true)
+    public static class StringIntPair extends LabelValuePair<Integer, String> {
         private final String label;
-        private final int value;
+        private final Integer value;
     }
 
     public static class StringIntCell extends ListCell<StringIntPair> {

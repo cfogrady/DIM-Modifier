@@ -1,27 +1,59 @@
 package com.github.cfogrady.dim.modifier.controls;
 
-import com.github.cfogrady.vb.dim.reader.reader.DimReader;
+import com.github.cfogrady.vb.dim.card.DimReader;
 import javafx.geometry.Insets;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.function.Consumer;
 
+@Slf4j
 public class IntegerTextField extends TextField {
 
+    @Setter
+    @Getter
     private int min;
+    @Setter
+    @Getter
     private int max;
+    @Setter
+    private boolean allowBlanks;
 
-    public IntegerTextField(int initialValue, Consumer<Integer> valueConsumer) {
+    @Setter
+    private Consumer<Integer> changeReceiver;
+
+    public IntegerTextField() {
         super();
-        this.setText(Integer.toString(initialValue));
         this.min = 0;
         this.max = DimReader.NONE_VALUE;
+        initialize();
+    }
+
+    public IntegerTextField(Integer initialValue, Consumer<Integer> valueConsumer) {
+        super();
+        if(initialValue != null) {
+            this.setText(Integer.toString(initialValue));
+        }
+        this.min = 0;
+        this.max = DimReader.NONE_VALUE;
+        this.changeReceiver = valueConsumer;
+        initialize();
+    }
+
+    public void initialize() {
         this.textProperty().addListener((obs,oldv,newv) -> {
             boolean error = false;
             if(newv == null || newv.isBlank()) {
-                error = true;
+                if(allowBlanks) {
+                    changeHandler(null);
+                } else {
+                    error = true;
+                }
             } else {
                 try {
                     int value = Integer.parseInt(newv);
@@ -29,7 +61,7 @@ public class IntegerTextField extends TextField {
                         error = true;
                     } else {
                         this.setBorder(null);
-                        valueConsumer.accept(value);
+                        changeHandler(value);
                     }
                 } catch (NumberFormatException e) {
                     error = true;
@@ -41,11 +73,34 @@ public class IntegerTextField extends TextField {
         });
     }
 
-    public void setMin(int min) {
-        this.min = min;
+    public void changeHandler(Integer value) {
+        if(changeReceiver != null) {
+            changeReceiver.accept(value);
+        }
     }
 
-    public void setMax(int max) {
-        this.max = max;
+    @Override
+    public void replaceText(int start, int end, String text)
+    {
+        if (validate(text))
+        {
+            super.replaceText(start, end, text);
+        }
     }
+
+    @Override
+    public void replaceSelection(String text)
+    {
+        if (validate(text))
+        {
+            super.replaceSelection(text);
+        }
+    }
+
+    private boolean validate(String text)
+    {
+        return text.matches("[0-9]*");
+    }
+
+
 }
