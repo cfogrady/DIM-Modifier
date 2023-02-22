@@ -93,10 +93,15 @@ public class CharacterViewController implements Initializable {
     private void initializeCharacterButtons() {
         newCharacterButton.setOnAction(e -> {
             appState.getCardData().addCharacter(characterSelection, spriteImageTranslator);
+            characterSelection++;
             refreshAll();
         });
         deleteCharacterButton.setOnAction(e -> {
             appState.getCardData().deleteCharacter(characterSelection);
+            int numberOfRemainingCharacters = appState.getCardData().getCharacters().size();
+            if(characterSelection >= numberOfRemainingCharacters) {
+                characterSelection = numberOfRemainingCharacters - 1;
+            }
             refreshAll();
         });
         exportCharacterSpritesButton.setOnAction(e -> {

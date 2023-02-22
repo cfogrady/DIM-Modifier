@@ -24,7 +24,7 @@ public abstract class CardData<T1 extends Character<?, T1>, T2 extends Adventure
 
     public void addCharacter(int characterIndex, SpriteImageTranslator spriteImageTranslator) {
         T1 newCharacter = characters.get(characterIndex).copyCharacter(spriteImageTranslator);
-        getCharacters().add(characterIndex, newCharacter);
+        getCharacters().add(characterIndex+1, newCharacter);
         resetUUIDToIndexesFrom(characterIndex);
     }
 
