@@ -5,6 +5,7 @@ import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
 import com.github.cfogrady.dim.modifier.data.card.SpecificFusion;
 import com.github.cfogrady.dim.modifier.data.bem.BemTransformationEntry;
 import com.github.cfogrady.dim.modifier.data.card.Character;
+import com.github.cfogrady.dim.modifier.data.card.TransformationEntry;
 import com.github.cfogrady.dim.modifier.data.dim.DimCharacter;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -79,8 +80,11 @@ public class TransformationViewController implements Initializable {
             if (character instanceof BemCharacter bemCharacter) {
                 bemCharacter.getTransformationEntries().add(BemTransformationEntry.builder().build());
                 refreshRegularTransformations();
+            } else if(character instanceof DimCharacter dimCharacter) {
+                dimCharacter.getTransformationEntries().add(TransformationEntry.builder().build());
+                refreshRegularTransformations();
             } else {
-                throw new IllegalStateException("Can only handle BemCharacters right now!");
+                throw new IllegalStateException("Unknown character type!");
             }
         });
     }
