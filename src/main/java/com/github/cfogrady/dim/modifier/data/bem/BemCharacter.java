@@ -15,10 +15,9 @@ import java.util.UUID;
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
 public class BemCharacter extends Character<BemTransformationEntry, BemCharacter> {
-    public static final List<SpriteData.SpriteDimensions> ALLOWED_DIMENSIONS = List.of(
-            SpriteData.SpriteDimensions.builder().width(64).height(56).build(),
-            SpriteData.SpriteDimensions.builder().width(32).height(24).build()
-            );
+    public static final SpriteData.SpriteDimensions NORMAL_SPRITE_DIMENSIONS = SpriteData.SpriteDimensions.builder().width(64).height(56).build();
+    public static final SpriteData.SpriteDimensions BABY_SPRITE_DIMENSIONS = SpriteData.SpriteDimensions.builder().width(32).height(24).build();
+    public static final List<SpriteData.SpriteDimensions> ALLOWED_DIMENSIONS = List.of(NORMAL_SPRITE_DIMENSIONS, BABY_SPRITE_DIMENSIONS);
 
     private Integer thirdPoolBattleChance;
     private Integer minutesUntilTransformation;

@@ -1,17 +1,19 @@
 package com.github.cfogrady.dim.modifier.data.bem;
 
 import com.github.cfogrady.dim.modifier.data.card.CardData;
-import com.github.cfogrady.dim.modifier.data.dim.DimCharacter;
 import com.github.cfogrady.vb.dim.card.BemCard;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
@@ -68,17 +70,17 @@ public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
         List<String> errors = new ArrayList<>();
         for(int characterIdx = 0; characterIdx < getCharacters().size(); characterIdx++) {
             BemCharacter character = getCharacters().get(characterIdx);
-            SpriteData.SpriteDimensions spriteDimensions = null;
+            Set<SpriteData.SpriteDimensions> legitSpriteDimensionsFound = new HashSet<>();
             for(int i = 1; i < 13; i++) {
-                if(SKIPPED_BABY_SPRITE_INDEXES.contains(i)) {
-                    continue;
+                SpriteData.SpriteDimensions spriteDimensions = character.getSprites().get(i).getSpriteDimensions();
+                if(character.isSpriteSizeValid(spriteDimensions)) {
+                    legitSpriteDimensionsFound.add(spriteDimensions);
+                } else {
+                    log.info("Illegal Sprite size for character {} at sprite index {}. Assumed placeholder sprite.", characterIdx, i);
                 }
-                if(spriteDimensions == null) {
-                    spriteDimensions = character.getSprites().get(i).getSpriteDimensions();
-                } else if(!spriteDimensions.equals(character.getSprites().get(i).getSpriteDimensions())) {
-                    errors.add("Character " + characterIdx + " has a mixture of sprite dimensions." + System.lineSeparator() + "  Sprites used by the phase must be uniform.");
-                    break;
-                }
+            }
+            if(legitSpriteDimensionsFound.size() > 1) {
+                errors.add("Character " + characterIdx + " has a mixture of sprite dimensions." + System.lineSeparator() + "  Sprites used by the character must be uniform.");
             }
         }
         return errors;
