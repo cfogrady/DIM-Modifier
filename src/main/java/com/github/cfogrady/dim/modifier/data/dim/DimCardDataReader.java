@@ -2,6 +2,7 @@ package com.github.cfogrady.dim.modifier.data.dim;
 
 import com.github.cfogrady.dim.modifier.data.card.CardSprites;
 import com.github.cfogrady.dim.modifier.data.card.*;
+import com.github.cfogrady.dim.modifier.utils.NoneUtils;
 import com.github.cfogrady.vb.dim.adventure.AdventureLevels;
 import com.github.cfogrady.vb.dim.card.DimCard;
 import com.github.cfogrady.vb.dim.character.DimStats;
@@ -48,7 +49,7 @@ public class DimCardDataReader extends CardDataRreader<
                 hours = entry.getHoursUntilEvolution();
             }
         }
-        return hours;
+        return hours == null ? hours : NoneUtils.nullIfNone(hours);
     }
 
     @Override
