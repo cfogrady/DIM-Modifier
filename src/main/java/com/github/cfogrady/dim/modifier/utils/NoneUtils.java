@@ -17,6 +17,13 @@ public class NoneUtils {
         return Integer.valueOf(value);
     }
 
+    public static int noneIfNull(Integer value) {
+        if(value == null) {
+            return NONE;
+        }
+        return value.intValue();
+    }
+
     public static String defaultIfNone(int value, String defaultValue) {
         return value == DimReader.NONE_VALUE ? defaultValue : Integer.toString(value);
     }

@@ -4,6 +4,8 @@ import com.github.cfogrady.dim.modifier.data.card.Adventure;
 import com.github.cfogrady.dim.modifier.data.card.CardDataWriter;
 import com.github.cfogrady.dim.modifier.data.card.SpecificFusion;
 import com.github.cfogrady.dim.modifier.data.card.TransformationEntry;
+import com.github.cfogrady.dim.modifier.utils.NoneUtils;
+import com.github.cfogrady.dim.modifier.utils.NullUtils;
 import com.github.cfogrady.vb.dim.adventure.AdventureLevels;
 import com.github.cfogrady.vb.dim.adventure.DimAdventures;
 import com.github.cfogrady.vb.dim.card.DimCard;
@@ -110,11 +112,8 @@ public class DimCardDataWriter extends CardDataWriter<
 
     @Override
     protected TransformationRequirements.TransformationRequirementsEntry.TransformationRequirementsEntryBuilder<? extends DimEvolutionRequirements.DimEvolutionRequirementBlock, ?> getTransformationEntryFromFusionBuilder(DimCharacter character) {
-        if(character.getHoursUntilTransformation() == null) {
-            throw new IllegalStateException("Somehow have no minutes until transformation even though we have evolution requirements!");
-        }
         return DimEvolutionRequirements.DimEvolutionRequirementBlock.builder()
-                .hoursUntilEvolution(character.getHoursUntilTransformation());
+                .hoursUntilEvolution(NoneUtils.noneIfNull(character.getHoursUntilTransformation()));
     }
 
     @Override
@@ -142,7 +141,8 @@ public class DimCardDataWriter extends CardDataWriter<
 
     @Override
     protected boolean includeBlankFusionRow(DimCharacter character) {
-        return false;
+        //write anytime the character doesn't have an existing entry
+        return character.getTransformationEntries().isEmpty();
     }
 
     @Override
