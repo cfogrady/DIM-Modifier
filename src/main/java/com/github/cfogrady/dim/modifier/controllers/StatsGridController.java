@@ -3,7 +3,6 @@ package com.github.cfogrady.dim.modifier.controllers;
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
 import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
-import com.github.cfogrady.dim.modifier.controls.LabelValuePair;
 import com.github.cfogrady.dim.modifier.controls.StringIntComboBox;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
