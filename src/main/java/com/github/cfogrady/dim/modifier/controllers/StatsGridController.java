@@ -2,6 +2,7 @@ package com.github.cfogrady.dim.modifier.controllers;
 
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
+import com.github.cfogrady.dim.modifier.controls.ImageIntPair;
 import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
 import com.github.cfogrady.dim.modifier.controls.StringIntComboBox;
 import com.github.cfogrady.dim.modifier.data.AppState;
@@ -159,8 +160,8 @@ public class StatsGridController {
 
     private ImageIntComboBox getSpriteAttributeComboBox(Character<?, ?> bemCharacter) {
         ImageIntComboBox imageIntComboBox = new ImageIntComboBox();
-        ObservableList<ImageIntComboBox.ImageIntPair> options = spriteImageTranslator.createImageValuePairs(appState.getAttributes());
-        options.add(0, new ImageIntComboBox.ImageIntPair(null, null));
+        ObservableList<ImageIntPair> options = spriteImageTranslator.createImageValuePairs(appState.getAttributes());
+        options.add(0, new ImageIntPair(null, null));
         Integer attributeComboValue = bemCharacter.getAttribute() == 0 ? null : bemCharacter.getAttribute() - 1;
         imageIntComboBox.initialize(attributeComboValue, options, 1.0, BLACK_BACKGROUND, "None");
         imageIntComboBox.setOnAction(e -> {

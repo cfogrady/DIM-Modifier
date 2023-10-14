@@ -2,6 +2,7 @@ package com.github.cfogrady.dim.modifier.controllers;
 
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
+import com.github.cfogrady.dim.modifier.controls.ImageIntPair;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.dim.modifier.data.card.Fusions;
@@ -40,8 +41,8 @@ public class AttributeFusionGridController {
         GridPane gridPane = new GridPane();
         gridPane.setGridLinesVisible(true);
         int columnIndex = 0;
-        ObservableList<ImageIntComboBox.ImageIntPair> idleCharacters = spriteImageTranslator.createImageValuePairs(appState.getIdleForCharacters());
-        idleCharacters.add(0, new ImageIntComboBox.ImageIntPair(null, null));
+        ObservableList<ImageIntPair> idleCharacters = spriteImageTranslator.createImageValuePairs(appState.getIdleForCharacters());
+        idleCharacters.add(0, new ImageIntPair(null, null));
         gridPane.add(setupAttributeFusion(idleCharacters, 1, "Virus", fusions::getType1FusionResult, fusions::setType1FusionResult), columnIndex++, 0);
         gridPane.add(setupAttributeFusion(idleCharacters, 2, "Data", fusions::getType2FusionResult, fusions::setType2FusionResult), columnIndex++, 0);
         gridPane.add(setupAttributeFusion(idleCharacters, 3, "Vaccine", fusions::getType3FusionResult, fusions::setType3FusionResult), columnIndex++, 0);
@@ -49,7 +50,7 @@ public class AttributeFusionGridController {
         return gridPane;
     }
 
-    private Node setupAttributeFusion(ObservableList<ImageIntComboBox.ImageIntPair> characterSelections, int type, String defaultText, Supplier<UUID> fusionResultGetter, Consumer<UUID> fusionResultSetter) {
+    private Node setupAttributeFusion(ObservableList<ImageIntPair> characterSelections, int type, String defaultText, Supplier<UUID> fusionResultGetter, Consumer<UUID> fusionResultSetter) {
         HBox hBox = new HBox();
         hBox.setSpacing(10);
         hBox.setPadding(new Insets(10));

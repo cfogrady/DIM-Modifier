@@ -114,7 +114,7 @@ public class CharacterViewController implements Initializable {
     }
 
     private void initializeCharacterSelectionListView() {
-        characterSelectionListView.initialize(spriteImageTranslator.createImageValuePairsForListView(appState.getIdleForCharacters()), 1.0, null, null);
+        characterSelectionListView.initialize(spriteImageTranslator.createImageValuePairs(appState.getIdleForCharacters()), 1.0, null, null);
         characterSelectionListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             if (newValue != null) {
                 characterSelection = newValue.getValue();
