@@ -14,7 +14,7 @@ public class FirmwareData {
     public static int BIG_ATTACK_START_INDEX = 288;
     public static int BIG_ATTACK_END_INDEX = 309;
     public static int SMALL_ATTACK_START_INDEX = 310;
-    public static int SMALL_ATTACK_END_INDEX = 349;
+    public static int SMALL_ATTACK_END_INDEX = 348; //Omit the test attack
 
     private final SpriteData spriteData;
     private final int[] bigAttackIndexes;
