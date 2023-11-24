@@ -20,7 +20,7 @@ public class BemCharacter extends Character<BemTransformationEntry, BemCharacter
     public static final List<SpriteData.SpriteDimensions> ALLOWED_DIMENSIONS = List.of(NORMAL_SPRITE_DIMENSIONS, BABY_SPRITE_DIMENSIONS);
 
     private Integer thirdPoolBattleChance;
-    private Integer minutesUntilTransformation;
+    private Integer minutesUntilFusionCheck;
 
     @Override
     public BemCharacter copyCharacter(SpriteImageTranslator spriteImageTranslator) {

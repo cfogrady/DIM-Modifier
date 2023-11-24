@@ -32,9 +32,9 @@ public class BemCardDataReader extends CardDataRreader<
     private Integer getMinutesUntilTransformation(int index, BemCard bemCard) {
         Integer minutes = null;
         for(BemTransformationRequirements.BemTransformationRequirementEntry entry : bemCard.getTransformationRequirements().getTransformationEntries()) {
-            if(entry.getFromCharacterIndex() == index) {
-                if(minutes != null && entry.getMinutesUntilTransformation() != minutes) {
-                    log.error("BEM encountered with different evolution timers from a single digimon. Please log an issue with the BEM on https://github.com/cfogrady/DIM-Modifier/issues");
+            if(entry.getFromCharacterIndex() == index && entry.getToCharacterIndex() == NONE_VALUE) {
+                if(minutes != null) {
+                    log.error("BEM encountered with different fusion evolution timers from a single digimon. Please log an issue with the BEM on https://github.com/cfogrady/DIM-Modifier/issues");
                 }
                 minutes = entry.getMinutesUntilTransformation();
             }
@@ -73,6 +73,7 @@ public class BemCardDataReader extends CardDataRreader<
     @Override
     protected BemTransformationEntry.BemTransformationEntryBuilder<?, ?> getTransformationBuilder(BemTransformationRequirements.BemTransformationRequirementEntry rawEntry) {
         return BemTransformationEntry.builder()
+                .minutesUntilTransformation(rawEntry.getMinutesUntilTransformation())
                 .isSecret(rawEntry.getIsNotSecret() == 0)
                 .requiredCompletedAdventureLevel(NoneUtils.nullIfNone(rawEntry.getRequiredCompletedAdventureLevel()));
     }
@@ -82,7 +83,7 @@ public class BemCardDataReader extends CardDataRreader<
         BemCharacterStats.BemCharacterStatEntry characterStatEntry = card.getCharacterStats().getCharacterEntries().get(index);
         return BemCharacter.builder()
                 .thirdPoolBattleChance(NoneUtils.nullIfNone(characterStatEntry.getThirdPoolBattleChance()))
-                .minutesUntilTransformation(getMinutesUntilTransformation(index, card));
+                .minutesUntilFusionCheck(getMinutesUntilTransformation(index, card));
     }
 
     @Override

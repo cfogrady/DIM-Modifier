@@ -11,7 +11,6 @@ import com.github.cfogrady.vb.dim.character.BemCharacterStats;
 import com.github.cfogrady.vb.dim.character.CharacterStats;
 import com.github.cfogrady.vb.dim.fusion.AttributeFusions;
 import com.github.cfogrady.vb.dim.fusion.BemSpecificFusions;
-import com.github.cfogrady.vb.dim.header.BemHeader;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import com.github.cfogrady.vb.dim.transformation.BemTransformationRequirements;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +71,7 @@ public class BemCardDataWriter extends CardDataWriter<
         SpriteData.SpriteDimensions dimensions = character.getSprites().get(1).getSpriteDimensions();
         int size = dimensions.equals(DEFAULT_SIZE) ? 2 : 0;
         return BemCharacterStats.BemCharacterStatEntry.builder()
-                .spriteResizeFlag(2)
+                .spriteResizeFlag(size)
                 .thirdPoolBattleChance(character.getStage() < 2 ? NONE_VALUE : NullUtils.getOrDefault(character.getThirdPoolBattleChance(), NONE_VALUE));
     }
 
@@ -88,12 +87,8 @@ public class BemCardDataWriter extends CardDataWriter<
 
     @Override
     protected BemTransformationRequirements.BemTransformationRequirementEntry.BemTransformationRequirementEntryBuilder<?, ?> getTransformationEntryBuilder(BemCharacter character, BemTransformationEntry transformationEntry) {
-        if(character.getMinutesUntilTransformation() == null) {
-            throw new IllegalStateException("Somehow have no minutes until transformation even though we have evolution requirements!");
-        }
-        int minutesUntilTransformation = character.getMinutesUntilTransformation();
         return BemTransformationRequirements.BemTransformationRequirementEntry.builder()
-                .minutesUntilTransformation(minutesUntilTransformation)
+                .minutesUntilTransformation(transformationEntry.getMinutesUntilTransformation())
                 .isNotSecret(transformationEntry.isSecret() ? 0 : 1)
                 .maximumMinuteOfHour(NONE_VALUE)
                 .minimumMinuteOfHour(0)
@@ -102,11 +97,11 @@ public class BemCardDataWriter extends CardDataWriter<
 
     @Override
     protected BemTransformationRequirements.BemTransformationRequirementEntry.BemTransformationRequirementEntryBuilder<?, ?> getTransformationEntryFromFusionBuilder(BemCharacter character) {
-        if(character.getMinutesUntilTransformation() == null) {
-            throw new IllegalStateException("Somehow have no minutes until transformation even though we have evolution requirements!");
+        if(character.getMinutesUntilFusionCheck() == null) {
+            throw new IllegalStateException("Somehow have no minutes until fusion check even though we have fusions!");
         }
         return BemTransformationRequirements.BemTransformationRequirementEntry.builder()
-                .minutesUntilTransformation(character.getMinutesUntilTransformation())
+                .minutesUntilTransformation(character.getMinutesUntilFusionCheck())
                 .minimumMinuteOfHour(0)
                 .maximumMinuteOfHour(NONE_VALUE)
                 .requiredCompletedAdventureLevel(NONE_VALUE)

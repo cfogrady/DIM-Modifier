@@ -41,9 +41,24 @@ public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
         List<String> errors = new ArrayList<>();
         for(int i = 0; i < getCharacters().size(); i++) {
             BemCharacter character = getCharacters().get(i);
-            if(character.hasTransformations() && (character.getMinutesUntilTransformation() == null || character.getMinutesUntilTransformation() == 0)) {
-                errors.add("Character " + i + " has transformations," + System.lineSeparator() +
-                        "  but time until transformations is not set.");
+            if(character.hasTransformations()) {
+                errors.addAll(validateCharacterTransformations(i, character));
+            }
+        }
+        return errors;
+    }
+
+    private static List<String> validateCharacterTransformations(int characterIndex, BemCharacter character) {
+        List<String> errors = new ArrayList<>();
+        if ((!character.getFusions().isEmpty() || !character.getSpecificFusions().isEmpty()) && character.getMinutesUntilFusionCheck() == null) {
+            errors.add("Character " + characterIndex + " has fusions," + System.lineSeparator() +
+                    "  but time until fusion checks is not set.");
+        }
+        for (int i = 0; i < character.getTransformationEntries().size(); i++) {
+            BemTransformationEntry transformationEntry = character.getTransformationEntries().get(i);
+            if (transformationEntry.getMinutesUntilTransformation() == null) {
+                errors.add("Character " + characterIndex + " transformation " + (i+1) + " does not have" + System.lineSeparator() +
+                        "minutes until transformations set.");
             }
         }
         return errors;
