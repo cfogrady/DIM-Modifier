@@ -54,7 +54,7 @@ public class FirstLoadScene {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/LoadedView.fxml"));
             loader.setControllerFactory(p -> loadedViewController);
-            Scene scene = new Scene(loader.load(), 1420, 720);
+            Scene scene = new Scene(loader.load(), 1520, 720);
             loadedViewController.refreshAll();
             stage.setScene(scene);
             stage.centerOnScreen();

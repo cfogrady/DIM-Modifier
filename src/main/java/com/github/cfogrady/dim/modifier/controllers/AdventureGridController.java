@@ -2,6 +2,7 @@ package com.github.cfogrady.dim.modifier.controllers;
 
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
+import com.github.cfogrady.dim.modifier.controls.ImageIntPair;
 import com.github.cfogrady.dim.modifier.controls.IntegerTextField;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.bem.BemAdventure;
@@ -41,30 +42,30 @@ public class AdventureGridController {
     @RequiredArgsConstructor
     @Data
     static class ImageOptions {
-        private final ObservableList<ImageIntComboBox.ImageIntPair> characterOptions;
-        private final ObservableList<ImageIntComboBox.ImageIntPair> characterOptionsWithNoneOption;
-        private final ObservableList<ImageIntComboBox.ImageIntPair> smallAttackSpriteOptions;
-        private final ObservableList<ImageIntComboBox.ImageIntPair> bigAttackSpriteOptions;
-        private final ObservableList<ImageIntComboBox.ImageIntPair> backgroundOptions;
+        private final ObservableList<ImageIntPair> characterOptions;
+        private final ObservableList<ImageIntPair> characterOptionsWithNoneOption;
+        private final ObservableList<ImageIntPair> smallAttackSpriteOptions;
+        private final ObservableList<ImageIntPair> bigAttackSpriteOptions;
+        private final ObservableList<ImageIntPair> backgroundOptions;
     }
 
     private ImageOptions buildImageOptions() {
-        ObservableList<ImageIntComboBox.ImageIntPair> characterOptions = spriteImageTranslator.createImageValuePairs(appState.getIdleForCharacters());
+        ObservableList<ImageIntPair> characterOptions = spriteImageTranslator.createImageValuePairs(appState.getIdleForCharacters());
 
-        ObservableList<ImageIntComboBox.ImageIntPair> characterOptionsWithNoneOption = FXCollections.observableArrayList(characterOptions);
-        characterOptionsWithNoneOption.add(0, new ImageIntComboBox.ImageIntPair(null, null));
+        ObservableList<ImageIntPair> characterOptionsWithNoneOption = FXCollections.observableArrayList(characterOptions);
+        characterOptionsWithNoneOption.add(0, new ImageIntPair(null, null));
 
-        ObservableList<ImageIntComboBox.ImageIntPair> backgroundOptions = spriteImageTranslator.createImageValuePairs(appState.getCardData().getCardSprites().getBackgrounds());
+        ObservableList<ImageIntPair> backgroundOptions = spriteImageTranslator.createImageValuePairs(appState.getCardData().getCardSprites().getBackgrounds());
 
         List<SpriteData.Sprite> smallAttackSprites = appState.getFirmwareData().getSmallAttacks();
         smallAttackSprites.addAll(appState.getCardData().getCardSprites().getSmallAttacks());
-        ObservableList<ImageIntComboBox.ImageIntPair> smallAttackSpriteOptions = spriteImageTranslator.createImageValuePairs(smallAttackSprites);
-        smallAttackSpriteOptions.add(0, new ImageIntComboBox.ImageIntPair(null, null));
+        ObservableList<ImageIntPair> smallAttackSpriteOptions = spriteImageTranslator.createImageValuePairs(smallAttackSprites);
+        smallAttackSpriteOptions.add(0, new ImageIntPair(null, null));
 
         List<SpriteData.Sprite> bigAttackSprites = appState.getFirmwareData().getBigAttacks();
         bigAttackSprites.addAll(appState.getCardData().getCardSprites().getBigAttacks());
-        ObservableList<ImageIntComboBox.ImageIntPair> bigAttackSpriteOptions = spriteImageTranslator.createImageValuePairs(bigAttackSprites);
-        bigAttackSpriteOptions.add(0, new ImageIntComboBox.ImageIntPair(null, null));
+        ObservableList<ImageIntPair> bigAttackSpriteOptions = spriteImageTranslator.createImageValuePairs(bigAttackSprites);
+        bigAttackSpriteOptions.add(0, new ImageIntPair(null, null));
         return new ImageOptions(characterOptions, characterOptionsWithNoneOption, smallAttackSpriteOptions, bigAttackSpriteOptions, backgroundOptions);
     }
 
@@ -140,7 +141,7 @@ public class AdventureGridController {
         return checkBox;
     }
 
-    private ImageIntComboBox createCharacterSelectorComboBox(Supplier<UUID> getter, Consumer<UUID> setter, ObservableList<ImageIntComboBox.ImageIntPair> characterOptions) {
+    private ImageIntComboBox createCharacterSelectorComboBox(Supplier<UUID> getter, Consumer<UUID> setter, ObservableList<ImageIntPair> characterOptions) {
         ImageIntComboBox imageIntComboBox = new ImageIntComboBox();
         imageIntComboBox.initialize(characterOptions);
         imageIntComboBox.setOnAction(e -> {
@@ -171,7 +172,7 @@ public class AdventureGridController {
         return integerTextField;
     }
 
-    private ImageIntComboBox createSmallAttackSelection(BemAdventure adventure, ObservableList<ImageIntComboBox.ImageIntPair> options) {
+    private ImageIntComboBox createSmallAttackSelection(BemAdventure adventure, ObservableList<ImageIntPair> options) {
         ImageIntComboBox comboBox = new ImageIntComboBox();
         comboBox.initialize(adventure.getSmallAttackId(), options, 1.0, null, "Default Attack");
         comboBox.setOnAction(e -> adventure.setSmallAttackId(comboBox.getValue().getValue()));
@@ -180,7 +181,7 @@ public class AdventureGridController {
         return comboBox;
     }
 
-    private ImageIntComboBox createBigAttackSelection(BemAdventure adventure, ObservableList<ImageIntComboBox.ImageIntPair> options) {
+    private ImageIntComboBox createBigAttackSelection(BemAdventure adventure, ObservableList<ImageIntPair> options) {
         ImageIntComboBox comboBox = new ImageIntComboBox();
         comboBox.initialize(adventure.getBigAttackId(),options, 1.0, null, "Default Attack");
         comboBox.setOnAction(e -> adventure.setBigAttackId(comboBox.getValue().getValue()));
@@ -189,7 +190,7 @@ public class AdventureGridController {
         return comboBox;
     }
 
-    private ImageIntComboBox createBackgroundSelection(Supplier<Integer> backgroundFetcher, Consumer<Integer> backgroundSetter, ObservableList<ImageIntComboBox.ImageIntPair> options) {
+    private ImageIntComboBox createBackgroundSelection(Supplier<Integer> backgroundFetcher, Consumer<Integer> backgroundSetter, ObservableList<ImageIntPair> options) {
         ImageIntComboBox imageIntComboBox = new ImageIntComboBox();
         imageIntComboBox.initialize(backgroundFetcher.get(), options, 1.0, null, null);
         imageIntComboBox.setOnAction(e -> backgroundSetter.accept(imageIntComboBox.getValue().getValue()));

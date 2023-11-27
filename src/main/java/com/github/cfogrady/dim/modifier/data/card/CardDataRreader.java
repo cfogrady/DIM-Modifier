@@ -32,12 +32,13 @@ public abstract class CardDataRreader<
         List<CharacterType> characters = new ArrayList<>(numberOfSlots);
         List<UUID> idBySlot = IntStream.range(0, numberOfSlots).mapToObj(i -> UUID.randomUUID()).collect(Collectors.toList());
         Map<UUID, Integer> uuidToCharacterSlot = new HashMap<>(numberOfSlots);
+        List<List<SpecificFusionT>> specificFusionsBySlotId = getSpecificFusionsForCardByIndex(card);
         for(int slotIndex = 0; slotIndex < card.getCharacterStats().getCharacterEntries().size(); slotIndex++) {
-            CharacterType character = buildCharacter(slotIndex, card, idBySlot);
+            CharacterType character = buildCharacter(slotIndex, card, idBySlot, specificFusionsBySlotId.get(slotIndex));
             uuidToCharacterSlot.put(character.getId(), slotIndex);
             characters.add(character);
         }
-        return getCardDataBuilder()
+        return getCardDataBuilder(card)
                 .originalCard(card)
                 .metaData(getMetadata(card))
                 .characters(characters)
@@ -59,7 +60,7 @@ public abstract class CardDataRreader<
                 .build();
     }
 
-    protected CharacterType buildCharacter(int index, CardType card, List<UUID> idBySlot) {
+    protected CharacterType buildCharacter(int index, CardType card, List<UUID> idBySlot, List<SpecificFusionT> specificFusionsForCharacter) {
         CharacterStats<?> stats = card.getCharacterStats();
         CharacterStats.CharacterStatsEntry characterStatEntry = stats.getCharacterEntries().get(index);
         return getCharacterBuilder(index, card, idBySlot)
@@ -77,7 +78,7 @@ public abstract class CardDataRreader<
                 .transformationEntries(buildTransformationsForSlot(index, card, idBySlot))
                 .sprites(getSpritesForSlot(index, card))
                 .fusions(getAttributeFusions(index, card, idBySlot))
-                .specificFusions(getSpecificFusions(index, card, idBySlot))
+                .specificFusions(transformSpecificFusions(index, specificFusionsForCharacter, card.getHeader().getDimId(), idBySlot))
                 .build();
     }
 
@@ -119,14 +120,14 @@ public abstract class CardDataRreader<
         return Fusions.builder().build();
     }
 
-    private List<SpecificFusion> getSpecificFusions(int index, CardType card, List<UUID> idBySlot) {
+    private List<SpecificFusion> transformSpecificFusions(int index, List<SpecificFusionT> specificFusionsForCharacter, int cardDimId, List<UUID> idBySlot) {
         List<SpecificFusion> specificFusions = new ArrayList<>();
-        for(SpecificFusions.SpecificFusionEntry specificFusionEntry : card.getSpecificFusions().getEntries()) {
+        for(SpecificFusions.SpecificFusionEntry specificFusionEntry : specificFusionsForCharacter) {
             if(specificFusionEntry.getFromCharacterIndex() == index) {
                 SpecificFusion.SpecificFusionBuilder<?, ?> builder  = SpecificFusion.builder()
                         .evolveToCharacterId(idBySlot.get(specificFusionEntry.getToCharacterIndex()))
                         .partnerDimId(specificFusionEntry.getBackupDimId());
-                if(specificFusionEntry.getBackupDimId() == card.getHeader().getDimId()) {
+                if(specificFusionEntry.getBackupDimId() == cardDimId) {
                     builder = builder.sameBemPartnerCharacter(idBySlot.get(specificFusionEntry.getBackupCharacterIndex()))
                             .partnerDimSlotId(null);
 
@@ -137,6 +138,17 @@ public abstract class CardDataRreader<
             }
         }
         return specificFusions;
+    }
+
+    protected List<List<SpecificFusionT>> getSpecificFusionsForCardByIndex(CardType card) {
+        List<List<SpecificFusionT>> fusionsByIndex = new ArrayList<>();
+        for(int i = 0; i < card.getCharacterStats().getCharacterEntries().size(); i++) {
+            fusionsByIndex.add(new ArrayList<>());
+        }
+        for(SpecificFusionT fusion : card.getSpecificFusions().getEntries()) {
+            fusionsByIndex.get(fusion.getFromCharacterIndex()).add(fusion);
+        }
+        return fusionsByIndex;
     }
 
     private List<AdventureType> getAdventures(CardType card, List<UUID> idBySlot) {
@@ -157,7 +169,7 @@ public abstract class CardDataRreader<
 
     protected abstract Character.CharacterBuilder<TransformationType, CharacterType, ? extends CharacterType, ?> getCharacterBuilder(int index, CardType card, List<UUID> idBySlot);
 
-    protected abstract CardData.CardDataBuilder<CharacterType, AdventureType, CardType, ? extends CardDataType, ?> getCardDataBuilder();
+    protected abstract CardData.CardDataBuilder<CharacterType, AdventureType, CardType, ? extends CardDataType, ?> getCardDataBuilder(CardType card);
 
     protected abstract TransformationEntry.TransformationEntryBuilder<? extends TransformationType, ?> getTransformationBuilder(CardTransformationT rawEntry);
 

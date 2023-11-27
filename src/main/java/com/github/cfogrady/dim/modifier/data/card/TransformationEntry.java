@@ -13,4 +13,5 @@ public class TransformationEntry {
     private int trophyRequirement;
     private int battleRequirement;
     private int winRatioRequirement;
+    private int timeToTransform;
 }

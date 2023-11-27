@@ -7,6 +7,7 @@ import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
 import com.github.cfogrady.dim.modifier.data.bem.BemTransformationEntry;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.dim.modifier.data.card.TransformationEntry;
+import com.github.cfogrady.dim.modifier.data.dim.DimTransformationEntity;
 import com.github.cfogrady.vb.dim.card.DimReader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -46,6 +47,7 @@ public class RegularTransformationsGridController {
     private void addRow(GridPane gridPane, int rowIndex, TransformationEntry transformationEntry, Character<?, ?> character) {
         int columnIndex = 0;
         gridPane.add(getEvolveToColumn(transformationEntry), columnIndex++, rowIndex);
+        gridPane.add(getTimeToEvolveLabel(transformationEntry), columnIndex++, rowIndex);
         gridPane.add(getVitalValueRequirementLabel(transformationEntry), columnIndex++, rowIndex);
         gridPane.add(getTrophiesRequirementLabel(transformationEntry), columnIndex++, rowIndex);
         gridPane.add(getBattlesRequirementLabel(transformationEntry), columnIndex++, rowIndex);
@@ -73,6 +75,25 @@ public class RegularTransformationsGridController {
         });
         comboBox.setPrefWidth(120);
         VBox vBox = new VBox(label, comboBox);
+        vBox.setSpacing(10);
+        GridPane.setMargin(vBox, new Insets(10));
+        return vBox;
+    }
+
+    private Node getTimeToEvolveLabel(TransformationEntry transformationEntry) {
+        String labelText = "Time Until Transformation";
+        IntegerTextField textField = null;
+        if (transformationEntry instanceof DimTransformationEntity dimTransformationEntity) {
+            textField = new IntegerTextField(dimTransformationEntity.getHoursUntilTransformation(), dimTransformationEntity::setHoursUntilTransformation);
+            labelText = "Hours Until Transformation:";
+        } else if (transformationEntry instanceof BemTransformationEntry bemTransformationEntry) {
+            labelText = "Minutes Until Transformation:";
+            textField = new IntegerTextField(bemTransformationEntry.getMinutesUntilTransformation(), bemTransformationEntry::setMinutesUntilTransformation);
+        }
+        Label label = new Label(labelText);
+        textField.setMin(1);
+        textField.setMax(0xFFFF);
+        VBox vBox = new VBox(label, textField);
         vBox.setSpacing(10);
         GridPane.setMargin(vBox, new Insets(10));
         return vBox;

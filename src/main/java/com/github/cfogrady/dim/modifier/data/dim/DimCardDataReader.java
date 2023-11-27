@@ -21,7 +21,7 @@ public class DimCardDataReader extends CardDataRreader<
         AdventureLevels.AdventureLevel,
         SpecificFusions.SpecificFusionEntry,
         DimCard,
-        TransformationEntry,
+        DimTransformationEntity,
         DimCharacter,
         Adventure,
         DimCardData> {
@@ -34,7 +34,7 @@ public class DimCardDataReader extends CardDataRreader<
     protected DimCharacter.DimCharacterBuilder<?, ?> getCharacterBuilder(int index, DimCard card, List<UUID> idBySlot) {
         DimStats.DimStatBlock stats = card.getCharacterStats().getCharacterEntries().get(index);
         return DimCharacter.builder()
-                .hoursUntilTransformation(getHoursUntilTransformation(index, card))
+                .hoursUntilFusionCheck(getHoursUntilTransformation(index, card))
                 .stars(stats.getDpStars())
                 .finishAdventureToUnlock(stats.isUnlockRequired());
     }
@@ -42,9 +42,9 @@ public class DimCardDataReader extends CardDataRreader<
     private Integer getHoursUntilTransformation(int index, DimCard dimCard) {
         Integer hours = null;
         for(DimEvolutionRequirements.DimEvolutionRequirementBlock entry : dimCard.getTransformationRequirements().getTransformationEntries()) {
-            if(entry.getFromCharacterIndex() == index) {
-                if(hours != null && entry.getHoursUntilEvolution() != hours) {
-                    log.error("BEM encountered with different evolution timers from a single digimon. Please log an issue with the BEM on https://github.com/cfogrady/DIM-Modifier/issues");
+            if(entry.getFromCharacterIndex() == index && entry.getToCharacterIndex() == NONE_VALUE) {
+                if(hours != null) {
+                    log.error("DIM encountered with different fusion evolution timers from a single digimon. Please log an issue with the BEM on https://github.com/cfogrady/DIM-Modifier/issues");
                 }
                 hours = entry.getHoursUntilEvolution();
             }
@@ -53,13 +53,13 @@ public class DimCardDataReader extends CardDataRreader<
     }
 
     @Override
-    protected DimCardData.DimCardDataBuilder<?, ?> getCardDataBuilder() {
+    protected DimCardData.DimCardDataBuilder<?, ?> getCardDataBuilder(DimCard card) {
         return DimCardData.builder();
     }
 
     @Override
-    protected TransformationEntry.TransformationEntryBuilder<?, ?> getTransformationBuilder(DimEvolutionRequirements.DimEvolutionRequirementBlock rawEntry) {
-        return TransformationEntry.builder();
+    protected DimTransformationEntity.DimTransformationEntityBuilder<?, ?> getTransformationBuilder(DimEvolutionRequirements.DimEvolutionRequirementBlock rawEntry) {
+        return DimTransformationEntity.builder().hoursUntilTransformation(rawEntry.getHoursUntilEvolution());
     }
 
     @Override

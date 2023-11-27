@@ -3,7 +3,9 @@ package com.github.cfogrady.dim.modifier;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.firmware.FirmwareManager;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -33,8 +35,11 @@ public class FirmwareLoadScene {
                     firmwareManager.setFirmwareLocation(file);
                     appState.setFirmwareData(firmwareManager.loadFirmware());
                     firstLoadScene.setupScene();
-                } catch (IOException e) {
-                    log.error("Unable to read firmware. Are you sure this is BE firmware?");
+                } catch (Throwable th) {
+                    log.error("Unable to read firmware.", th);
+                    Alert alert = new Alert(Alert.AlertType.NONE, "Unable to read firmware. Are you sure this is BE firmware?");
+                    alert.getButtonTypes().add(ButtonType.OK);
+                    alert.show();
                     firmwareManager.clearFirmwareLocation();
                 }
             }

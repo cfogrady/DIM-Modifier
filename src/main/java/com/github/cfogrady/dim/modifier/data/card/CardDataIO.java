@@ -26,6 +26,9 @@ public class CardDataIO {
 
     public CardData<?, ?, ?> readFromStream(InputStream inputStream) throws IOException {
         Card card = dimReader.readCard(inputStream, true);
+        if(card.getChecksum() != card.getCalculatedCheckSum()) {
+            throw new IllegalStateException("Checksum mismatch. This is probably the result of a bad read.");
+        }
         if(card instanceof BemCard bemCard) {
             return bemCardDataReader.fromCard(bemCard);
         } else if(card instanceof DimCard dimCard) {

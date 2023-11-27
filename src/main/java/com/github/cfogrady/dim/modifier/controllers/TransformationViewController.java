@@ -5,8 +5,8 @@ import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
 import com.github.cfogrady.dim.modifier.data.card.SpecificFusion;
 import com.github.cfogrady.dim.modifier.data.bem.BemTransformationEntry;
 import com.github.cfogrady.dim.modifier.data.card.Character;
-import com.github.cfogrady.dim.modifier.data.card.TransformationEntry;
 import com.github.cfogrady.dim.modifier.data.dim.DimCharacter;
+import com.github.cfogrady.dim.modifier.data.dim.DimTransformationEntity;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
@@ -25,7 +25,7 @@ public class TransformationViewController implements Initializable {
     private final AttributeFusionGridController attributeFusionGridController;
 
     @FXML
-    private IntegerTextField timeToTransformationBox;
+    private IntegerTextField timeUntilFusionChecksBox;
     @FXML
     private Accordion accordion;
     @FXML
@@ -48,7 +48,7 @@ public class TransformationViewController implements Initializable {
         regularTransformationsGridController.setStackPane(regularTransformationHolder);
         specificFusionGridController.setStackPane(specificFusionHolder);
         attributeFusionGridController.setStackPane(attributeFusionHolder);
-        timeToTransformationBox.setAllowBlanks(true);
+        timeUntilFusionChecksBox.setAllowBlanks(true);
     }
 
     public void refreshAll() {
@@ -56,21 +56,21 @@ public class TransformationViewController implements Initializable {
         refreshSpecificFusions();
         refreshAttributeFusions();
         if(character instanceof BemCharacter bemCharacter) {
-            timeToTransformationBox.setChangeReceiver(null);
-            if(bemCharacter.getMinutesUntilTransformation() != null) {
-                timeToTransformationBox.setText(bemCharacter.getMinutesUntilTransformation().toString());
+            timeUntilFusionChecksBox.setChangeReceiver(null);
+            if(bemCharacter.getMinutesUntilFusionCheck() != null) {
+                timeUntilFusionChecksBox.setText(bemCharacter.getMinutesUntilFusionCheck().toString());
             } else {
-                timeToTransformationBox.setText("");
+                timeUntilFusionChecksBox.setText("");
             }
-            timeToTransformationBox.setChangeReceiver(bemCharacter::setMinutesUntilTransformation);
+            timeUntilFusionChecksBox.setChangeReceiver(bemCharacter::setMinutesUntilFusionCheck);
         } else if(character instanceof DimCharacter dimCharacter) {
-            timeToTransformationBox.setChangeReceiver(null);
-            if(dimCharacter.getHoursUntilTransformation() != null) {
-                timeToTransformationBox.setText(dimCharacter.getHoursUntilTransformation().toString());
+            timeUntilFusionChecksBox.setChangeReceiver(null);
+            if(dimCharacter.getHoursUntilFusionCheck() != null) {
+                timeUntilFusionChecksBox.setText(dimCharacter.getHoursUntilFusionCheck().toString());
             } else {
-                timeToTransformationBox.setText("");
+                timeUntilFusionChecksBox.setText("");
             }
-            timeToTransformationBox.setChangeReceiver(dimCharacter::setHoursUntilTransformation);
+            timeUntilFusionChecksBox.setChangeReceiver(dimCharacter::setHoursUntilFusionCheck);
         }
     }
 
@@ -81,7 +81,7 @@ public class TransformationViewController implements Initializable {
                 bemCharacter.getTransformationEntries().add(BemTransformationEntry.builder().build());
                 refreshRegularTransformations();
             } else if(character instanceof DimCharacter dimCharacter) {
-                dimCharacter.getTransformationEntries().add(TransformationEntry.builder().build());
+                dimCharacter.getTransformationEntries().add(DimTransformationEntity.builder().build());
                 refreshRegularTransformations();
             } else {
                 throw new IllegalStateException("Unknown character type!");

@@ -49,11 +49,10 @@ public class IntegerTextField extends TextField {
         this.textProperty().addListener((obs,oldv,newv) -> {
             boolean error = false;
             if(newv == null || newv.isBlank()) {
-                if(allowBlanks) {
-                    changeHandler(null);
-                } else {
+                if(!allowBlanks) {
                     error = true;
                 }
+                changeHandler(null);
             } else {
                 try {
                     int value = Integer.parseInt(newv);

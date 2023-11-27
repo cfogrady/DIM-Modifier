@@ -2,7 +2,6 @@ package com.github.cfogrady.dim.modifier.data.dim;
 
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.data.card.Character;
-import com.github.cfogrady.dim.modifier.data.card.TransformationEntry;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -15,14 +14,14 @@ import java.util.UUID;
 @Data
 @SuperBuilder(toBuilder = true)
 @EqualsAndHashCode(callSuper = true)
-public class DimCharacter extends Character<TransformationEntry, DimCharacter> {
+public class DimCharacter extends Character<DimTransformationEntity, DimCharacter> {
     public static final SpriteData.SpriteDimensions ALLOWED_ADULT_DIMENSIONS =
             SpriteData.SpriteDimensions.builder().width(64).height(56).build();
 
     public static final SpriteData.SpriteDimensions ALLOWED_BABY_DIMENSIONS =
             SpriteData.SpriteDimensions.builder().width(32).height(24).build();
 
-    private Integer hoursUntilTransformation;
+    private Integer hoursUntilFusionCheck;
     private int stars;
     private boolean finishAdventureToUnlock;
 

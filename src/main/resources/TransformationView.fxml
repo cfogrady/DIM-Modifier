@@ -17,15 +17,6 @@
    <content>
       <VBox>
          <children>
-            <HBox spacing="10" alignment="CENTER_LEFT">
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
-               <children>
-                  <Text>Time To Transformation:</Text>
-                  <IntegerTextField fx:id="timeToTransformationBox" max="2000"/>
-               </children>
-            </HBox>
             <Accordion fx:id="accordion">
                <panes>
                   <TitledPane animated="false" text="Regular Transformations">
@@ -51,6 +42,15 @@
                      <content>
                         <VBox spacing="10.0">
                            <children>
+                              <HBox spacing="10" alignment="CENTER_LEFT">
+                                 <padding>
+                                    <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                                 </padding>
+                                 <children>
+                                    <Text>Time Until Fusion Checks:</Text>
+                                    <IntegerTextField fx:id="timeUntilFusionChecksBox" max="2000"/>
+                                 </children>
+                              </HBox>
                               <StackPane fx:id="specificFusionHolder" />
                               <Button fx:id="specificFusionButton" mnemonicParsing="false" text="Add Specific Fusion" />
                            </children>

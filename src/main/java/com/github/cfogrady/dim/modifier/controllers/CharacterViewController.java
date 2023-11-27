@@ -2,7 +2,7 @@ package com.github.cfogrady.dim.modifier.controllers;
 
 import com.github.cfogrady.dim.modifier.SpriteImageTranslator;
 import com.github.cfogrady.dim.modifier.SpriteReplacer;
-import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
+import com.github.cfogrady.dim.modifier.controls.ImageIntListView;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.card.Character;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
@@ -42,7 +42,8 @@ public class CharacterViewController implements Initializable {
     private final Node transformationsSubView;
 
     @FXML
-    private ImageIntComboBox characterSelectionComboBox;
+    private ImageIntListView characterSelectionListView;
+
     @FXML
     private StackPane nameBox;
     @FXML
@@ -69,11 +70,10 @@ public class CharacterViewController implements Initializable {
     private NameUpdater nameUpdater;
     private SubViewSelection subViewSelection = SubViewSelection.STATS;
 
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initializeCharacterButtons();
-        statsViewController.setRefreshIdleSprite(this::initializeCharacterSelectionComboBox);
+        statsViewController.setRefreshIdleSprite(this::initializeCharacterSelectionListView);
         statsViewController.setRefreshAll(this::refreshAll);
         statsViewController.initialize(location, resources);
     }
@@ -84,7 +84,7 @@ public class CharacterViewController implements Initializable {
     }
 
     public void refreshAll() {
-        initializeCharacterSelectionComboBox();
+        initializeCharacterSelectionListView();
         initializeNameBox();
         refreshButtons();
         initializeSubView();
@@ -113,17 +113,17 @@ public class CharacterViewController implements Initializable {
         });
     }
 
-    private void initializeCharacterSelectionComboBox() {
-        characterSelectionComboBox.initialize(characterSelection, spriteImageTranslator.createImageValuePairs(appState.getIdleForCharacters()), 1.0, null, null);
-        characterSelectionComboBox.setOnAction(e -> {
-            if(characterSelectionComboBox.getValue() != null) {
-                characterSelection = characterSelectionComboBox.getValue().getValue();
+    private void initializeCharacterSelectionListView() {
+        characterSelectionListView.initialize(spriteImageTranslator.createImageValuePairs(appState.getIdleForCharacters()), 1.0, null, null);
+        characterSelectionListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue != null) {
+                characterSelection = newValue.getValue();
+                if(nameUpdater != null) {
+                    nameUpdater.cancel();
+                }
+                initializeNameBox();
+                initializeSubView();
             }
-            if(nameUpdater != null) {
-                nameUpdater.cancel();
-            }
-            initializeNameBox();
-            initializeSubView();
         });
     }
 

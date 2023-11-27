@@ -26,6 +26,7 @@ import java.util.ResourceBundle;
 @RequiredArgsConstructor
 public class StatsViewController implements Initializable {
     public static final int IDLE_SPRITE_IDX = 1;
+    public static SpriteData.SpriteDimensions CUTIN_DIMENSIONS = SpriteData.SpriteDimensions.builder().width(80).height(160).build();
 
     private final AppState appState;
     private final SpriteImageTranslator spriteImageTranslator;
@@ -136,7 +137,7 @@ public class StatsViewController implements Initializable {
     private void replaceCharacterSprite(SpriteData.Sprite newSprite) {
         if(newSprite != null) {
             SpriteData.SpriteDimensions proposedDimensions = newSprite.getSpriteDimensions();
-            if(character.isSpriteSizeValid(proposedDimensions)) {
+            if(isValidSpriteSize(proposedDimensions)) {
                 character.getSprites().set(spriteOption, newSprite);
                 if(spriteOption == AppState.SELECTION_SPRITE_IDX) {
                     refreshIdleSprite.run();
@@ -148,6 +149,16 @@ public class StatsViewController implements Initializable {
                 alert.show();
             }
         }
+    }
+
+    private boolean isValidSpriteSize(SpriteData.SpriteDimensions proposedDimensions) {
+        int backgroundSprite = character.getSprites().size() - 1;
+        if(spriteOption < backgroundSprite && character.isSpriteSizeValid(proposedDimensions)) {
+            return true;
+        } else if(spriteOption == backgroundSprite && proposedDimensions.equals(CUTIN_DIMENSIONS)) {
+            return true;
+        }
+        return false;
     }
 
     private void refreshGrid() {

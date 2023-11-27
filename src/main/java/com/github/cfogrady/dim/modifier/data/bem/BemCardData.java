@@ -1,22 +1,26 @@
 package com.github.cfogrady.dim.modifier.data.bem;
 
 import com.github.cfogrady.dim.modifier.data.card.CardData;
-import com.github.cfogrady.dim.modifier.data.dim.DimCharacter;
 import com.github.cfogrady.vb.dim.card.BemCard;
+import com.github.cfogrady.vb.dim.fusion.BemSpecificFusions;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.SuperBuilder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Data
 @SuperBuilder
 @EqualsAndHashCode(callSuper = true)
 public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
     private static final Set<Integer> SKIPPED_BABY_SPRITE_INDEXES = Set.of(4, 5, 6, 7, 8, 11, 12);
+    private List<BemSpecificFusions.BemSpecificFusionEntry> fusionsFromOtherCardsWithThisCard;
 
     @Override
     public List<String> checkForErrors() {
@@ -39,9 +43,24 @@ public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
         List<String> errors = new ArrayList<>();
         for(int i = 0; i < getCharacters().size(); i++) {
             BemCharacter character = getCharacters().get(i);
-            if(character.hasTransformations() && (character.getMinutesUntilTransformation() == null || character.getMinutesUntilTransformation() == 0)) {
-                errors.add("Character " + i + " has transformations," + System.lineSeparator() +
-                        "  but time until transformations is not set.");
+            if(character.hasTransformations()) {
+                errors.addAll(validateCharacterTransformations(i, character));
+            }
+        }
+        return errors;
+    }
+
+    private static List<String> validateCharacterTransformations(int characterIndex, BemCharacter character) {
+        List<String> errors = new ArrayList<>();
+        if ((!character.getFusions().isEmpty() || !character.getSpecificFusions().isEmpty()) && character.getMinutesUntilFusionCheck() == null) {
+            errors.add("Character " + characterIndex + " has fusions," + System.lineSeparator() +
+                    "  but time until fusion checks is not set.");
+        }
+        for (int i = 0; i < character.getTransformationEntries().size(); i++) {
+            BemTransformationEntry transformationEntry = character.getTransformationEntries().get(i);
+            if (transformationEntry.getMinutesUntilTransformation() == null) {
+                errors.add("Character " + characterIndex + " transformation " + (i+1) + " does not have" + System.lineSeparator() +
+                        "minutes until transformations set.");
             }
         }
         return errors;
@@ -68,17 +87,17 @@ public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
         List<String> errors = new ArrayList<>();
         for(int characterIdx = 0; characterIdx < getCharacters().size(); characterIdx++) {
             BemCharacter character = getCharacters().get(characterIdx);
-            SpriteData.SpriteDimensions spriteDimensions = null;
+            Set<SpriteData.SpriteDimensions> legitSpriteDimensionsFound = new HashSet<>();
             for(int i = 1; i < 13; i++) {
-                if(SKIPPED_BABY_SPRITE_INDEXES.contains(i)) {
-                    continue;
+                SpriteData.SpriteDimensions spriteDimensions = character.getSprites().get(i).getSpriteDimensions();
+                if(character.isSpriteSizeValid(spriteDimensions)) {
+                    legitSpriteDimensionsFound.add(spriteDimensions);
+                } else {
+                    log.info("Illegal Sprite size for character {} at sprite index {}. Assumed placeholder sprite.", characterIdx, i);
                 }
-                if(spriteDimensions == null) {
-                    spriteDimensions = character.getSprites().get(i).getSpriteDimensions();
-                } else if(!spriteDimensions.equals(character.getSprites().get(i).getSpriteDimensions())) {
-                    errors.add("Character " + characterIdx + " has a mixture of sprite dimensions." + System.lineSeparator() + "  Sprites used by the phase must be uniform.");
-                    break;
-                }
+            }
+            if(legitSpriteDimensionsFound.size() > 1) {
+                errors.add("Character " + characterIdx + " has a mixture of sprite dimensions." + System.lineSeparator() + "  Sprites used by the character must be uniform.");
             }
         }
         return errors;

@@ -3,9 +3,7 @@ package com.github.cfogrady.dim.modifier.data.dim;
 import com.github.cfogrady.dim.modifier.data.card.Adventure;
 import com.github.cfogrady.dim.modifier.data.card.CardDataWriter;
 import com.github.cfogrady.dim.modifier.data.card.SpecificFusion;
-import com.github.cfogrady.dim.modifier.data.card.TransformationEntry;
 import com.github.cfogrady.dim.modifier.utils.NoneUtils;
-import com.github.cfogrady.dim.modifier.utils.NullUtils;
 import com.github.cfogrady.vb.dim.adventure.AdventureLevels;
 import com.github.cfogrady.vb.dim.adventure.DimAdventures;
 import com.github.cfogrady.vb.dim.card.DimCard;
@@ -16,7 +14,6 @@ import com.github.cfogrady.vb.dim.fusion.AttributeFusions;
 import com.github.cfogrady.vb.dim.fusion.DimFusions;
 import com.github.cfogrady.vb.dim.fusion.DimSpecificFusions;
 import com.github.cfogrady.vb.dim.fusion.SpecificFusions;
-import com.github.cfogrady.vb.dim.header.DimHeader;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import com.github.cfogrady.vb.dim.transformation.DimEvolutionRequirements;
 import com.github.cfogrady.vb.dim.transformation.TransformationRequirements;
@@ -39,7 +36,7 @@ public class DimCardDataWriter extends CardDataWriter<
         SpecificFusions.SpecificFusionEntry,
         DimSpecificFusions,
         DimCard,
-        TransformationEntry,
+        DimTransformationEntity,
         DimCharacter,
         Adventure,
         DimCardData
@@ -101,19 +98,15 @@ public class DimCardDataWriter extends CardDataWriter<
     }
 
     @Override
-    protected TransformationRequirements.TransformationRequirementsEntry.TransformationRequirementsEntryBuilder<? extends DimEvolutionRequirements.DimEvolutionRequirementBlock, ?> getTransformationEntryBuilder(DimCharacter character, TransformationEntry transformation) {
-        if(character.getHoursUntilTransformation() == null) {
-            throw new IllegalStateException("Somehow have no hours until transformation even though we have evolution requirements!");
-        }
-        int hoursUntileTransformation = character.getHoursUntilTransformation();
+    protected TransformationRequirements.TransformationRequirementsEntry.TransformationRequirementsEntryBuilder<? extends DimEvolutionRequirements.DimEvolutionRequirementBlock, ?> getTransformationEntryBuilder(DimCharacter character, DimTransformationEntity transformation) {
         return DimEvolutionRequirements.DimEvolutionRequirementBlock.builder()
-                .hoursUntilEvolution(hoursUntileTransformation);
+                .hoursUntilEvolution(transformation.getHoursUntilTransformation());
     }
 
     @Override
     protected TransformationRequirements.TransformationRequirementsEntry.TransformationRequirementsEntryBuilder<? extends DimEvolutionRequirements.DimEvolutionRequirementBlock, ?> getTransformationEntryFromFusionBuilder(DimCharacter character) {
         return DimEvolutionRequirements.DimEvolutionRequirementBlock.builder()
-                .hoursUntilEvolution(NoneUtils.noneIfNull(character.getHoursUntilTransformation()));
+                .hoursUntilEvolution(NoneUtils.noneIfNull(character.getHoursUntilFusionCheck()));
     }
 
     @Override
@@ -151,7 +144,7 @@ public class DimCardDataWriter extends CardDataWriter<
     }
 
     @Override
-    protected DimSpecificFusions mergeSpecificFusions(DimSpecificFusions old, List<SpecificFusions.SpecificFusionEntry> entries) {
+    protected DimSpecificFusions mergeSpecificFusions(DimCardData cardData, DimSpecificFusions old, List<SpecificFusions.SpecificFusionEntry> entries) {
         DimSpecificFusions.DimSpecificFusionsBuilder<?, ?> builder = old.toBuilder();
         if(entries.size() != old.getEntries().size() && entries.size() < DimSpecificFusions.VB_TABLE_SIZE) {
             log.info("Number of specific fusions on this dim has changed and the new value is less than table size. Using full table dummy rows");

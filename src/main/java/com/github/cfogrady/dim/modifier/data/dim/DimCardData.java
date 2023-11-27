@@ -1,5 +1,6 @@
 package com.github.cfogrady.dim.modifier.data.dim;
 
+import com.github.cfogrady.dim.modifier.data.bem.BemTransformationEntry;
 import com.github.cfogrady.dim.modifier.data.card.Adventure;
 import com.github.cfogrady.dim.modifier.data.card.CardData;
 import com.github.cfogrady.vb.dim.card.DimCard;
@@ -64,9 +65,24 @@ public class DimCardData extends CardData<DimCharacter, Adventure, DimCard> {
         List<String> errors = new ArrayList<>();
         for(int i = 0; i < getCharacters().size(); i++) {
             DimCharacter character = getCharacters().get(i);
-            if(character.hasTransformations() && (character.getHoursUntilTransformation() == null || character.getHoursUntilTransformation() == 0)) {
-                errors.add("Character " + i + " has transformations," + System.lineSeparator() +
-                        "  but time until transformations is not set.");
+            if(character.hasTransformations()) {
+                errors.addAll(validatorCharacterTransformations(i, character));
+            }
+        }
+        return errors;
+    }
+
+    private static List<String> validatorCharacterTransformations(int characterIndex, DimCharacter character) {
+        List<String> errors = new ArrayList<>();
+        if (!character.getSpecificFusions().isEmpty()) {
+            errors.add("Character " + characterIndex + " has specific fusions," + System.lineSeparator() +
+                    "  but time until fusion checks is not set.");
+        }
+        for (int i = 0; i < character.getTransformationEntries().size(); i++) {
+            DimTransformationEntity transformationEntry = character.getTransformationEntries().get(i);
+            if (transformationEntry.getHoursUntilTransformation() == null) {
+                errors.add("Character " + characterIndex + " transformation " + (i+1) + " does not have" + System.lineSeparator() +
+                        "hours until transformations set.");
             }
         }
         return errors;

@@ -1,6 +1,9 @@
 package com.github.cfogrady.dim.modifier;
 
 import com.github.cfogrady.dim.modifier.controls.ImageIntComboBox;
+import com.github.cfogrady.dim.modifier.controls.ImageIntListView;
+
+import com.github.cfogrady.dim.modifier.controls.ImageIntPair;
 import com.github.cfogrady.dim.modifier.data.AppState;
 import com.github.cfogrady.dim.modifier.data.bem.BemCharacter;
 import com.github.cfogrady.dim.modifier.data.card.Character;
@@ -57,12 +60,12 @@ public class SpriteImageTranslator {
         this.stage = stage;
     }
 
-    public ObservableList<ImageIntComboBox.ImageIntPair> createImageValuePairs(List<SpriteData.Sprite> sprites) {
-        ObservableList<ImageIntComboBox.ImageIntPair> items = FXCollections.observableArrayList();
+    public ObservableList<ImageIntPair> createImageValuePairs(List<SpriteData.Sprite> sprites) {
+        ObservableList<ImageIntPair> items = FXCollections.observableArrayList();
         for(int i = 0; i < sprites.size(); i++) {
             SpriteData.Sprite sprite = sprites.get(i);
             Image image = loadImageFromSprite(sprite);
-            items.add(new ImageIntComboBox.ImageIntPair(image, i));
+            items.add(new ImageIntPair(image, i));
         }
         return items;
     }

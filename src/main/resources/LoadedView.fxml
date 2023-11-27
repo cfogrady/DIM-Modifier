@@ -34,6 +34,6 @@
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
          </padding>
       </HBox>
-      <AnchorPane fx:id="subView"/>
+      <AnchorPane fx:id="subView" VBox.vgrow="ALWAYS"/>
    </children>
 </VBox>

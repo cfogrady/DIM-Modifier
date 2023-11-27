@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.function.Consumer;
 
 @Slf4j
-public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
+public class ImageIntComboBox extends ComboBox<ImageIntPair> {
 
     public ImageIntComboBox() {
         super();
@@ -62,13 +62,6 @@ public class ImageIntComboBox extends ComboBox<ImageIntComboBox.ImageIntPair> {
             }
         }
         return null;
-    }
-
-    @Data
-    @EqualsAndHashCode(callSuper = true)
-    public static class ImageIntPair extends LabelValuePair<Integer, Image> {
-        private final Image label;
-        private final Integer value;
     }
 
     @RequiredArgsConstructor
