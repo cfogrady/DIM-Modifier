@@ -144,7 +144,7 @@ public class DimCardDataWriter extends CardDataWriter<
     }
 
     @Override
-    protected DimSpecificFusions mergeSpecificFusions(DimSpecificFusions old, List<SpecificFusions.SpecificFusionEntry> entries) {
+    protected DimSpecificFusions mergeSpecificFusions(DimCardData cardData, DimSpecificFusions old, List<SpecificFusions.SpecificFusionEntry> entries) {
         DimSpecificFusions.DimSpecificFusionsBuilder<?, ?> builder = old.toBuilder();
         if(entries.size() != old.getEntries().size() && entries.size() < DimSpecificFusions.VB_TABLE_SIZE) {
             log.info("Number of specific fusions on this dim has changed and the new value is less than table size. Using full table dummy rows");

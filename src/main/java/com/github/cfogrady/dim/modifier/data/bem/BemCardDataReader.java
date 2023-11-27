@@ -66,8 +66,8 @@ public class BemCardDataReader extends CardDataRreader<
     }
 
     @Override
-    protected BemCardData.BemCardDataBuilder<?, ?> getCardDataBuilder() {
-        return BemCardData.builder();
+    protected BemCardData.BemCardDataBuilder<?, ?> getCardDataBuilder(BemCard card) {
+        return BemCardData.builder().fusionsFromOtherCardsWithThisCard(getSpecificFusionsNotFromThisCard(card));
     }
 
     @Override
@@ -105,5 +105,36 @@ public class BemCardDataReader extends CardDataRreader<
         int start = FIRST_CHARACTER_SPRITE_INDEX + (index * SPRITES_PER_CHARACTER);
         int end = FIRST_CHARACTER_SPRITE_INDEX + ((index + 1) * SPRITES_PER_CHARACTER);
         return bemCard.getSpriteData().getSprites().subList(start, end);
+    }
+
+    @Override
+    protected List<List<BemSpecificFusions.BemSpecificFusionEntry>> getSpecificFusionsForCardByIndex(BemCard card) {
+        List<List<BemSpecificFusions.BemSpecificFusionEntry>> fusionsByIndex = new ArrayList<>();
+        for(int i = 0; i < card.getCharacterStats().getCharacterEntries().size(); i++) {
+            fusionsByIndex.add(new ArrayList<>());
+        }
+        for(BemSpecificFusions.BemSpecificFusionEntry fusion : card.getSpecificFusions().getEntries()) {
+            if(fusion.getFromBemId() == card.getHeader().getDimId()) {
+                fusionsByIndex.get(fusion.getFromCharacterIndex()).add(fusion);
+            }
+        }
+        return fusionsByIndex;
+    }
+
+    /**
+     * This method returns fusions that are on the card, and reference the card, but are not from a character on this
+     * card. Example if this is card id 1, this would catch an entry on this card that is from card id 02 slot id 12
+     * that fuses with card id 1 slot id 12 to go to card id 1 slot 22.
+     * @param card
+     * @return
+     */
+    private List<BemSpecificFusions.BemSpecificFusionEntry> getSpecificFusionsNotFromThisCard(BemCard card) {
+        List<BemSpecificFusions.BemSpecificFusionEntry> fusionsNotFromThisCard = new ArrayList<>();
+        for(BemSpecificFusions.BemSpecificFusionEntry fusion : card.getSpecificFusions().getEntries()) {
+            if(fusion.getFromBemId() != card.getHeader().getDimId()) {
+                fusionsNotFromThisCard.add(fusion);
+            }
+        }
+        return fusionsNotFromThisCard;
     }
 }

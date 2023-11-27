@@ -53,7 +53,7 @@ public class DimCardDataReader extends CardDataRreader<
     }
 
     @Override
-    protected DimCardData.DimCardDataBuilder<?, ?> getCardDataBuilder() {
+    protected DimCardData.DimCardDataBuilder<?, ?> getCardDataBuilder(DimCard card) {
         return DimCardData.builder();
     }
 

@@ -2,6 +2,7 @@ package com.github.cfogrady.dim.modifier.data.bem;
 
 import com.github.cfogrady.dim.modifier.data.card.CardData;
 import com.github.cfogrady.vb.dim.card.BemCard;
+import com.github.cfogrady.vb.dim.fusion.BemSpecificFusions;
 import com.github.cfogrady.vb.dim.sprite.SpriteData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -19,6 +20,7 @@ import java.util.Set;
 @EqualsAndHashCode(callSuper = true)
 public class BemCardData extends CardData<BemCharacter, BemAdventure, BemCard> {
     private static final Set<Integer> SKIPPED_BABY_SPRITE_INDEXES = Set.of(4, 5, 6, 7, 8, 11, 12);
+    private List<BemSpecificFusions.BemSpecificFusionEntry> fusionsFromOtherCardsWithThisCard;
 
     @Override
     public List<String> checkForErrors() {

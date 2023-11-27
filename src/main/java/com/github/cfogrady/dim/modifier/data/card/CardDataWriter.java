@@ -215,7 +215,7 @@ public abstract class CardDataWriter<
                         .build());
             }
         }
-        return mergeSpecificFusions(oldSpecificFusions, specificFusionEntries);
+        return mergeSpecificFusions(cardData, oldSpecificFusions, specificFusionEntries);
     }
 
     private int getPartnerCharacterIndex(SpecificFusion specificFusion, CardDataType cardData) {
@@ -227,7 +227,7 @@ public abstract class CardDataWriter<
 
     protected abstract SpecificFusions.SpecificFusionEntry.SpecificFusionEntryBuilder<? extends SpecificFusionEntryT, ?> getSpecificFusionBuilder(SpecificFusion specificFusion, CardDataType cardData);
 
-    protected abstract SpecificFusionT mergeSpecificFusions(SpecificFusionT old, List<SpecificFusionEntryT> entries);
+    protected abstract SpecificFusionT mergeSpecificFusions(CardDataType cardData, SpecificFusionT old, List<SpecificFusionEntryT> entries);
 
     protected abstract SpriteData createSpriteData(SpriteData oldSpriteData, CardDataType cardData);
 

@@ -142,7 +142,8 @@ public class BemCardDataWriter extends CardDataWriter<
     }
 
     @Override
-    protected BemSpecificFusions mergeSpecificFusions(BemSpecificFusions old, List<BemSpecificFusions.BemSpecificFusionEntry> entries) {
+    protected BemSpecificFusions mergeSpecificFusions(BemCardData cardData, BemSpecificFusions old, List<BemSpecificFusions.BemSpecificFusionEntry> entries) {
+        entries.addAll(cardData.getFusionsFromOtherCardsWithThisCard());
         return old.toBuilder().entries(entries).build();
     }
 
