@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -18,11 +17,8 @@ import java.util.prefs.Preferences;
 public class FirmwareManager {
     public static final String FIRMWARE_LOCATION = "FIRMWARE_LOCATION";
 
-    public static final int SPRITE_DIMENSIONS_LOCATION = 0x90a4;
-
-    public static final int SPRITE_PACKAGE_LOCATION = 0x80000;
-
-    private final BemSpriteReader bemSpriteReader = new BemSpriteReader();
+    private final FirmwareData10bBuilder firmwareData10bBuilder;
+    private final FirmwareData20bBuilder firmwareData20bBuilder;
     private final Preferences preferences;
 
     public void setFirmwareLocation(File file) {
@@ -46,17 +42,17 @@ public class FirmwareManager {
         return file != null && file.exists() && file.isFile() && file.canRead();
     }
 
-    public FirmwareData loadFirmware() throws IOException {
+    public FirmwareData loadFirmware() {
         String firmwareLocation = preferences.get(FIRMWARE_LOCATION, null);
         File file = new File(firmwareLocation);
-        try (FileInputStream fileInput = new FileInputStream(file)) {
-            RelativeByteOffsetInputStream input = new RelativeByteOffsetInputStream(fileInput);
-            input.readToOffset(SPRITE_DIMENSIONS_LOCATION);
-            List<SpriteData.SpriteDimensions> dimensionsList = bemSpriteReader.readSpriteDimensions(input);
-            input.readToOffset(SPRITE_PACKAGE_LOCATION);
-            return new FirmwareData(bemSpriteReader.getSpriteData(input, dimensionsList));
-        } catch (IOException ioe) {
-            throw ioe;
+        if(file.getName().endsWith("VBBE_20A.vb2")) {
+            log.info("Using 2.0.A firmware");
+            return firmwareData20bBuilder.buildFirmwareData(file);
+        } else if(file.getName().endsWith("VBBE_10B.vb2")) {
+            log.info("Using 1.0.B firmware");
+            return firmwareData10bBuilder.buildFirmwareData(file);
+        } else {
+            throw new IllegalArgumentException("Expecting VBBE_10B.vb2 or VBBE_20A.vb2 firmware file.");
         }
     }
 }
