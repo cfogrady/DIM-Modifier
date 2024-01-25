@@ -74,7 +74,7 @@ public class DimCardData extends CardData<DimCharacter, Adventure, DimCard> {
 
     private static List<String> validatorCharacterTransformations(int characterIndex, DimCharacter character) {
         List<String> errors = new ArrayList<>();
-        if (!character.getSpecificFusions().isEmpty()) {
+        if (!character.getSpecificFusions().isEmpty() && character.getHoursUntilFusionCheck() == null) {
             errors.add("Character " + characterIndex + " has specific fusions," + System.lineSeparator() +
                     "  but time until fusion checks is not set.");
         }
